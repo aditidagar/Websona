@@ -77,17 +77,16 @@ There are several reasons why users would want to use a service like Websona:
 
 #### Q6: What are the roles & responsibilities on the team?
 
-We have the folowing roles for this project:
+Websona is a project that is more backend heavy as compared to front end when it comes to the actual implementation. The UI aspect would be fairly basic as compared to the work in the backend. Due to this, we have decided to have four back-end and two front-end developers. 
+Along with the development roles, we have one role for a scrum master who would basically ensure that every team member part of the project follows the agreed upon agile principles. He/She is also responsible for holding scrum meetings as requested or needed. 
+We have one person assigned for Communication as well. He/She would be responsible for all the communication between the team and the project manager. Arrange for ad-hoc meetings if necessary and ensure everyone is on the same page at all times.
 
-* Scrum Master - Ibrahim Fazili
-* Communications Lead - Saakshi Shah
-* 2 x Frontend Developers - 
-* 4 x Backend Developers - 
 
 Our following outlines the various strengths and weaknesses of our team members:
 
 1. Gautam Gireesh
-
+    Role: Front-end Developer
+    
     Strength:
     
    * Mobile Development
@@ -100,7 +99,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Testing
 
 2. Parshva Shah
-
+   Role: Back-end Developer
+   
    Strength: 
    
    * Framework knowledge, 
@@ -114,7 +114,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Time management
 
 3. Ibrahim Fazili
-
+   Role: Back-end Developer / Scrum Master
+   
    Strength: 
    
    * Framework knowledge 
@@ -129,7 +130,8 @@ Our following outlines the various strengths and weaknesses of our team members:
 
 
 4. Lakshya Gupta
-
+   Role: Back-end Developer 
+   
    Strength:
    
    * Experience with AWS
@@ -143,7 +145,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Mobile testing + design
 
 5. Saakshi Shah
-
+   Role: Front-end Developer / Communication-Lead
+   
    Strength: 
    
    * Experience with frontend
@@ -157,7 +160,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * AWS
 
 6. Aditi Dagar
-
+   Role: Back-end Developer
+   
    Strength:
    * Experience with Node.js
    * Backend testing (mocha/chai/artillery)
