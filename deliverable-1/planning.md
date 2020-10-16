@@ -97,6 +97,7 @@ Our following outlines the various strengths and weaknesses of our team members:
 
    * Cloud Computing
    * Testing
+   * Databases
 
 2. Parshva Shah
    Role: Back-end Developer
