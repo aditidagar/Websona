@@ -16,7 +16,7 @@ All in all, the motivation behind designing Websona is to streamline the network
 
 #### Q2: Who are your target users?
 
-Websona is meant to streamline the networking process and therefore is intended to be used all individuals who use social media to interact with people and build professional links. At the the same time, Websona will also come handy to event organisers who wish to meticulously organise vital participant information.
+Websona is meant to streamline the networking process and therefore is intended to be used by all individuals who use social media to interact with people and build professional links. At the the same time, Websona will also come handy to event organisers who wish to meticulously organise vital participant information.
 
 In the foreseeable future, Websona is scheduled to be used across Toronto restaurants, the Ryerson 2021 residence orientation, and upcoming networking conferences.
 
@@ -27,11 +27,11 @@ In the foreseeable future, Websona is scheduled to be used across Toronto restau
 
 There are several reasons why users would want to use a service like Websona:
 
+* Websona will help save the user's time when they meet new people and wish to add them on various social media platforms. Instead of individually adding people on different social media platforms, Websona will provide the person's social media handles through a simple QR code scan. By seperately organising one's basic information, social media handles and professional details, users can choose what information they wish to share with a new person.
+
 * Given the COVID-19 context, the use of Websona will allow waiters to have the user's basic information (name and phone number, for example) with a quick QR code scan instead of the user having to write it down at every location they visit.
 
 * Event organizers and business HR folks can create a group QR code that individuals can scan to be added to the group. Once added, groups hosts may share any upcoming events, and have access to all the information that users are willing to share. The host will be able to organize events, see who’s attending, and export the group information thereby making it easier to collect and distill participant information.
-
-* The ‘calendar’ button in group chats will allow individuals to fill out their calendars with times they are unavailable. Once everyone has confirmed their calendars, overlapping free-times will be displayed. This calendar can be synced via email with their existing calendars should they choose to reduce redundancies in labour. The group can also “vote” for which time slot works best, and once that decision is finalized the time is “blocked” off on their respective calendars. This will provide users an easy outlet for comparing timetables and finding matching times.
 
 ----
 
@@ -278,7 +278,7 @@ As a group we will implement the 3 strike system. Everytime a member of the grou
  
 As is the case with every group assignment, teammates are bound to disagree and conflicts will arise. Non-responsiveness is a major downfall to many group projects, especially when deadlines are nearing, with each individual having their own responsibilities it is vital that the entire group stays on track and has their user stories completed on time. Our focus is to finish the task at hand, if an individual was to be unresponsive, the remaining members would equally split the load, and he/she will be dealt with at a later time for their actions.
 
-Since we are a large group, it will be nearly impossible for any decision based on tech stack or implementation to be unanimous. We have already discussed that certain members may feel less comfortable with the languages/frameworks we choose to use for this project, however, we have decided to split the implementation in a manner such that either each individual has had experience with the language, or is doing something similar enough to a point where the learning curve wont be too steep.
+Since we are a large group, it will be nearly impossible for any decision based on tech stack or implementation to be unanimous. We have already discussed that certain members may feel less comfortable with the languages/frameworks we choose to use for this project, however, we have decided to split the implementation in a manner such that either each individual has had experience with the language, or is doing something similar enough to a point where the learning curve won't be too steep.
 
 Along with this, we will move forward with every decision on a majority basis i.e. 4 out of 6 members will have to agree on every decision we make. As per any other major conflicts, since we have worked with each other in the past, and trust one-another with any sort of task, we eliminate the possibility of ignoring each other's concerns and requests. This underlying team chemistry will be vital for us to meet our deadlines and design the application Websona as envisioned by our partners.
 
