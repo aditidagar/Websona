@@ -11,11 +11,14 @@ Moreover, event organisers will be able to create group QR codes that can be use
 
 All in all, the motivation behind designing Websona is to streamline the networking process for individuals as well as event organizers and business HR folks.
 
+----
 
 
 #### Q2: Who are your target users?
 
 Websona is scheduled to be used across Toronto restaurants, the Ryerson 2021 residence orientation, and upcoming networking conferences.
+
+----
 
 
 #### Q3: Why would your users choose your product? What are they using today to solve their problem/need?
@@ -27,6 +30,8 @@ There are several reasons why users would want to use a service like Websona:
 * Event organizers and business HR folks can create a group QR code that individuals can scan to be added to the group. Once added, groups hosts may share any upcoming events, and have access to all the information that users are willing to share. The host will be able to organize events, see who’s attending, and export the group information thereby making it easier to collect and distill participant information.
 
 * The ‘calendar’ button in group chats will allow individuals to fill out their calendars with times they are unavailable. Once everyone has confirmed their calendars, overlapping free-times will be displayed. This calendar can be synced via email with their existing calendars should they choose to reduce redundancies in labour. The group can also “vote” for which time slot works best, and once that decision is finalized the time is “blocked” off on their respective calendars. This will provide users an easy outlet for comparing timetables and finding matching times.
+
+----
 
 #### Q4: How will you build it?
 
@@ -66,11 +71,6 @@ There are several reasons why users would want to use a service like Websona:
 
 #### Q5: What are the user stories that make up the MVP?
 
- * At least 5 user stories concerning the main features of the application - note that this can broken down further
- * You must follow proper user story format (as taught in lecture) ```As a <user of the app>, I want to <do something in the app> in order to <accomplish some goal>```
- * If you have a partner, these must be reviewed and accepted by them
- * The user stories should be written in Github and each one must have clear acceptance criteria.
-
 ----
 
 ### Mobile App
@@ -105,6 +105,8 @@ There are several reasons why users would want to use a service like Websona:
 	- As a potential user, I want to find more information about the app so that I can understand what the app is about and decide if I want to download the app or not
 - Create links to App Store, Play Store
 	- As a potential user, I want to click on links to play store or the app store so I can easily find and download the app after I visit the website
+	
+----
 
 #### Q6: What are the roles & responsibilities on the team?
 
@@ -231,6 +233,7 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Deployment
    * Frontend Experience
 
+----
 
 
 #### Q7: What operational events will you have as a team?
@@ -241,11 +244,15 @@ Each meeting would consist of everyone talking about what they’ve worked on in
 
 We’ve had two meetings with our project partner so far. The preliminary meeting was mainly introductory in nature. The partner explained their entire project idea to us including what features they are looking to add and how the app would function to help us better understand what they have envisioned for Websona. We were given time to ask any questions regarding the same as well towards the end of the meeting. 
 
+The second meeting was primarily held to present a mockup of the application we designed according to what we thought was adequate and talk about all the user stories we planned to incorporate. We did this so as to get feedback from our partner, and to make sure the idea we had in mind met their expectations. 
+
+----
+
 #### Q8: What artifacts will you use to self-organize?
 
 Since we have a fixed date of when we have to meet with the partner, we all have individual reminders. Our communication manager, Saakshi Shah, will keep track of any important information that occurs in the weekly meetings with the partners. For our SCRUM meetings, any additional information that is discussed about a particular user story or task will be added on ClickUp. We will be using ClickUp to self-organize the team’s tasks. We will have a separate SCRUM board for the front and backend for both the website and the app. We will split the board into different steps of the process, “Open Tasks”, “InProgress”, “Review”, “Staged”. Each task will have an assigned programmer, priority status, time estimate and a “confidence level”, i.e. how confident the programmer is to finish the task by the deadline. We will first prioritize user stories that are necessary to have a basic implementation of the app, then enhancements come after. User stories will be assigned to team members based on how comfortable they are with it and if they have any experience working with something similar.
 
-
+----
 
 #### Q9: What are the rules regarding how your team works?
 
@@ -253,7 +260,6 @@ Since we have a fixed date of when we have to meet with the partner, we all have
 During the process of creating this application, as a group we plan on having meetings twice a week. One meeting will include our project TA and product partner while the other will consist of just the team itself. During our weekly meeting with the partner, we will discuss the current status of the project, as well as discuss certain problems that we have encountered along the way to consistently receive input on changes we can make to create the application our partner desires. We will be creating user stories that can be viewed by both our partner and our TA along with our projected deadline to ensure that we stay up to date with the production of our application.
 
  As a group we will implement the 3 strike system. Everytime a member of the group misses a meeting without giving a reason why they will receive a strike, once their strike count hits three as a group we will make a decision as to whether we contact our professor and have him/her removed from the team. If a member is unable to finish their user stories, as a group we can put additional time in order to make sure we are keeping up with our suggested timeline. 
-
 
 
 ----
