@@ -118,91 +118,115 @@ Since communication with our partners is vital for the project’s success, we h
 
 Our following outlines the various strengths and weaknesses of our team members:
 
-1. Gautam Gireesh
-    Role: Front-end Developer
+1. __Gautam Gireesh__
+
+    __Role__: Front-end Developer
     
-    Strength:
+    __Description__: Ensuring seamless flow throughout the app and connecting the front end aspect of the application to our backend.
+
+    
+    __Strength__:
     
    * Mobile Development
    * Version Control
    * Framework knowledge
 
-   Weakness: 
+   __Weakness__: 
 
    * Cloud Computing
    * Testing
    * Databases
 
-2. Parshva Shah
-   Role: Back-end Developer
+2. __Parshva Shah__
+
+   __Role__: Back-end Developer
    
-   Strength: 
+   __Description__: Integrating authentication and authorization for the mobile and web app.
+
+   
+   __Strength__: 
    
    * Framework knowledge, 
    * Application Deployment (AWS, Heroku, Firebase etc.)
    * Data structure design
 
-   Weakness: 
+   __Weakness__: 
    
    * Interface Designing 
    * Clear and concise communication
    * Time management
 
-3. Ibrahim Fazili
-   Role: Back-end Developer / Scrum Master
+3. __Ibrahim Fazili__
+
+   __Role__: Back-end Developer / Scrum Master
    
-   Strength: 
+   __Description__: Setting up databases and collections to efficiently store user information. As a Scrum Master, Ibrahim will also be responsible in conducting regular scrum meetings and ensuring everyone is working as per deadlines.
+
+   
+   __Strength__: 
    
    * Framework knowledge 
    * Quick to learn new technologies
    * Mobile Development 
 
-   Weakness: 
+   __Weakness__: 
    
    * AWS 
    * Limited work with backend
    * CI/CD
 
 
-4. Lakshya Gupta
-   Role: Back-end Developer 
+4. __Lakshya Gupta__
+
+   __Role__: Back-end Developer 
    
-   Strength:
+   __Description__: Storing user media like profile photos safely and generating secure links that our application can use to fetch the required media. Lakshya will also be responsible for creating a CI/CD pipeline for improving work efficiency by automating building and testing. 
+
+   
+   __Strength__:
    
    * Experience with AWS
    * Extensive experience with backend development
    * CI/CD
    
-   Weakness:
+   __Weakness__:
    
    * UI design
    * Front-end testing
    * Mobile testing + design
 
-5. Saakshi Shah
-   Role: Front-end Developer / Communication-Lead
+5. __Saakshi Shah__
+
+   __Role__: Front-end Developer / Communication-Lead
    
-   Strength: 
+   __Description__: Responsible for the design and testing aspect of the application. Creating front end test suites to ensure the user will not experience any bugs on their side. As communication lead, Saakshi will be responsible for maintaining a strong connection between the team and the project partners to make sure we deliver a product that meets all expectations.
+
+   
+   __Strength__: 
    
    * Experience with frontend
    * Node.js
    * Deployment 
 
-   Weakness: 
+   __Weakness__: 
    
    * Working with DB
    * Limited experience CI/CD
    * AWS
 
-6. Aditi Dagar
-   Role: Back-end Developer
+6. __Aditi Dagar__
+
+   __Role__: Back-end Developer
    
-   Strength:
+   __Description__: Aditi is responsible for deploying the backend of the application to run it on a server that can be easily accessed by our application. She will be in charge of creating backend test suites to ensure no new features affect anything else already in place. 
+
+   
+   __Strength__:
    * Experience with Node.js
    * Backend testing (mocha/chai/artillery)
    * Experience with databases
 
-   Weakness:
+   __Weakness__:
    * Limited CI/CD knowledge
    * Deployment
    * Frontend Experience
