@@ -108,9 +108,12 @@ There are several reasons why users would want to use a service like Websona:
 
 #### Q6: What are the roles & responsibilities on the team?
 
-Websona is a project that is more backend heavy as compared to front end when it comes to the actual implementation. The UI aspect would be fairly basic as compared to the work in the backend. Due to this, we have decided to have four back-end and two front-end developers. 
-Along with the development roles, we have one role for a scrum master who would basically ensure that every team member part of the project follows the agreed upon agile principles. He/She is also responsible for holding scrum meetings as requested or needed. 
-We have one person assigned for Communication as well. He/She would be responsible for all the communication between the team and the project manager. Arrange for ad-hoc meetings if necessary and ensure everyone is on the same page at all times.
+Websona is a project that is more backend heavy as compared to front end when it comes to the actual implementation. The UI aspect would be fairly basic as compared to the work in the backend. That is precisely why we have decided to have four back-end and two front-end developers. 
+
+Aside from the development roles, we have one scrum master who would be responsible for ensuring that every team member adheres to the agreed upon agile principles. He/She is also responsible for holding regular scrum meetings as requested or needed. 
+
+Since communication with our partners is vital for the project’s success, we have one person assigned as the Communications Lead. He/She would be responsible for all the communication between the team and the project manager and arranging ad-hoc meetings if necessary and ensuring everyone is on the same page at all times.
+
 
 
 Our following outlines the various strengths and weaknesses of our team members:
