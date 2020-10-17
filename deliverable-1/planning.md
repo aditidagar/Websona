@@ -37,7 +37,7 @@ There are several reasons why users would want to use a service like Websona:
 
 #### Q4: How will you build it?
 
-# Tech-Stack V1
+### Tech-Stack V1
 
 - Mobile
     - Flutter + Dart
