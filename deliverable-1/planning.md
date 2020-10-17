@@ -73,7 +73,38 @@ There are several reasons why users would want to use a service like Websona:
 
 ----
 
-## Process Details
+### Mobile App
+- Sign Up + Login
+	- As a user, I should be able to open the app and create an account. If I already have an account, I should be able to login using my credentials so that I can access the app
+- Create User Profile
+	- As a user, I want to create a profile with my information on so that I can create QR codes and share my profile with other users
+- Generate & Manage QR Codes
+	- As a user, I should be able to generate QR codes for different sets of social media that I want to associate with those QR codes. I should also be able to delete 		  existing QR codes, or update them by adding or removing social media links. This would let me share my info with other users and allow me them to connect with me on             other platforms easily
+- Scan other user codes
+	- As a user, I want to be able to scan other users' QR codes to add them as a contact and receive their social media links so that I can connect with them on other 		  platforms
+- Follow links to external Apps
+	- As a user, I should be able to click on social media links on other users' profile and see their profile on those platforms so that I can connect with them easily
+- Contact List
+	- As a user, I want to add tags to each user whose code I scan so I can easily identify and filter all the scanned users
+- Support for Tags
+	- As a user, I want to add tags to each user whose code I scan so I can easily identify and filter all the scanned users
+- Add group email/texts/events
+	- As a user, I want to send group emails/texts/calendar events to groups of users that have certain tags associated with them so I can communicate with a certain set of users easily without having to contact them separately on other platforms
+- Scanning code without Websona
+	- As a new user, I should be provided with an option to download websona after scanning someone's QR code If I don't have it. Once I download the app, the process of adding that person as a contact should continue without having to re-scan the QR code so I can start using websona right away with minimal hassle
+- Event Codes
+	- As an event organizer, I want to generate QR code(s) specific to the event that I can share with the attendees so I can get a centralized list of all the attendees (and their relevant info) for the event
+
+----
+
+### Website
+
+- Login
+	- As a user, I want to login to my account on the website and look at all my contacts so that I can access them from my computer or other devices when I don't have access to the app
+- Info Page for the App
+	- As a potential user, I want to find more information about the app so that I can understand what the app is about and decide if I want to download the app or not
+- Create links to App Store, Play Store
+	- As a potential user, I want to click on links to play store or the app store so I can easily find and download the app after I visit the website
 
 #### Q6: What are the roles & responsibilities on the team?
 
