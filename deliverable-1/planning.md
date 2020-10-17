@@ -16,7 +16,9 @@ All in all, the motivation behind designing Websona is to streamline the network
 
 #### Q2: Who are your target users?
 
-Websona is scheduled to be used across Toronto restaurants, the Ryerson 2021 residence orientation, and upcoming networking conferences.
+Websona is meant to streamline the networking process and therefore is intended to be used all individuals who use social media to interact with people and build professional links. At the the same time, Websona will also come handy to event organisers who wish to meticulously organise vital participant information.
+
+In the foreseeable future, Websona is scheduled to be used across Toronto restaurants, the Ryerson 2021 residence orientation, and upcoming networking conferences.
 
 ----
 
@@ -110,11 +112,13 @@ There are several reasons why users would want to use a service like Websona:
 
 #### Q6: What are the roles & responsibilities on the team?
 
+
 Websona is a project that is more backend heavy as compared to front end when it comes to the actual implementation. The UI aspect would be fairly basic as compared to the work in the backend. That is precisely why we have decided to have four back-end and two front-end developers. 
 
 Aside from the development roles, we have one scrum master who would be responsible for ensuring that every team member adheres to the agreed upon agile principles. He/She is also responsible for holding regular scrum meetings as requested or needed. 
 
 Since communication with our partners is vital for the project’s success, we have one person assigned as the Communications Lead. He/She would be responsible for all the communication between the team and the project manager and arranging ad-hoc meetings if necessary and ensuring everyone is on the same page at all times.
+
 
 
 
@@ -138,6 +142,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Cloud Computing
    * Testing
    * Databases
+   
+   
 
 2. __Parshva Shah__
 
@@ -157,6 +163,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Interface Designing 
    * Clear and concise communication
    * Time management
+
+
 
 3. __Ibrahim Fazili__
 
@@ -178,6 +186,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * CI/CD
 
 
+
+
 4. __Lakshya Gupta__
 
    __Role__: Back-end Developer 
@@ -197,6 +207,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Front-end testing
    * Mobile testing + design
 
+
+
 5. __Saakshi Shah__
 
    __Role__: Front-end Developer / Communication-Lead
@@ -215,6 +227,8 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Working with DB
    * Limited experience CI/CD
    * AWS
+   
+   
 
 6. __Aditi Dagar__
 
@@ -232,6 +246,7 @@ Our following outlines the various strengths and weaknesses of our team members:
    * Limited CI/CD knowledge
    * Deployment
    * Frontend Experience
+   
 
 ----
 
@@ -274,23 +289,23 @@ Along with this, we will move forward with every decision on a majority basis i.
 
 Our first meeting with the team of Websona was a productive one. We were able to make four critical decisions related to the product and one regarding our process. The following paragraphs will outline these decisions, the alternatives, and why we ultimately decided on the given conclusion.
 
-1) QR Codes
+1) __QR Codes__
 
- After introducing members of both teams, the first idea we tackled was QR codes. Our team was unsure of what Websona required. The options we discussed were having 2 set QR codes: Personal, Professional with the added option of having an optional customizable QR code. We also discussed the prospect of having 5 QR codes available to the customer, and they are free to choose from 1-5 customizable QR codes. While the first option set the tone of the app, it limited the consumer. On the contrary, the second option was what Websona deemed ideal. With this, the consumer would be able to customize the QR codes to their specific needs. Having discussed this for a while, both teams realized the second option made more sense for the target demographic.
+	After introducing members of both teams, the first idea we tackled was QR codes. Our team was unsure of what Websona required. The options we discussed were having 2 set QR codes: Personal, Professional with the added option of having an optional customizable QR code. We also discussed the prospect of having 5 QR codes available to the customer, and they are free to choose from 1-5 customizable QR codes. While the first option set the tone of the app, it limited the consumer. On the contrary, the second option was what Websona deemed ideal. With this, the consumer would be able to customize the QR codes to their specific needs. Having discussed this for a while, both teams realized the second option made more sense for the target demographic.
 
-2) Website
+2) __Website__
 
 	Upon finalizing QR codes, one of our team members asked Websona whether or not they envisioned a website alongside the mobile app. While the Websona team had not discussed a website, they loosely described they wanted a website to redirect consumers to download the app, and have the standard information regarding the app. We presented Websona with two alternatives that added to their existing idea. One being, the website would additionally serve as the redirection point: if users who scanned a QR code from a Websona user did not have the app, the information the code stored would be redirected to open up on the Websona website instead. The second option we presented was the idea of a web app. Wherein the web app would fully function as the mobile app. Both alternatives were well received by Websona; they saw the appeal to having a fully functional web app. However, considering time constraints, both the Websona team and our TA suggested we stick to the first alternative. Furthermore, Websona was focused on getting the mobile app done first and saw a web app as a future improvement. Having discussed both options, both teams agreed to have a basic website that served as a redirection.
 
-3) Social Media Integration
+3) __Social Media Integration__
 
 	An aspect of the app that was still up for discussion was whether or not social media would be fully integrated into the app. We discussed numerous options; one option considered was access to a user's social media profiles in the app itself. So once the user scanned a QR code and was presented with an Instagram handle, they'd be able to see that Instagram profile within the Websona app with one click. After thorough deliberation with the team, we realized this feature would require countless permissions and ideas outside of our skillset. An alternative both teams brainstormed was linking. Instead of having consumers login within the Websona app, they'd be redirected to the app or website of the given social media handle. This alternative was well within the boundary of our expertise and not as time-consuming as the initial approach. With the approval of Websona, we were also able to finalize this aspect of the app.
 
-4) Messaging Services
+4) __Messaging Services__
 
 	The initial proposal Websona presented us with explained how they'd like a group messaging service integrated into the app. We discussed this in-depth during our meeting and realized, like social media integration, there was simply not enough time and tools to deliver this. Furthermore, our TA strongly advised us against this; she explained how this required functionality outside our expertise. Considering her advice, both teams mutually concluded that this feature would be omitted for the time being.
 
-5) Communication
+5) __Communication__
 
 	Having discussed product specifics, we finally discussed communication channels. Seeing how productive our Zoom meeting had been, both the Websona team and us decided weekly Zoom meetings would be ideal. We very quickly were able to determine our meetings would be on Tuesdays at 9 pm. Lastly, to make communication easier, the Websona team required one person as a point of contact that would represent our team. Having decided this before the meetings amongst us, we concluded that Saakshi would be the appointed individual. With this, we completed the communication aspect of our discussion.
 
