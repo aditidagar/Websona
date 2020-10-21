@@ -1,7 +1,34 @@
+import dotenv from 'dotenv';
 import express from 'express';
+import { authenticateToken, generateAccessToken } from './authentication';
 
-const PORT = 3000;
+dotenv.config();
+const PORT = process.env.PORT;
 const app: express.Express = express();
+
+/**
+ * Sample route on how to generate access tokens for a user. On the actual route,
+ * we need to first authenticate a user and then issue an access token.
+ *
+ * ** This is for reference only **
+ *
+ * Once actual login/signup is implemented, we need to re-write an actual token route
+ * with authentication
+ */
+app.get("/token", (req, res) => {
+    const username = req.query.name;
+    if (!username) {
+        res.status(400).send('Missing username for access token request');
+        return;
+    }
+
+    const accessToken: string = generateAccessToken({ username });
+    res.status(200).send(accessToken);
+});
+
+// routes created after the line below will be reachable only by the clients
+// with a valid access token
+app.use(authenticateToken);
 
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
