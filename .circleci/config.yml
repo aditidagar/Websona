@@ -19,6 +19,7 @@ jobs:
           override-ci-command: npm i
       - run:
           name: Tests
+          working_directory: ~/project/backend
           command: npm test
       # Save workspace for subsequent jobs (i.e. test)
 #       - persist_to_workspace:
