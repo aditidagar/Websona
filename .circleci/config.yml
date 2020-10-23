@@ -5,7 +5,7 @@ orbs:
 
 jobs:
   build:
-    working_directory: ~/project/backend
+    working_directory: ~/project/backend/backend
     # Reuse Docker container specification given by the node Orb
     executor: node/default
     steps:
