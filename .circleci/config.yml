@@ -4,7 +4,7 @@ orbs:
   node: circleci/node@3.0.0
 
 jobs:
-  build:
+  backend_tests:
     working_directory: ~/project
     # Reuse Docker container specification given by the node Orb
     executor: node/default
@@ -21,28 +21,23 @@ jobs:
           name: Tests
           working_directory: ~/project/backend
           command: npm test
-      # Save workspace for subsequent jobs (i.e. test)
-#       - persist_to_workspace:
-#           root: .
-#           paths:
-#             - .
 
-  test:
-    working_directory: ~/project/backend
-    executor: node/default
-    steps:
-      # Reuse the workspace from the build job
-      - attach_workspace:
-          at: .
-      - run:
-          name: Test
-          command: npm test
+#   test:
+#     working_directory: ~/project/backend
+#     executor: node/default
+#     steps:
+#       # Reuse the workspace from the build job
+#       - attach_workspace:
+#           at: .
+#       - run:
+#           name: Test
+#           command: npm test
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
+      - backend_tests
+#       - test:
+#           requires:
+#             - build
