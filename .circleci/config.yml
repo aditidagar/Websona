@@ -24,6 +24,8 @@ jobs:
             - .
 
   test:
+    working_directory: ~/backend
+    executor: node/default
     steps:
       # Reuse the workspace from the build job
       - attach_workspace:
