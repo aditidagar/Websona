@@ -6,7 +6,7 @@ chai.use(chaiHttp);
 chai.should();
 
 const SERVER_URL: string = "http://localhost:3000";
-const _SERVER = app.listen(process.env.PORT, () => console.log("Launched server"));
+const _SERVER = app.listen(3000, () => console.log("Launched server"));
 
 let auth: string = "";
 
