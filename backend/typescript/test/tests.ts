@@ -5,8 +5,8 @@ import app from "../index";
 chai.use(chaiHttp);
 chai.should();
 
-const SERVER_URL: string = "http://localhost:3000";
-const _SERVER = app.listen(3000, () => console.log("Launched server"));
+const SERVER_URL: string = "http://localhost:8000";
+const _SERVER = app.listen(8000, () => console.log("Launched server"));
 
 let auth: string = "";
 
@@ -49,7 +49,7 @@ describe("JWT tests", () => {
         .end((err, res) => {
             if (!res) chai.assert.fail("No response from server on route '/protectedResource'");
             chai.expect(res.status).equal(200);
-            
+
             _SERVER.close();
             done();
         });

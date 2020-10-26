@@ -5,27 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = __importDefault(require("chai"));
 const chai_http_1 = __importDefault(require("chai-http"));
-const child_process_1 = require("child_process");
+const index_1 = __importDefault(require("../index"));
 chai_1.default.use(chai_http_1.default);
 chai_1.default.should();
-const SERVER_URL = "http://localhost:3000";
-// launch the server in the background to run the tests
-const _SERVER = child_process_1.exec("node javascript/index.js", (err, STDOUT, STDERR) => {
-    if (err) {
-        console.log('err', err);
-        throw Error("Couldn't launch the server for tests");
-    }
-    console.log("STDOUT:", STDOUT);
-    console.log("STDERR:", STDERR);
-});
-function sleep(milliseconds) {
-    const date = Date.now();
-    let currentDate;
-    do {
-        currentDate = Date.now();
-    } while (currentDate - date < milliseconds);
-}
-sleep(5000);
+const SERVER_URL = "http://localhost:8000";
+const _SERVER = index_1.default.listen(8000, () => console.log("Launched server"));
 let auth = "";
 describe("Sanity checks", () => {
     it("Check server is alive", (done) => {
@@ -62,6 +46,7 @@ describe("JWT tests", () => {
             if (!res)
                 chai_1.default.assert.fail("No response from server on route '/protectedResource'");
             chai_1.default.expect(res.status).equal(200);
+            _SERVER.close();
             done();
         });
     });
