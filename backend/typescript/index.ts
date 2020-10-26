@@ -45,3 +45,4 @@ app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });
 
+export default app;

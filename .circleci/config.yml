@@ -1,0 +1,47 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@3.0.0
+
+jobs:
+  backend_tests:
+    working_directory: ~/project
+    # Reuse Docker container specification given by the node Orb
+    executor: node/default
+    environment: 
+      JWT_TOKEN_SECRET: $JWT_SECRET_TOKEN
+      PORT: $PORT
+    steps:
+      - checkout
+      # Install the latest npm - the node Orb takes care of it
+      - node/install-npm
+      # Install dependencies - the node Orb take care of installation and dependency caching
+      - node/install-packages:
+          app-dir: ~/project/backend
+          cache-path: node_modules
+          override-ci-command: npm i
+      - run:
+          name: Tests
+          working_directory: ~/project/backend
+          command: npm test
+    
+        
+#   test:
+#     working_directory: ~/project/backend
+#     executor: node/default
+#     steps:
+#       # Reuse the workspace from the build job
+#       - attach_workspace:
+#           at: .
+#       - run:
+#           name: Test
+#           command: npm test
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - backend_tests
+#       - test:
+#           requires:
+#             - build

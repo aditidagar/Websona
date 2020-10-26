@@ -1,17 +1,14 @@
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { exec } from 'child_process';
+import app from "../index";
 
 chai.use(chaiHttp);
 chai.should();
 
-const SERVER_URL: string = "http://localhost:3000";
-// launch the server in the background to run the tests
-const _SERVER = exec("npm start &", (err, STDOUT, STDERR) => {
-    if (err) throw Error("Couldn't launch the server for tests");
-});
+const SERVER_URL: string = "http://localhost:8000";
+const _SERVER = app.listen(8000, () => console.log("Launched server"));
 
-var auth: string = "";
+let auth: string = "";
 
 describe("Sanity checks", () => {
 
@@ -53,6 +50,7 @@ describe("JWT tests", () => {
             if (!res) chai.assert.fail("No response from server on route '/protectedResource'");
             chai.expect(res.status).equal(200);
 
+            _SERVER.close();
             done();
         });
     });
