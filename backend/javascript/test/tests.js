@@ -14,6 +14,14 @@ const _SERVER = child_process_1.exec("npm start &", (err, STDOUT, STDERR) => {
     if (err)
         throw Error("Couldn't launch the server for tests");
 });
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+}
+sleep(5000);
 let auth = "";
 describe("Sanity checks", () => {
     it("Check server is alive", (done) => {

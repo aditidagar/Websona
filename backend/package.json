@@ -8,7 +8,7 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node javascript/index.js",
-    "test": "npx ts-mocha typescript/test/tests.ts --timeout 5000 --exit"
+    "test": "npx ts-mocha typescript/test/tests.ts --timeout 0 --exit"
   },
   "author": "",
   "license": "ISC",
