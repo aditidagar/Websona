@@ -8,6 +8,9 @@ jobs:
     working_directory: ~/project
     # Reuse Docker container specification given by the node Orb
     executor: node/default
+    environment: 
+      JWT_TOKEN_SECRET: $JWT_SECRET_TOKEN
+      PORT: $PORT
     steps:
       - checkout
       # Install the latest npm - the node Orb takes care of it
@@ -21,7 +24,8 @@ jobs:
           name: Tests
           working_directory: ~/project/backend
           command: npm test
-
+    
+        
 #   test:
 #     working_directory: ~/project/backend
 #     executor: node/default
