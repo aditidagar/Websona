@@ -7,20 +7,23 @@ chai.should();
 
 const SERVER_URL: string = "http://localhost:3000";
 // launch the server in the background to run the tests
-const _SERVER = exec("npm start &", (err, STDOUT, STDERR) => {
-    if (err) throw Error("Couldn't launch the server for tests");
-});
+// const _SERVER = exec("npm start &", (err, STDOUT, STDERR) => {
+//     if (err) throw Error("Couldn't launch the server for tests");
+// });
 
-var auth: string = "";
+let auth: string = "";
 
 describe("Sanity checks", () => {
 
     it("Check server is alive", (done) => {
-        chai.request(SERVER_URL).get("/").end((err, res) => {
-            if(!res) chai.assert.fail("No response from server on route '/'");
-            chai.expect(res.status).equal(200);
+        exec("npm start &", (err, STDOUT, STDERR) => {
+            if (err) throw Error("Couldn't launch the server for tests");
+            chai.request(SERVER_URL).get("/").end((err, res) => {
+                if(!res) chai.assert.fail("No response from server on route '/'");
+                chai.expect(res.status).equal(200);
 
-            done();
+                done();
+            });
         });
     });
 
