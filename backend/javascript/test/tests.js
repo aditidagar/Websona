@@ -10,9 +10,13 @@ chai_1.default.use(chai_http_1.default);
 chai_1.default.should();
 const SERVER_URL = "http://localhost:3000";
 // launch the server in the background to run the tests
-const _SERVER = child_process_1.exec("npm start &", (err, STDOUT, STDERR) => {
-    if (err)
+const _SERVER = child_process_1.exec("node javascript/index.js", (err, STDOUT, STDERR) => {
+    if (err) {
+        console.log('err', err);
         throw Error("Couldn't launch the server for tests");
+    }
+    console.log("STDOUT:", STDOUT);
+    console.log("STDERR:", STDERR);
 });
 function sleep(milliseconds) {
     const date = Date.now();
