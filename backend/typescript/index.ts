@@ -56,7 +56,6 @@ app.post("/signup", (req, res) => {
 
 });
 
-
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authenticateToken);
