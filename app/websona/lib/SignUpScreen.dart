@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'main.dart';
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -100,7 +101,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 60,
                 child: RaisedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, 'Home');
+                                       Navigator.push(context,
+              MaterialPageRoute(builder: (context) => MyStatefulWidget(),
+  ),
+);
                   },
                   color: Color(0xFF007AFE),
                   child: Text(

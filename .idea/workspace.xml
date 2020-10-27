@@ -24,10 +24,7 @@
   <component name="ChangeListManager">
     <list default="true" id="7cfb4fa5-7e93-4c46-b3be-7f14fa474ea6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/websona/asset/img/angryimg.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/websona/lib/SignInScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/websona/lib/SignInScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/websona/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/websona/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/websona/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/app/websona/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/websona/lib/SignUpScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/websona/lib/SignUpScreen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
