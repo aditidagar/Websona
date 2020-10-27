@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'SignUpScreen.dart';
+import 'Main.dart';
 
 
 class SignInScreen extends StatefulWidget {
@@ -63,7 +64,12 @@ class _SignInScreenState extends State<SignInScreen> {
               child: Container(
                 height: 60,
                 child: RaisedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context,
+              MaterialPageRoute(builder: (context) => MyStatefulWidget(),
+  ),
+);
+                  },
                   color: Color(0xFF007AFE),
                   child: Text(
                     'SIGN IN',
@@ -93,7 +99,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     style: TextStyle(color: Colors.black),
                     children: [
                       TextSpan(
-                        text: 'SIGN UP',
+                        text: ' SIGN UP',
                         style: TextStyle(
                             color: Color(0xFF007AFE), fontWeight: FontWeight.bold),
                       )
