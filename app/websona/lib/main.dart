@@ -102,72 +102,82 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         unselectedItemColor: Colors.black,
         onTap: _onItemTapped,
       ),
-      floatingActionButton: MyFloatingActionButton(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          opencamera(context);
+        },
+        child: Icon(Icons.add),
+      ),
     );
   }
-}
 
-// class MyFloatingActionButton extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return FloatingActionButton(
-//       onPressed: () {
-//           showBottomSheet (
-//             context: context,
-//             builder: (context) => Container(
-//                   color: Colors.red,
-//                 ));
-//           },
-//       child: Icon(Icons.add),
-//       backgroundColor: Colors.blue,
-//     ),
-//   }
-// }
-class MyFloatingActionButton extends StatefulWidget {
-  @override
-  createState() => new _MyFloatingActionButtonState();
-}
-
-// class MyFloatingActionButton extends State<> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return FloatingActionButton(
-//       onPressed: () {
-//         showBottomSheet(
-//             context: context,
-//             builder: (context) => Container(color: Colors.red, height: 250));
-//       },
-//       child: Icon(Icons.add),
-//     );
-//   }
-// }
-
-class _MyFloatingActionButtonState extends State<MyFloatingActionButton> {
-  bool showFab = true;
-  @override
-  Widget build(BuildContext context) {
-    return showFab
-        ? FloatingActionButton(
-            onPressed: () {
-              var bottomSheetController = showBottomSheet(
-                  context: context,
-                  builder: (context) => Container(
-                        color: Colors.grey[300],
-                        height: 400,
-                      ));
-              showFoatingActionButton(false);
-              bottomSheetController.closed.then((value) {
-                showFoatingActionButton(true);
-              });
-            },
-            child: Icon(Icons.add),
-          )
-        : Container();
-  }
-
-  void showFoatingActionButton(bool value) {
-    setState(() {
-      showFab = value;
-    });
+  void opencamera(context) {
+    showModalBottomSheet(
+        context: context,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20.0)),
+        ),
+        builder: (BuildContext bc) {
+          return Container(
+            alignment: Alignment.topCenter,
+            margin: EdgeInsets.all(30),
+            height: MediaQuery.of(context).size.height * 0.6,
+            // decoration: BoxDecoration(
+            //     borderRadius: BorderRadius.only(
+            //         topLeft: Radius.circular(40),
+            //         topRight: Radius.circular(40))),
+            child: Row(
+              children: <Widget>[
+                SizedBox(
+                  width: 70,
+                  child: SelectableText("Cancel",
+                      onTap: () => {Navigator.pop(context)},
+                      style: TextStyle(color: Colors.blue[800])),
+                ),
+                // style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                Text(
+                  'Scan the QR code',
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        });
   }
 }
+
+// class MyFloatingActionButton extends StatefulWidget {
+//   @override
+//   createState() => new _MyFloatingActionButtonState();
+// }
+
+// class _MyFloatingActionButtonState extends State<MyFloatingActionButton> {
+//   bool showFab = true;
+//   @override
+//   Widget build(BuildContext context) {
+//     return showFab
+//         ? FloatingActionButton(
+//             onPressed: () {
+//               var bottomSheetController = showBottomSheet(
+//                   context: context,
+//                   builder: (context) => Container(
+//                         color: Colors.grey[300],
+//                         height: 400,
+//                       ));
+//               showFoatingActionButton(false);
+//               bottomSheetController.closed.then((value) {
+//                 showFoatingActionButton(true);
+//               });
+//             },
+//             child: Icon(Icons.add),
+//           )
+//         : Container();
+//   }
+
+//   void showFoatingActionButton(bool value) {
+//     setState(() {
+//       showFab = value;
+//     });
+//   }
+// }
