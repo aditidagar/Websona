@@ -10,6 +10,7 @@
 // bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
 
 import 'package:flutter/material.dart';
+import 'SignInScreen.dart';
 
 void main() => runApp(MyApp());
 
@@ -21,7 +22,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: _title,
-      home: MyStatefulWidget(),
+      initialRoute: 'SignIn',
+      routes: {
+        'SignIn':(context) => SignInScreen()
+      }
+      // home: MyStatefulWidget(),
     );
   }
 }
@@ -53,11 +58,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       style: optionStyle,
     ),
     Text(
-      'Index 3: Settings',
-      style: optionStyle,
-    ),
-    Text(
-      'Index 4: Scrgegega',
+      'Index 3: Setttings',
       style: optionStyle,
     ),
   ];
