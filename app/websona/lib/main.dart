@@ -102,13 +102,72 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         unselectedItemColor: Colors.black,
         onTap: _onItemTapped,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add your onPressed code here!
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
-      ),
+      floatingActionButton: MyFloatingActionButton(),
     );
+  }
+}
+
+// class MyFloatingActionButton extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return FloatingActionButton(
+//       onPressed: () {
+//           showBottomSheet (
+//             context: context,
+//             builder: (context) => Container(
+//                   color: Colors.red,
+//                 ));
+//           },
+//       child: Icon(Icons.add),
+//       backgroundColor: Colors.blue,
+//     ),
+//   }
+// }
+class MyFloatingActionButton extends StatefulWidget {
+  @override
+  createState() => new _MyFloatingActionButtonState();
+}
+
+// class MyFloatingActionButton extends State<> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return FloatingActionButton(
+//       onPressed: () {
+//         showBottomSheet(
+//             context: context,
+//             builder: (context) => Container(color: Colors.red, height: 250));
+//       },
+//       child: Icon(Icons.add),
+//     );
+//   }
+// }
+
+class _MyFloatingActionButtonState extends State<MyFloatingActionButton> {
+  bool showFab = true;
+  @override
+  Widget build(BuildContext context) {
+    return showFab
+        ? FloatingActionButton(
+            onPressed: () {
+              var bottomSheetController = showBottomSheet(
+                  context: context,
+                  builder: (context) => Container(
+                        color: Colors.grey[300],
+                        height: 400,
+                      ));
+              showFoatingActionButton(false);
+              bottomSheetController.closed.then((value) {
+                showFoatingActionButton(true);
+              });
+            },
+            child: Icon(Icons.add),
+          )
+        : Container();
+  }
+
+  void showFoatingActionButton(bool value) {
+    setState(() {
+      showFab = value;
+    });
   }
 }
