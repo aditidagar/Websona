@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import DB = require("./utils/DatabaseManager");
+import DB from "./utils/DatabaseManager";
 import { authenticateToken, generateAccessToken } from './authentication';
 
 dotenv.config();
