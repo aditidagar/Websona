@@ -24,7 +24,9 @@ jobs:
           name: Tests
           working_directory: ~/project/backend
           command: npm test
-    
+      - run:
+          name: Testing Adding Environment
+          command: echo $MONGO_URL
         
 #   test:
 #     working_directory: ~/project/backend
@@ -42,6 +44,7 @@ workflows:
   build_and_test:
     jobs:
       - backend_tests
+    
 #       - test:
 #           requires:
 #             - build
