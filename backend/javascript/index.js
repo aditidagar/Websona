@@ -58,6 +58,33 @@ app.post("/signup", (req, res) => {
         res.status(500).send("Insert Failed");
     });
 });
+app.post("/login", (req, res) => {
+    const requestData = {
+        email: req.body.email,
+        password: req.body.password,
+    };
+    DB.fetchUsers({ email: requestData.email })
+        .then((users) => {
+        if (users.length < 1) {
+            res.status(401).send("Invalid Email");
+            return;
+        }
+        const user = users[0];
+        if (bcrypt_1.default.compareSync(requestData.password, user.password)) {
+            // Passwords match
+            delete user.password;
+            res.status(200).send(user);
+        }
+        else {
+            // Passwords don't match
+            res.status(401).send("Invalid password");
+        }
+    })
+        .catch((err) => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
+});
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
