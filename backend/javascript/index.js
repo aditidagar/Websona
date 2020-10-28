@@ -63,12 +63,8 @@ app.post("/login", (req, res) => {
         email: req.body.email,
         password: req.body.password,
     };
-    DB.fetchUsers({ email: requestData.email })
+    DatabaseHandler_1.fetchUsers({ email: requestData.email })
         .then((users) => {
-        if (users.length < 1) {
-            res.status(401).send("Invalid Email");
-            return;
-        }
         const user = users[0];
         if (bcrypt_1.default.compareSync(requestData.password, user.password)) {
             // Passwords match

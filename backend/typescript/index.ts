@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { insertUser } from "./utils/DatabaseHandler";
+import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken } from './authentication';
 
 dotenv.config();
@@ -61,12 +61,8 @@ app.post("/login", (req, res) => {
         password: req.body.password,
     };
 
-    DB.fetchUsers({ email: requestData.email })
+    fetchUsers({ email: requestData.email })
         .then((users) => {
-            if (users.length < 1) {
-                res.status(401).send("Invalid Email");
-                return;
-            }
             const user = users[0];
             if (bcrypt.compareSync(requestData.password, user.password)) {
                 // Passwords match
