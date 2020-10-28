@@ -1,11 +1,12 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import bcrypt from 'bcrypt';
+import { insertUser } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken } from './authentication';
 
 dotenv.config();
 const PORT = process.env.PORT;
 const app: express.Express = express();
-
 
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
@@ -30,6 +31,28 @@ app.get("/token", (req, res) => {
 
     const accessToken: string = generateAccessToken({ username });
     res.status(200).send(accessToken);
+});
+
+
+app.post("/signup", (req, res) => {
+
+	const requestData = {
+        firstName: req.body.first,
+        lastName: req.body.last,
+		email: req.body.email,
+		password: bcrypt.hashSync(req.body.password, 10)
+	};
+
+    insertUser(requestData)
+		.then(async (result) => {
+             res.status(201).send("success");
+		})
+		.catch((err) => {
+			// unsuccessful insert, reply back with unsuccess response code
+			console.log(err);
+			res.status(500).send("Insert Failed");
+		});
+
 });
 
 // routes created after the line below will be reachable only by the clients
