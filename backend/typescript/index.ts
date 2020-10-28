@@ -1,13 +1,12 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import DB = require("./utils/DatabaseManager");
+import { insertUser } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken } from './authentication';
 
 dotenv.config();
 const PORT = process.env.PORT;
 const app: express.Express = express();
-
 
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
@@ -44,7 +43,7 @@ app.post("/signup", (req, res) => {
 		password: bcrypt.hashSync(req.body.password, 10)
 	};
 
-    DB.insertUser(requestData)
+    insertUser(requestData)
 		.then(async (result) => {
              res.status(201).send("success");
 		})

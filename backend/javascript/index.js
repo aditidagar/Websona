@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const DB = require("./utils/DatabaseManager");
+const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
 dotenv_1.default.config();
 const PORT = process.env.PORT;
@@ -48,7 +48,7 @@ app.post("/signup", (req, res) => {
         email: req.body.email,
         password: bcrypt_1.default.hashSync(req.body.password, 10)
     };
-    DB.insertUser(requestData)
+    DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(201).send("success");
     }))
