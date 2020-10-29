@@ -45,7 +45,8 @@ app.post("/signup", (req, res) => {
 
     insertUser(requestData)
 		.then(async (result) => {
-             res.status(201).send("success");
+            const accessToken: string = generateAccessToken( requestData.firstName );
+            res.status(200).send(accessToken);
 		})
 		.catch((err) => {
 			// unsuccessful insert, reply back with unsuccess response code
