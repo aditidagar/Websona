@@ -14,6 +14,19 @@ app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
 });
 
+if (process.env.NODE_ENV === "test") {
+    app.get("/token", (req, res) => {
+        const username = req.query.name;
+        if (!username) {
+            res.status(400).send('Missing username for access token request');
+            return;
+        }
+
+        const accessToken: string = generateAccessToken({ username });
+        res.status(200).send(accessToken);
+    });
+}
+
 
 app.post("/signup", (req, res) => {
 
@@ -47,7 +60,7 @@ app.post("/login", (req, res) => {
     };
 
     fetchUsers({ email: requestData.email })
-        .then((users: Array<User> | MongoError) => {
+        .then((users: User[] | MongoError) => {
             const user: User = users[0];
             if (bcrypt.compareSync(requestData.password, user.password)) {
                 // Passwords match
