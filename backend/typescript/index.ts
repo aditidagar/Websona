@@ -46,7 +46,7 @@ app.post("/signup", (req, res) => {
 
     insertUser(requestData)
 		.then(async (result) => {
-            const accessToken: string = generateAccessToken( requestData.firstName );
+            const accessToken: string = generateAccessToken( requestData );
             res.status(200).send(accessToken);
 		})
 		.catch((err) => {
@@ -69,7 +69,7 @@ app.post("/login", (req, res) => {
             if (bcrypt.compareSync(requestData.password, user.password)) {
                 // Passwords match
                 delete user.password;
-                const accessToken: string = generateAccessToken( user.firstName );
+                const accessToken: string = generateAccessToken( requestData );
                 res.status(200).send(accessToken);
             } else {
                 // Passwords don't match
