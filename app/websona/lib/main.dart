@@ -12,9 +12,6 @@
 import 'package:flutter/material.dart';
 import 'SignInScreen.dart';
 
-
-
-
 void main() => runApp(MyApp());
 
 /// This is the main application widget.
@@ -71,7 +68,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("WebSona"),
+        title: Text("Websona"),
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -99,6 +96,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.black,
+        showUnselectedLabels: true,
         onTap: _onItemTapped,
       ),
       floatingActionButton: FloatingActionButton(

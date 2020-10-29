@@ -1,9 +1,6 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'SignUpScreen.dart';
 import 'Main.dart';
-
 
 class SignInScreen extends StatefulWidget {
   @override
@@ -11,6 +8,21 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  String email = "";
+  String password = "";
+
+  handleEmailChange(String text) {
+    setState(() {
+      email = text;
+    });
+  }
+
+  handlePasswordChange(String text) {
+    setState(() {
+      password = text;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +33,8 @@ class _SignInScreenState extends State<SignInScreen> {
             height: 300,
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    fit: BoxFit.cover, image: AssetImage('asset/img/title.png'))),
+                    fit: BoxFit.cover,
+                    image: AssetImage('asset/img/title.png'))),
           ),
           SizedBox(
             height: 20,
@@ -30,12 +43,14 @@ class _SignInScreenState extends State<SignInScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: <Widget>[
-                IconButton(icon: Icon(Icons.email), onPressed: null),
                 Expanded(
                     child: Container(
                         margin: EdgeInsets.only(right: 20, left: 10),
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Email'),
+                          onChanged: handleEmailChange,
+                          enableSuggestions: true,
+                          decoration: InputDecoration(
+                              hintText: 'Email', prefixIcon: Icon(Icons.email)),
                         )))
               ],
             ),
@@ -44,12 +59,17 @@ class _SignInScreenState extends State<SignInScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: <Widget>[
-                IconButton(icon: Icon(Icons.lock), onPressed: null),
                 Expanded(
                     child: Container(
                         margin: EdgeInsets.only(right: 20, left: 10),
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Password'),
+                          obscureText: true,
+                          enableSuggestions: false,
+                          autocorrect: false,
+                          onChanged: handlePasswordChange,
+                          decoration: InputDecoration(
+                              hintText: 'Password',
+                              prefixIcon: Icon(Icons.lock)),
                         ))),
               ],
             ),
@@ -65,10 +85,12 @@ class _SignInScreenState extends State<SignInScreen> {
                 height: 60,
                 child: RaisedButton(
                   onPressed: () {
-                    Navigator.push(context,
-              MaterialPageRoute(builder: (context) => MyStatefulWidget(),
-  ),
-);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyStatefulWidget(),
+                      ),
+                    );
                   },
                   color: Color(0xFF007AFE),
                   child: Text(
@@ -86,13 +108,15 @@ class _SignInScreenState extends State<SignInScreen> {
             height: 20,
           ),
           InkWell(
-            onTap: (){
-              Navigator.push(context,
-              MaterialPageRoute(builder: (context) => SignUpScreen(),
-  ),
-);
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SignUpScreen(),
+                ),
+              );
             },
-                      child: Center(
+            child: Center(
               child: RichText(
                 text: TextSpan(
                     text: 'Don\'t have an account?',
@@ -101,7 +125,8 @@ class _SignInScreenState extends State<SignInScreen> {
                       TextSpan(
                         text: ' SIGN UP',
                         style: TextStyle(
-                            color: Color(0xFF007AFE), fontWeight: FontWeight.bold),
+                            color: Color(0xFF007AFE),
+                            fontWeight: FontWeight.bold),
                       )
                     ]),
               ),

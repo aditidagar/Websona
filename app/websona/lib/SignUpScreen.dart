@@ -21,12 +21,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: <Widget>[
-                IconButton(icon: Icon(Icons.person), onPressed: null),
                 Expanded(
                     child: Container(
                         margin: EdgeInsets.only(right: 20, left: 10),
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'First Name'),
+                          decoration: InputDecoration(
+                              hintText: 'First Name',
+                              prefixIcon: Icon(Icons.person)),
                         )))
               ],
             ),
@@ -35,27 +36,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: <Widget>[
-                IconButton(icon: Icon(Icons.person), onPressed: null),
                 Expanded(
                     child: Container(
                         margin: EdgeInsets.only(right: 20, left: 10),
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Last Name'),
-                        )))
-              ],
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              children: <Widget>[
-                IconButton(icon: Icon(Icons.mail), onPressed: null),
-                Expanded(
-                    child: Container(
-                        margin: EdgeInsets.only(right: 20, left: 10),
-                        child: TextField(
-                          decoration: InputDecoration(hintText: 'Email'),
+                          decoration: InputDecoration(
+                              hintText: 'Last Name',
+                              prefixIcon: Icon(Icons.person)),
                         )))
               ],
             ),
@@ -64,32 +51,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: <Widget>[
-                IconButton(icon: Icon(Icons.lock), onPressed: null),
                 Expanded(
                     child: Container(
                         margin: EdgeInsets.only(right: 20, left: 10),
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Password'),
+                          decoration: InputDecoration(
+                              hintText: 'Email', prefixIcon: Icon(Icons.email)),
                         )))
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: <Widget>[
-                IconButton(icon: Icon(Icons.lock), onPressed: null),
                 Expanded(
                     child: Container(
                         margin: EdgeInsets.only(right: 20, left: 10),
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Confirm Password'),
+                          decoration: InputDecoration(
+                              hintText: 'Password',
+                              prefixIcon: Icon(Icons.lock)),
                         )))
               ],
             ),
           ),
-
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                    child: Container(
+                        margin: EdgeInsets.only(right: 20, left: 10),
+                        child: TextField(
+                          decoration: InputDecoration(
+                              hintText: 'Confirm Password',
+                              prefixIcon: Icon(Icons.lock)),
+                        )))
+              ],
+            ),
+          ),
           SizedBox(
             height: 10,
           ),
@@ -101,10 +102,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 60,
                 child: RaisedButton(
                   onPressed: () {
-                                       Navigator.push(context,
-              MaterialPageRoute(builder: (context) => MyStatefulWidget(),
-  ),
-);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyStatefulWidget(),
+                      ),
+                    );
                   },
                   color: Color(0xFF007AFE),
                   child: Text(
@@ -135,32 +138,32 @@ class BackButtonWidget extends StatelessWidget {
       height: 120,
       decoration: BoxDecoration(
           image: DecorationImage(
-              fit: BoxFit.cover, image: AssetImage('asset/img/background.png'))),
+              fit: BoxFit.cover,
+              image: AssetImage('asset/img/background.png'))),
       child: Positioned(
           child: Stack(
-            children: <Widget>[
-              Positioned(
-                  top: 20,
-                  child: Row(
-                    children: <Widget>[
-                      IconButton(
-                          icon: Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                      Text(
-                        'Back',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  )),
-
-            ],
-          )),
+        children: <Widget>[
+          Positioned(
+              top: 20,
+              child: Row(
+                children: <Widget>[
+                  IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
+                  Text(
+                    'Back',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  )
+                ],
+              )),
+        ],
+      )),
     );
   }
 }
