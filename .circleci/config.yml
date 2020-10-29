@@ -20,6 +20,12 @@ jobs:
           app-dir: ~/project/backend
           cache-path: node_modules
           override-ci-command: npm i
+      # build the app
+      - run:
+          name: Build
+          working_directory: ~/project/backend
+          command: npm run build
+      # run unit and integration tests
       - run:
           name: Tests
           working_directory: ~/project/backend
