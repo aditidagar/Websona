@@ -3,6 +3,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken } from './authentication';
+import { SignUpInfo, LoginInfo } from './interfaces';
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -36,7 +37,7 @@ app.get("/token", (req, res) => {
 
 app.post("/signup", (req, res) => {
 
-	const requestData = {
+	const requestData: SignUpInfo = {
         firstName: req.body.first,
         lastName: req.body.last,
 		email: req.body.email,
@@ -57,7 +58,7 @@ app.post("/signup", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    const requestData = {
+    const requestData: LoginInfo = {
         email: req.body.email,
         password: req.body.password,
     };
