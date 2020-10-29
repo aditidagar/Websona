@@ -3,7 +3,8 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken } from './authentication';
-import { SignUpInfo, LoginInfo } from './interfaces';
+import { SignUpInfo, LoginInfo, User } from './interfaces';
+import { MongoError } from 'mongodb';
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -11,27 +12,6 @@ const app: express.Express = express();
 
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
-});
-
-
-/**
- * Sample route on how to generate access tokens for a user. On the actual route,
- * we need to first authenticate a user and then issue an access token.
- *
- * ** This is for reference only **
- *
- * Once actual login/signup is implemented, we need to re-write an actual token route
- * with authentication
- */
-app.get("/token", (req, res) => {
-    const username = req.query.name;
-    if (!username) {
-        res.status(400).send('Missing username for access token request');
-        return;
-    }
-
-    const accessToken: string = generateAccessToken({ username });
-    res.status(200).send(accessToken);
 });
 
 
@@ -46,7 +26,10 @@ app.post("/signup", (req, res) => {
 
     insertUser(requestData)
 		.then(async (result) => {
-            const accessToken: string = generateAccessToken( requestData );
+            const accessToken: string = generateAccessToken({
+                firstName: requestData.firstName,
+                email: requestData.email
+            });
             res.status(200).send(accessToken);
 		})
 		.catch((err) => {
@@ -64,12 +47,14 @@ app.post("/login", (req, res) => {
     };
 
     fetchUsers({ email: requestData.email })
-        .then((users) => {
-            const user = users[0];
+        .then((users: Array<User> | MongoError) => {
+            const user: User = users[0];
             if (bcrypt.compareSync(requestData.password, user.password)) {
                 // Passwords match
-                delete user.password;
-                const accessToken: string = generateAccessToken( requestData );
+                const accessToken: string = generateAccessToken({
+                    firstName: user.firstName,
+                    email: user.email
+                });
                 res.status(200).send(accessToken);
             } else {
                 // Passwords don't match

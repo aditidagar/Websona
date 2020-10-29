@@ -50,7 +50,8 @@ app.post("/signup", (req, res) => {
     };
     DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
-        res.status(201).send("success");
+        const accessToken = authentication_1.generateAccessToken(requestData.firstName);
+        res.status(200).send(accessToken);
     }))
         .catch((err) => {
         // unsuccessful insert, reply back with unsuccess response code
@@ -69,7 +70,8 @@ app.post("/login", (req, res) => {
         if (bcrypt_1.default.compareSync(requestData.password, user.password)) {
             // Passwords match
             delete user.password;
-            res.status(200).send(user);
+            const accessToken = authentication_1.generateAccessToken(user.firstName);
+            res.status(200).send(accessToken);
         }
         else {
             // Passwords don't match
