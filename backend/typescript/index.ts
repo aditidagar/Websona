@@ -67,7 +67,8 @@ app.post("/login", (req, res) => {
             if (bcrypt.compareSync(requestData.password, user.password)) {
                 // Passwords match
                 delete user.password;
-                res.status(200).send(user);
+                const accessToken: string = generateAccessToken( user.firstName );
+                res.status(200).send(accessToken);
             } else {
                 // Passwords don't match
                 res.status(401).send("Invalid password");
