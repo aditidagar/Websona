@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { insertUser } from "./utils/DatabaseHandler";
+import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken } from './authentication';
+import { SignUpInfo, LoginInfo, User } from './interfaces';
+import { MongoError } from 'mongodb';
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -12,31 +14,23 @@ app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
 });
 
+if (process.env.NODE_ENV === "test") {
+    app.get("/token", (req, res) => {
+        const username = req.query.name;
+        if (!username) {
+            res.status(400).send('Missing username for access token request');
+            return;
+        }
 
-/**
- * Sample route on how to generate access tokens for a user. On the actual route,
- * we need to first authenticate a user and then issue an access token.
- *
- * ** This is for reference only **
- *
- * Once actual login/signup is implemented, we need to re-write an actual token route
- * with authentication
- */
-app.get("/token", (req, res) => {
-    const username = req.query.name;
-    if (!username) {
-        res.status(400).send('Missing username for access token request');
-        return;
-    }
-
-    const accessToken: string = generateAccessToken({ username });
-    res.status(200).send(accessToken);
-});
+        const accessToken: string = generateAccessToken({ username });
+        res.status(200).send(accessToken);
+    });
+}
 
 
 app.post("/signup", (req, res) => {
 
-	const requestData = {
+	const requestData: SignUpInfo = {
         firstName: req.body.first,
         lastName: req.body.last,
 		email: req.body.email,
@@ -45,7 +39,11 @@ app.post("/signup", (req, res) => {
 
     insertUser(requestData)
 		.then(async (result) => {
-             res.status(201).send("success");
+            const accessToken: string = generateAccessToken({
+                firstName: requestData.firstName,
+                email: requestData.email
+            });
+            res.status(200).send(accessToken);
 		})
 		.catch((err) => {
 			// unsuccessful insert, reply back with unsuccess response code
@@ -54,6 +52,34 @@ app.post("/signup", (req, res) => {
 		});
 
 });
+
+app.post("/login", (req, res) => {
+    const requestData: LoginInfo = {
+        email: req.body.email,
+        password: req.body.password,
+    };
+
+    fetchUsers({ email: requestData.email })
+        .then((users: User[] | MongoError) => {
+            const user: User = users[0];
+            if (bcrypt.compareSync(requestData.password, user.password)) {
+                // Passwords match
+                const accessToken: string = generateAccessToken({
+                    firstName: user.firstName,
+                    email: user.email
+                });
+                res.status(200).send(accessToken);
+            } else {
+                // Passwords don't match
+                res.status(401).send("Invalid password");
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).send("Server error");
+        });
+});
+
 
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
