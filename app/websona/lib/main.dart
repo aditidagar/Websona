@@ -11,9 +11,7 @@
 
 import 'package:flutter/material.dart';
 import 'SignInScreen.dart';
-
-
-
+import 'scan.dart';
 
 void main() => runApp(MyApp());
 
@@ -70,9 +68,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("WebSona"),
-      ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
@@ -114,7 +109,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     showModalBottomSheet(
         context: context,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20.0)),
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(20.0), topLeft: Radius.circular(20.0)),
         ),
         builder: (BuildContext bc) {
           return Container(
@@ -129,9 +125,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               children: <Widget>[
                 SizedBox(
                   width: 70,
-                  child: SelectableText("Cancel",
-                      onTap: () => {Navigator.pop(context)},
-                      style: TextStyle(color: Colors.blue[800])),
+                  child: SelectableText("Cancel", onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ScanScreen()),
+                    );
+                  }, style: TextStyle(color: Colors.blue[800])),
                 ),
                 // style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
                 Text(
@@ -141,6 +140,23 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 ),
               ],
             ),
+
+            // Row(
+            //   children: <Widget>[
+            //     SizedBox(
+            //       width: 70,
+            //       child: SelectableText("Cancel",
+            //           onTap: () => {Navigator.pop(context)},
+            //           style: TextStyle(color: Colors.blue[800])),
+            //     ),
+            //     // style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            //     Text(
+            //       'Scan the QR code',
+            //       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            //       textAlign: TextAlign.center,
+            //     ),
+            //   ],
+            // ),
           );
         });
   }

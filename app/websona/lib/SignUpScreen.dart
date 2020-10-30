@@ -45,7 +45,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
@@ -74,7 +73,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
@@ -84,12 +82,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     child: Container(
                         margin: EdgeInsets.only(right: 20, left: 10),
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Confirm Password'),
+                          decoration:
+                              InputDecoration(hintText: 'Confirm Password'),
                         )))
               ],
             ),
           ),
-
           SizedBox(
             height: 10,
           ),
@@ -101,10 +99,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 60,
                 child: RaisedButton(
                   onPressed: () {
-                                       Navigator.push(context,
-              MaterialPageRoute(builder: (context) => MyStatefulWidget(),
-  ),
-);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyStatefulWidget(),
+                      ),
+                    );
                   },
                   color: Color(0xFF007AFE),
                   child: Text(
@@ -135,32 +135,32 @@ class BackButtonWidget extends StatelessWidget {
       height: 120,
       decoration: BoxDecoration(
           image: DecorationImage(
-              fit: BoxFit.cover, image: AssetImage('asset/img/background.png'))),
+              fit: BoxFit.cover,
+              image: AssetImage('asset/img/background.png'))),
       child: Positioned(
           child: Stack(
-            children: <Widget>[
-              Positioned(
-                  top: 20,
-                  child: Row(
-                    children: <Widget>[
-                      IconButton(
-                          icon: Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                      Text(
-                        'Back',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  )),
-
-            ],
-          )),
+        children: <Widget>[
+          Positioned(
+              top: 20,
+              child: Row(
+                children: <Widget>[
+                  IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
+                  Text(
+                    'Back',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  )
+                ],
+              )),
+        ],
+      )),
     );
   }
 }
