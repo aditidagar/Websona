@@ -12,23 +12,55 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  String firstName = "";
-  bool isFirstNameError = false;
-  FocusNode firstNameNode = new FocusNode();
+  String firstName;
+  bool isFirstNameError;
+  FocusNode firstNameNode;
 
-  String lastName = "";
+  String lastName;
 
-  String email = "";
-  bool emailError = false;
-  FocusNode emailNode = new FocusNode();
+  String email;
+  bool emailError;
+  FocusNode emailNode;
 
-  String password = "";
-  bool passwordError = false;
-  FocusNode passwordNode = new FocusNode();
+  String password;
+  bool passwordError;
+  FocusNode passwordNode;
 
-  String confirmPassword = "";
-  bool confirmPasswordError = false;
-  FocusNode confirmPassNode = new FocusNode();
+  String confirmPassword;
+  bool confirmPasswordError;
+  FocusNode confirmPassNode;
+
+  @override
+  void initState() {
+    super.initState();
+
+    firstName = "";
+    isFirstNameError = false;
+    firstNameNode = new FocusNode();
+
+    lastName = "";
+
+    email = "";
+    emailError = false;
+    emailNode = new FocusNode();
+
+    password = "";
+    passwordError = false;
+    passwordNode = new FocusNode();
+
+    confirmPassword = "";
+    confirmPasswordError = false;
+    confirmPassNode = new FocusNode();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    firstNameNode.dispose();
+    emailNode.dispose();
+    passwordNode.dispose();
+    confirmPassNode.dispose();
+  }
 
   void handleFirstNameChange(String text) {
     setState(() {

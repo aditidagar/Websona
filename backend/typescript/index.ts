@@ -39,6 +39,7 @@ app.post("/signup", (req, res) => {
 
     insertUser(requestData)
 		.then(async (result) => {
+	    console.log('Success');
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
                 email: requestData.email

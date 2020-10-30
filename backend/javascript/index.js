@@ -43,6 +43,7 @@ app.post("/signup", (req, res) => {
     };
     DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log('Success');
         const accessToken = authentication_1.generateAccessToken({
             firstName: requestData.firstName,
             email: requestData.email
