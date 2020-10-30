@@ -12,6 +12,8 @@
 import 'package:flutter/material.dart';
 import 'SignInScreen.dart';
 
+const String API_URL = "http://localhost:3000";
+
 void main() => runApp(MyApp());
 
 /// This is the main application widget.
