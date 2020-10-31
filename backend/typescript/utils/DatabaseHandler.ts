@@ -1,12 +1,11 @@
 import { Collection, InsertOneWriteOpResult, MongoClient, MongoError } from 'mongodb';
 
-const MONGO_URL =
-    "mongodb+srv://websona_backend:" + process.env.DATABASE_PASS + "@cluster0.if06i.mongodb.net/<dbname>?retryWrites=true&w=majority";
-let client = new MongoClient(MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true });
-
-const COLLECTION_USERS = "Users";
 const DB_NAME = "test";
+const MONGO_URL =
+    `mongodb+srv://websona_backend:${process.env.DATABASE_PASS}@cluster0.if06i.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
 
+let client = new MongoClient(MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true });
+const COLLECTION_USERS = "Users";
 let USERS_COLLECTION_LOCAL = null;
 
 

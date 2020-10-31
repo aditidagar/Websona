@@ -1,14 +1,16 @@
 import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
-import { authenticateToken, generateAccessToken } from './authentication';
+import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
 import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
-
-dotenv.config();
+import { json as _bodyParser } from 'body-parser';
 const PORT = process.env.PORT;
 const app: express.Express = express();
+
+app.use(_bodyParser());
 
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
@@ -39,12 +41,14 @@ app.post("/signup", (req, res) => {
 
     insertUser(requestData)
 		.then(async (result) => {
-	    console.log('Success');
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
                 email: requestData.email
             });
-            res.status(200).send(accessToken);
+            res.status(201).send({
+                accessToken,
+                tokenExpiryTime
+            });
 		})
 		.catch((err) => {
 			// unsuccessful insert, reply back with unsuccess response code
@@ -69,7 +73,10 @@ app.post("/login", (req, res) => {
                     firstName: user.firstName,
                     email: user.email
                 });
-                res.status(200).send(accessToken);
+                res.status(200).send({
+                    accessToken,
+                    tokenExpiryTime
+                });
             } else {
                 // Passwords don't match
                 res.status(401).send("Invalid password");

@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import Express from 'express';
 
+export const tokenExpiryTime: number = 3600;
 /**
  * Authenticate incoming request. If the incoming request contains a valid authorization token, call the
  * next middleware. Otherwise respond with a 401 (Forbidden)
@@ -15,7 +16,6 @@ export function authenticateToken(req: Express.Request, res: Express.Response, n
     const token = authHeader.split(' ')[1];
     jwt.verify(token, process.env.JWT_TOKEN_SECRET as string, (err, user) => {
         if (err) {
-            console.log('JWT verification failed:', err);
             res.status(401).send("Invalid authorization token");
         } else {
             next(); // user is authorized, let them access the requested resource
@@ -29,5 +29,5 @@ export function authenticateToken(req: Express.Request, res: Express.Response, n
  * @param uid Unique identifier for a user. This is used in the hashing process when generating the jwt
  */
 export function generateAccessToken(uid: object): string {
-    return jwt.sign(uid, process.env.JWT_TOKEN_SECRET as string, { expiresIn: 3600 });
+    return jwt.sign(uid, process.env.JWT_TOKEN_SECRET as string, { expiresIn: tokenExpiryTime });
 }

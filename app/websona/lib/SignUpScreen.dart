@@ -1,10 +1,15 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'main.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const Pattern emailRegexPattern =
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$";
 
 RegExp emailValidator = new RegExp(emailRegexPattern);
+const String API_URL = "http://192.168.8.31:3000";
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -96,7 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
   }
 
-  void handleSubmit() {
+  void handleSubmit() async {
     if (firstName.length == 0) {
       setState(() {
         isFirstNameError = true;
@@ -132,6 +137,66 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     // all fields are valid, sent signup request to the server
+    Response response = await post(API_URL + "/signup",
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, String>{
+          'first': firstName,
+          'last': lastName,
+          'email': email,
+          'password': password
+        }));
+    if (response.statusCode == 201) {
+      // successful signup
+      // obtain shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      final secureStorage = new FlutterSecureStorage();
+      final responseBody = jsonDecode(response.body);
+
+      prefs.setString('access_token', responseBody['accessToken']);
+      prefs.setInt(
+          'tokenExpiryTime',
+          (responseBody['tokenExpiryTime'] * 1000) +
+              DateTime.now().millisecondsSinceEpoch);
+      prefs.setString('email', email);
+      await secureStorage.write(key: 'websona-password', value: password);
+
+      // go to the home page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyStatefulWidget(),
+        ),
+      );
+    } else {
+      showAlertDialog(context);
+    }
+  }
+
+  showAlertDialog(BuildContext context) {
+    // set up the button
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Error"),
+      content: Text("500: Server error. Please try again later"),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 
   @override
@@ -284,15 +349,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Container(
                 height: 60,
                 child: RaisedButton(
-                  onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => MyStatefulWidget(),
-                    //   ),
-                    // );
-                    handleSubmit();
-                  },
+                  onPressed: handleSubmit,
                   color: Color(0xFF007AFE),
                   child: Text(
                     'SIGN UP',
