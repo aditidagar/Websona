@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
@@ -7,7 +8,7 @@ import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
 import { verifyGithubPayload } from './webhook';
 
-dotenv.config();
+
 const PORT = process.env.PORT;
 const app: express.Express = express();
 let isServerOutdated = false;
