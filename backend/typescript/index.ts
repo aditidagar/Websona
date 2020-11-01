@@ -5,10 +5,17 @@ import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken } from './authentication';
 import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
+import { verifyGithubPayload } from './webhook';
 
 dotenv.config();
 const PORT = process.env.PORT;
 const app: express.Express = express();
+let isServerOutdated = true;
+
+app.use(function (req, res, next) {
+    if (!isServerOutdated) next();
+	else res.status(503).send("Server is updating...").end();
+});
 
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
@@ -80,6 +87,19 @@ app.post("/login", (req, res) => {
         });
 });
 
+app.post('/updateWebhook', (req, res) => {
+    if (!verifyGithubPayload(req)) {
+        res.status(401).send("Payload couldn't be verified").end();
+        return;
+    }
+    const isMaster = req.body.ref === "refs/heads/master";
+	if (isMaster) {
+		isServerOutdated = true;
+	}
+
+	res.status(200);
+	res.end();
+});
 
 // routes created after the line below will be reachable only by the clients
 // with a valid access token

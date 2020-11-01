@@ -175,3 +175,7 @@ data "aws_subnet_ids" "all" {
   vpc_id = aws_default_vpc.default.id
 }
 
+output "lb_address" {
+  value = "${aws_lb.websona-alb.dns_name}"
+}
+
