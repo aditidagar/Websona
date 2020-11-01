@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
@@ -55,7 +56,10 @@ app.post("/signup", (req, res) => {
             firstName: requestData.firstName,
             email: requestData.email
         });
-        res.status(200).send(accessToken);
+        res.status(201).send({
+            accessToken,
+            tokenExpiryTime: authentication_1.tokenExpiryTime
+        });
     }))
         .catch((err) => {
         // unsuccessful insert, reply back with unsuccess response code
@@ -77,7 +81,10 @@ app.post("/login", (req, res) => {
                 firstName: user.firstName,
                 email: user.email
             });
-            res.status(200).send(accessToken);
+            res.status(200).send({
+                accessToken,
+                tokenExpiryTime: authentication_1.tokenExpiryTime
+            });
         }
         else {
             // Passwords don't match

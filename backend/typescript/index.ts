@@ -3,9 +3,10 @@ dotenv.config();
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
-import { authenticateToken, generateAccessToken } from './authentication';
+import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
 import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
+import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 
 
@@ -17,6 +18,8 @@ app.use((req, res, next) => {
     if (!isServerOutdated) next();
 	else res.status(503).send("Server is updating...").end();
 });
+
+app.use(_bodyParser());
 
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
@@ -51,7 +54,10 @@ app.post("/signup", (req, res) => {
                 firstName: requestData.firstName,
                 email: requestData.email
             });
-            res.status(200).send(accessToken);
+            res.status(201).send({
+                accessToken,
+                tokenExpiryTime
+            });
 		})
 		.catch((err) => {
 			// unsuccessful insert, reply back with unsuccess response code
@@ -76,7 +82,10 @@ app.post("/login", (req, res) => {
                     firstName: user.firstName,
                     email: user.email
                 });
-                res.status(200).send(accessToken);
+                res.status(200).send({
+                    accessToken,
+                    tokenExpiryTime
+                });
             } else {
                 // Passwords don't match
                 res.status(401).send("Invalid password");
