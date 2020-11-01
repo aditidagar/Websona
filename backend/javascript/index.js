@@ -17,9 +17,17 @@ const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
+const webhook_1 = require("./webhook");
 dotenv_1.default.config();
 const PORT = process.env.PORT;
 const app = express_1.default();
+let isServerOutdated = false;
+app.use((req, res, next) => {
+    if (!isServerOutdated)
+        next();
+    else
+        res.status(503).send("Server is updating...").end();
+});
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
 });
@@ -80,6 +88,18 @@ app.post("/login", (req, res) => {
         console.log(err);
         res.status(500).send("Server error");
     });
+});
+app.post('/updateWebhook', (req, res) => {
+    if (!webhook_1.verifyGithubPayload(req)) {
+        res.status(401).send("Payload couldn't be verified").end();
+        return;
+    }
+    const isMaster = req.body.ref === "refs/heads/master";
+    if (isMaster) {
+        isServerOutdated = true;
+    }
+    res.status(200);
+    res.end();
 });
 // routes created after the line below will be reachable only by the clients
 // with a valid access token

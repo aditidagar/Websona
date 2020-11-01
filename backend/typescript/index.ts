@@ -10,9 +10,9 @@ import { verifyGithubPayload } from './webhook';
 dotenv.config();
 const PORT = process.env.PORT;
 const app: express.Express = express();
-let isServerOutdated = true;
+let isServerOutdated = false;
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     if (!isServerOutdated) next();
 	else res.status(503).send("Server is updating...").end();
 });
