@@ -7,8 +7,17 @@ import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authe
 import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
+import { verifyGithubPayload } from './webhook';
+
+
 const PORT = process.env.PORT;
 const app: express.Express = express();
+let isServerOutdated = false;
+
+app.use((req, res, next) => {
+    if (!isServerOutdated) next();
+	else res.status(503).send("Server is updating...").end();
+});
 
 app.use(_bodyParser());
 
@@ -88,6 +97,19 @@ app.post("/login", (req, res) => {
         });
 });
 
+app.post('/updateWebhook', (req, res) => {
+    if (!verifyGithubPayload(req)) {
+        res.status(401).send("Payload couldn't be verified").end();
+        return;
+    }
+    const isMaster = req.body.ref === "refs/heads/master";
+	if (isMaster) {
+		isServerOutdated = true;
+	}
+
+	res.status(200);
+	res.end();
+});
 
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
