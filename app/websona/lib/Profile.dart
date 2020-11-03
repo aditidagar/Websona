@@ -11,8 +11,25 @@ class ProfilePage extends StatefulWidget {
 
 class MapScreenState extends State<ProfilePage>
     with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController _nameController;
+  static List<String> friendsList = [''];
+  static List<String> media = [''];
+
   bool _status = true;
   File _image;
+  String dropdownValue = 'Please choose a social link';
+  List<String> _socialLinks = [
+    'LinkedIn',
+    'Instagram',
+    'SnapChat',
+    'Facebook',
+    'WeChat',
+    'Twitter'
+  ];
+
+  String _last_link = "";
+
   final FocusNode myFocusNode = FocusNode();
 
   @override
@@ -20,10 +37,13 @@ class MapScreenState extends State<ProfilePage>
     // ignore: todo
     // TODO: implement initState
     super.initState();
+    _nameController = TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
+    print(friendsList);
+    print(media);
     return new Scaffold(
         body: new Container(
       color: Colors.white,
@@ -41,11 +61,15 @@ class MapScreenState extends State<ProfilePage>
                         child: new Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            new Icon(
-                              Icons.arrow_back_ios,
-                              color: Colors.black,
-                              size: 22.0,
-                            ),
+                            InkWell(
+                                child: new Icon(
+                                  Icons.arrow_back_ios,
+                                  color: Colors.black,
+                                  size: 22.0,
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                }),
                             Padding(
                               padding: EdgeInsets.only(left: 25.0),
                               child: new Text('PROFILE',
@@ -243,34 +267,25 @@ class MapScreenState extends State<ProfilePage>
                               ),
                             ],
                           )),
+
+                      //TODO make sure it works only on edit mode
                       Padding(
                           padding: EdgeInsets.only(
                               left: 25.0, right: 25.0, top: 25.0),
                           child: new Row(
                             mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
-                              Expanded(
-                                child: Container(
-                                  child: new Text(
-                                    'Pin Code',
+                              new Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  new Text(
+                                    'Links',
                                     style: TextStyle(
                                         fontSize: 16.0,
                                         fontWeight: FontWeight.bold),
                                   ),
-                                ),
-                                flex: 2,
-                              ),
-                              Expanded(
-                                child: Container(
-                                  child: new Text(
-                                    'State',
-                                    style: TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                flex: 2,
+                                ],
                               ),
                             ],
                           )),
@@ -279,29 +294,72 @@ class MapScreenState extends State<ProfilePage>
                               left: 25.0, right: 25.0, top: 2.0),
                           child: new Row(
                             mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
-                              Flexible(
-                                child: Padding(
-                                  padding: EdgeInsets.only(right: 10.0),
-                                  child: new TextField(
-                                    decoration: const InputDecoration(
-                                        hintText: "Enter Pin Code"),
-                                    enabled: !_status,
-                                  ),
-                                ),
-                                flex: 2,
-                              ),
-                              Flexible(
-                                child: new TextField(
-                                  decoration: const InputDecoration(
-                                      hintText: "Enter State"),
-                                  enabled: !_status,
-                                ),
-                                flex: 2,
-                              ),
+                              Container(
+                                  width: 300,
+                                  child: DropdownButton(
+                                    hint: dropdownValue == null
+                                        ? Text('Dropdown')
+                                        : Text(
+                                            dropdownValue,
+                                            style:
+                                                TextStyle(color: Colors.blue),
+                                          ),
+                                    isExpanded: true,
+                                    iconSize: 30.0,
+                                    style: TextStyle(color: Colors.blue),
+                                    items: _socialLinks.map(
+                                      (val) {
+                                        return DropdownMenuItem<String>(
+                                          value: val,
+                                          child: new Text(val),
+                                        );
+                                      },
+                                    ).toList(),
+                                    onChanged: (val) {
+                                      setState(
+                                        () {
+                                          _last_link = val;
+                                          // dropdownValue = val;;
+                                          if (media.contains(val) == false) {
+                                            media.insert(0, val);
+                                            friendsList.insert(0, null);
+                                          }
+                                        },
+                                      );
+                                    },
+                                  ))
                             ],
                           )),
+                      Padding(
+                        padding:
+                            EdgeInsets.only(left: 25.0, right: 25.0, top: 2.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // name textfield
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Text(
+                                  'Social Links',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16),
+                                ),
+                                ..._getLinks(),
+                                SizedBox(
+                                  height: 40,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                       !_status ? _getActionButtons() : new Container(),
                     ],
                   ),
@@ -437,6 +495,104 @@ class MapScreenState extends State<ProfilePage>
           _status = false;
         });
       },
+    );
+  }
+
+  List<Widget> _getLinks() {
+    List<Widget> linkTextfields = [];
+    for (int i = 0; i < friendsList.length; i++) {
+      linkTextfields.add(Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child: Row(
+          children: [
+            Expanded(child: FriendTextFields(i)),
+            SizedBox(
+              width: 16,
+            ),
+            // we need add button at last friends row
+            _removeLink(i),
+          ],
+        ),
+      ));
+    }
+    return linkTextfields;
+  }
+
+  /// add / remove button
+  Widget _removeLink(int index) {
+    return InkWell(
+      onTap: () {
+        friendsList.removeAt(index);
+        media.removeAt(index);
+        if (media.length == 0) {
+          media = [''];
+        }
+        setState(() {});
+      },
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(
+          Icons.remove,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+
+class FriendTextFields extends StatefulWidget {
+  final int index;
+  FriendTextFields(this.index);
+  @override
+  _FriendTextFieldsState createState() => _FriendTextFieldsState();
+}
+
+class _FriendTextFieldsState extends State<FriendTextFields> {
+  TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _nameController.text = MapScreenState.friendsList[widget.index] ?? '';
+    });
+    return Padding(
+      padding: EdgeInsets.only(left: 5.0, right: 25.0, top: 2.0),
+      child: Row(
+        children: [
+          Text(MapScreenState.media[widget.index]),
+          SizedBox(width: 10),
+          new Flexible(
+              child: TextFormField(
+            controller: _nameController,
+            onChanged: (v) => {
+              MapScreenState.friendsList[widget.index] = v,
+            },
+            decoration:
+                InputDecoration(hintText: 'Enter your social media link'),
+            validator: (v) {
+              if (v.trim().isEmpty) return 'Please enter something';
+              return null;
+            },
+          ))
+        ],
+      ),
     );
   }
 }

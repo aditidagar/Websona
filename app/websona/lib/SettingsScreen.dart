@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:websona/Profile.dart';
+import 'package:websona/SocialLinks.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -33,6 +34,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               leading: Icon(Icons.article),
               onTap: () {
                 print("Terms of Service");
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => MyForm()));
               },
             ),
             SettingsTile(
