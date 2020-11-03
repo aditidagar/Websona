@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'SignInScreen.dart';
+import 'package:websona/Events.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -71,7 +72,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
+  final List<Widget> _widgetOptions = <Widget>[
     Text(
       'Index 0: Codes',
       style: optionStyle,
@@ -80,10 +81,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       'Index 1: Contacts',
       style: optionStyle,
     ),
-    Text(
-      'Index 2: Events',
-      style: optionStyle,
-    ),
+    Event(),
     Text(
       'Index 3: Setttings',
       style: optionStyle,
@@ -99,9 +97,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Websona"),
-      ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
