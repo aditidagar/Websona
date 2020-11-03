@@ -18,6 +18,9 @@ class GenerateQrScreen extends StatefulWidget {
 class _GenerateQrScreenState extends State<GenerateQrScreen> {
   //Add some state initialization later
   String dropdownValue = 'Social Media 1';
+  String dropdownValue2 = 'Social Media 2';
+  String dropdownValue3 = 'Social Media 3';
+  String dropdownValue4 = 'Social Media 4';
   String qrData = '';
 
   @override
@@ -28,7 +31,29 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
         children: <Widget>[
           QrImage(
             data: qrData,
-            size: 300,
+            size: 200,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                    child: Container(
+                        margin: EdgeInsets.only(right: 20, left: 10),
+                        child: new Theme(
+                          data: new ThemeData(primaryColor: Colors.blue),
+                          child: TextField(
+                            obscureText: true,
+                            enableSuggestions: false,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              hintText: 'Enter QR Name',
+                              suffixStyle: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        )))
+              ],
+            ),
           ),
           Padding(
               padding: const EdgeInsets.all(20.0),
@@ -36,10 +61,10 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                 children: <Widget>[
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.only(right: 200, left: 10),
+                      margin: EdgeInsets.only(right: 10, left: 10),
                       child: DropdownButton<String>(
                         value: dropdownValue,
-                        icon: Icon(Icons.arrow_downward),
+                        // icon: Icon(Icons.arrow_downward),
                         iconSize: 24,
                         elevation: 16,
                         style: TextStyle(color: Colors.deepPurple),
@@ -76,9 +101,9 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                 children: <Widget>[
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.only(right: 200, left: 10),
+                      margin: EdgeInsets.only(right: 10, left: 10),
                       child: DropdownButton<String>(
-                        value: dropdownValue,
+                        value: dropdownValue2,
                         icon: Icon(Icons.arrow_downward),
                         iconSize: 24,
                         elevation: 16,
@@ -91,7 +116,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                           setState(() {
                             qrData = qrData + newValue;
                             qrData = qrData + ", ";
-                            dropdownValue = newValue;
+                            dropdownValue2 = newValue;
                           });
                         },
                         items: <String>[
@@ -116,9 +141,9 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                 children: <Widget>[
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.only(right: 200, left: 10),
+                      margin: EdgeInsets.only(right: 10, left: 10),
                       child: DropdownButton<String>(
-                        value: dropdownValue,
+                        value: dropdownValue3,
                         icon: Icon(Icons.arrow_downward),
                         iconSize: 24,
                         elevation: 16,
@@ -131,7 +156,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                           setState(() {
                             qrData = qrData + newValue;
                             qrData = qrData + ", ";
-                            dropdownValue = newValue;
+                            dropdownValue3 = newValue;
                           });
                         },
                         items: <String>[
@@ -156,9 +181,9 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                 children: <Widget>[
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.only(right: 200, left: 10),
+                      margin: EdgeInsets.only(right: 10, left: 10),
                       child: DropdownButton<String>(
-                        value: dropdownValue,
+                        value: dropdownValue4,
                         icon: Icon(Icons.arrow_downward),
                         iconSize: 24,
                         elevation: 16,
@@ -171,7 +196,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                           setState(() {
                             qrData = qrData + newValue;
                             qrData = qrData + ", ";
-                            dropdownValue = newValue;
+                            dropdownValue4 = newValue;
                           });
                         },
                         items: <String>[
@@ -201,7 +226,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
               /*...*/
             },
             child: Text(
-              "Generate QR",
+              "Create",
               style: TextStyle(fontSize: 20.0),
             ),
           ),
