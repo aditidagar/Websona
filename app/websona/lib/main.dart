@@ -10,6 +10,8 @@
 // bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
 
 import 'package:flutter/material.dart';
+import 'package:barcode_scan/barcode_scan.dart';
+import 'package:flutter/services.dart';
 import 'SignInScreen.dart';
 import 'scan.dart';
 
@@ -38,6 +40,13 @@ class MyStatefulWidget extends StatefulWidget {
 /// This is the private State class that goes with MyStatefulWidget.
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
+  String barcode = "";
+
+  @override
+  initState() {
+    super.initState();
+  }
+
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
@@ -97,102 +106,63 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         onTap: _onItemTapped,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          opencamera(context);
-        },
+        onPressed: scan,
         child: Icon(Icons.add),
       ),
     );
   }
 
-  void opencamera(context) {
-    showModalBottomSheet(
-        context: context,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-              topRight: Radius.circular(20.0), topLeft: Radius.circular(20.0)),
-        ),
-        builder: (BuildContext bc) {
-          return Container(
-            alignment: Alignment.topCenter,
-            margin: EdgeInsets.all(30),
-            height: MediaQuery.of(context).size.height * 0.6,
-            // decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.only(
-            //         topLeft: Radius.circular(40),
-            //         topRight: Radius.circular(40))),
-            child: Row(
-              children: <Widget>[
-                SizedBox(
-                  width: 70,
-                  child: SelectableText("Cancel", onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ScanScreen()),
-                    );
-                  }, style: TextStyle(color: Colors.blue[800])),
-                ),
-                // style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-                Text(
-                  'Scan the QR code',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+  // void opencamera(context) {
+  //   showModalBottomSheet(
+  //       context: context,
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.only(
+  //             topRight: Radius.circular(20.0), topLeft: Radius.circular(20.0)),
+  //       ),
+  //       builder: (BuildContext bc) {
+  //         return Container(
+  //           alignment: Alignment.topCenter,
+  //           margin: EdgeInsets.all(30),
+  //           height: MediaQuery.of(context).size.height * 0.6,
+  //           child: Row(
+  //             children: <Widget>[
+  //               SizedBox(
+  //                 width: 70,
+  //                 child: SelectableText("Cancel", onTap: () {
+  //                   Navigator.push(
+  //                     context,
+  //                     MaterialPageRoute(builder: (context) => ScanScreen()),
+  //                   );
+  //                 }, style: TextStyle(color: Colors.blue[800])),
+  //               ),
+  //               Text(
+  //                 'Scan the QR code',
+  //                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+  //                 textAlign: TextAlign.center,
+  //               ),
+  //             ],
+  //           ),
+  //         );
+  //       });
+  // }
 
-            // Row(
-            //   children: <Widget>[
-            //     SizedBox(
-            //       width: 70,
-            //       child: SelectableText("Cancel",
-            //           onTap: () => {Navigator.pop(context)},
-            //           style: TextStyle(color: Colors.blue[800])),
-            //     ),
-            //     // style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-            //     Text(
-            //       'Scan the QR code',
-            //       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            //       textAlign: TextAlign.center,
-            //     ),
-            //   ],
-            // ),
-          );
+  Future scan() async {
+    try {
+      String barcode = (await BarcodeScanner.scan()).rawContent;
+      setState(() => this.barcode = barcode);
+    } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.cameraAccessDenied) {
+        setState(() {
+          this.barcode = 'The user did not grant the camera permission!';
         });
+      } else {
+        setState(() => this.barcode = 'Unknown error: $e');
+      }
+    } on FormatException {
+      setState(() => this.barcode =
+          'null (User returned using the "back"-button before scanning anything. Result)');
+    } catch (e) {
+      setState(() => this.barcode = 'Unknown error: $e');
+    }
   }
 }
-
-// class MyFloatingActionButton extends StatefulWidget {
-//   @override
-//   createState() => new _MyFloatingActionButtonState();
-// }
-
-// class _MyFloatingActionButtonState extends State<MyFloatingActionButton> {
-//   bool showFab = true;
-//   @override
-//   Widget build(BuildContext context) {
-//     return showFab
-//         ? FloatingActionButton(
-//             onPressed: () {
-//               var bottomSheetController = showBottomSheet(
-//                   context: context,
-//                   builder: (context) => Container(
-//                         color: Colors.grey[300],
-//                         height: 400,
-//                       ));
-//               showFoatingActionButton(false);
-//               bottomSheetController.closed.then((value) {
-//                 showFoatingActionButton(true);
-//               });
-//             },
-//             child: Icon(Icons.add),
-//           )
-//         : Container();
-//   }
-
-//   void showFoatingActionButton(bool value) {
-//     setState(() {
-//       showFab = value;
-//     });
-//   }
-// }
