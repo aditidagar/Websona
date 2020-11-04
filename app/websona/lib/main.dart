@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
-const String API_URL = "http://192.168.8.31:3000";
+const String API_URL =
+    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
 
 void main() => runApp(MyApp());
 
