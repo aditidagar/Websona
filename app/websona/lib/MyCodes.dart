@@ -7,6 +7,7 @@ class MyCodes extends StatefulWidget {
 
 class _MyCodesState extends State<MyCodes> {
   List<String> litems = [];
+  int counter = 0;
   final TextEditingController eCtrl = new TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -22,8 +23,11 @@ class _MyCodesState extends State<MyCodes> {
                   padding: EdgeInsets.only(right: 20.0),
                   child: GestureDetector(
                     onTap: () {
-                      litems.add("QR Code");
-                      setState(() {});
+                      if (counter < 5) {
+                        litems.add("QR Code");
+                        setState(() {});
+                        counter = counter + 1;
+                      }
                     },
                     child: Icon(
                       Icons.add,
@@ -63,7 +67,8 @@ class _MyCodesState extends State<MyCodes> {
                                       fontSize: 22, color: Colors.white),
                                   textAlign: TextAlign.center,
                                 ),
-                              )),
+                              )
+                              ),
                         );
                         // Text(litems[index]);
                       }))
