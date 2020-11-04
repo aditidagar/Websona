@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'SignInScreen.dart';
+import 'MyCodes.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SignInScreen(),
+      home: MyStatefulWidget(),
     );
   }
 }
@@ -71,11 +72,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Index 0: Codes',
-      style: optionStyle,
-    ),
+  final List<Widget> _widgetOptions = <Widget>[
+    MyCodes(),
     Text(
       'Index 1: Contacts',
       style: optionStyle,
@@ -93,15 +91,24 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      // if (index == 0) {
+      //   // go to the my codes page
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => MyCodes(),
+      //     ),
+      //   );
+      // }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Websona"),
-      ),
+      // appBar: AppBar(
+      //   title: Text("Websona"),
+      // ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
