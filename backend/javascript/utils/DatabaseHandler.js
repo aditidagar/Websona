@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchUsers = exports.insertUser = void 0;
 const mongodb_1 = require("mongodb");
-const MONGO_URL = "mongodb+srv://websona_backend:" + process.env.DATABASE_PASS + "@cluster0.if06i.mongodb.net/<dbname>?retryWrites=true&w=majority";
+const DB_NAME = "test";
+const MONGO_URL = `mongodb+srv://websona_backend:${process.env.DATABASE_PASS}@cluster0.if06i.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
 let client = new mongodb_1.MongoClient(MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true });
 const COLLECTION_USERS = "Users";
-const DB_NAME = "test";
 let USERS_COLLECTION_LOCAL = null;
 /**
  * Connect the client to database at the specified URL

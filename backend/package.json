@@ -8,12 +8,13 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node javascript/index.js",
-    "test": "npx ts-mocha typescript/test/tests.ts --timeout 5000 --exit"
+    "test": "NODE_ENV=test npx ts-mocha typescript/test/tests.ts --timeout 5000 --exit"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/bcrypt": "^3.0.0",
+    "@types/body-parser": "^1.19.0",
     "@types/chai": "^4.2.14",
     "@types/chai-http": "^4.2.0",
     "@types/dotenv": "^8.2.0",
@@ -23,6 +24,7 @@
     "@types/mocha": "^8.0.3",
     "@types/mongodb": "^3.5.31",
     "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "dotenv": "^8.2.0",

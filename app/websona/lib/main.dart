@@ -1,19 +1,51 @@
-/// Flutter code sample for BottomNavigationBar
-
-// This example shows a [BottomNavigationBar] as it is used within a [Scaffold]
-// widget. The [BottomNavigationBar] has three [BottomNavigationBarItem]
-// widgets and the [currentIndex] is set to index 0. The selected item is
-// amber. The `_onItemTapped` function changes the selected item's index
-// and displays a corresponding message in the center of the [Scaffold].
-//
-// ![A scaffold with a bottom navigation bar containing three bottom navigation
-// bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
-
 import 'package:flutter/material.dart';
 import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+
+const String API_URL = "http://192.168.8.31:3000";
 
 void main() => runApp(MyApp());
+
+Future<String> getAuthorizationToken(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  if (prefs.getInt('tokenExpiryTime') <=
+      DateTime.now().millisecondsSinceEpoch) {
+    // tokens expired, get new tokens
+    final secureStorage = new FlutterSecureStorage();
+    String password = await secureStorage.read(key: 'websona-password');
+    // no password found in keychain, ask user to login so we can get new auth tokens
+    if (password == null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SignInScreen(),
+        ),
+      );
+
+      return null;
+    }
+
+    // obtain new token
+    Response response = await post(API_URL + "/login",
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, String>{
+          'email': prefs.getString('email'),
+          'password': password
+        }));
+    final responseBody = jsonDecode(response.body);
+    await prefs.setString('access_token', responseBody['accessToken']);
+    prefs.setInt(
+        'tokenExpiryTime',
+        (responseBody['tokenExpiryTime'] * 1000) +
+            DateTime.now().millisecondsSinceEpoch);
+  }
+
+  return 'Bearer ' + prefs.getString('access_token');
+}
 
 /// This is the main application widget.
 class MyApp extends StatelessWidget {
@@ -66,7 +98,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("WebSona"),
+        title: Text("Websona"),
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -94,6 +126,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.black,
+        showUnselectedLabels: true,
         onTap: _onItemTapped,
       ),
       floatingActionButton: FloatingActionButton(
@@ -105,7 +138,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-  void opencamera(context) {
+  void opencamera(context) async {
     showModalBottomSheet(
         context: context,
         shape: RoundedRectangleBorder(
@@ -116,10 +149,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             alignment: Alignment.topCenter,
             margin: EdgeInsets.all(30),
             height: MediaQuery.of(context).size.height * 0.6,
-            // decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.only(
-            //         topLeft: Radius.circular(40),
-            //         topRight: Radius.circular(40))),
             child: Row(
               children: <Widget>[
                 SizedBox(
@@ -128,7 +157,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       onTap: () => {Navigator.pop(context)},
                       style: TextStyle(color: Colors.blue[800])),
                 ),
-                // style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
                 Text(
                   'Scan the QR code',
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
@@ -140,38 +168,3 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         });
   }
 }
-
-// class MyFloatingActionButton extends StatefulWidget {
-//   @override
-//   createState() => new _MyFloatingActionButtonState();
-// }
-
-// class _MyFloatingActionButtonState extends State<MyFloatingActionButton> {
-//   bool showFab = true;
-//   @override
-//   Widget build(BuildContext context) {
-//     return showFab
-//         ? FloatingActionButton(
-//             onPressed: () {
-//               var bottomSheetController = showBottomSheet(
-//                   context: context,
-//                   builder: (context) => Container(
-//                         color: Colors.grey[300],
-//                         height: 400,
-//                       ));
-//               showFoatingActionButton(false);
-//               bottomSheetController.closed.then((value) {
-//                 showFoatingActionButton(true);
-//               });
-//             },
-//             child: Icon(Icons.add),
-//           )
-//         : Container();
-//   }
-
-//   void showFoatingActionButton(bool value) {
-//     setState(() {
-//       showFab = value;
-//     });
-//   }
-// }
