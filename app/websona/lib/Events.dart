@@ -7,6 +7,7 @@ class Event extends StatefulWidget {
 
 class _EventState extends State<Event> {
   DateTime selectedDate = DateTime.now();
+  List<String> eventItems = [];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -53,7 +54,8 @@ class _EventState extends State<Event> {
   // }
 
   createDialog(BuildContext context) {
-    TextEditingController customController = TextEditingController();
+    TextEditingController nameController = TextEditingController();
+    TextEditingController locationController = TextEditingController();
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -69,11 +71,11 @@ class _EventState extends State<Event> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextField(
-                      controller: customController,
+                      controller: nameController,
                       decoration: InputDecoration(hintText: 'Name'),
                     ),
                     TextField(
-                      controller: customController,
+                      controller: locationController,
                       decoration: InputDecoration(hintText: 'Location'),
                     ),
                     new RaisedButton(
@@ -83,7 +85,11 @@ class _EventState extends State<Event> {
                     SizedBox(
                       width: 150.0,
                       child: RaisedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          eventItems.add(nameController.text);
+                          setState(() {});
+                          Navigator.of(context).pop();
+                        },
                         child: Text(
                           "Create",
                           style: TextStyle(color: Colors.white),
@@ -119,7 +125,11 @@ class _EventState extends State<Event> {
                   padding: const EdgeInsets.all(10.0),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(40)),
-                  onPressed: () => {createDialog(context)},
+                  onPressed: () {
+                    //eventItems.add("QR Code");
+                    //setState(() {});
+                    createDialog(context);
+                  },
                   child: Padding(
                       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                       child: Row(
@@ -140,6 +150,45 @@ class _EventState extends State<Event> {
                                     color: Colors.blue[200], size: 40)),
                           ]))),
             ),
+            new Expanded(
+                child: ListView.separated(
+               padding: EdgeInsets.only(top:15),
+               
+              itemCount: eventItems.length,
+              separatorBuilder: (BuildContext context, int index) => Divider(
+                color: Colors.white,
+              ),
+              itemBuilder: (BuildContext ctxt, int index) {
+                return new RaisedButton(
+                    textColor: Colors.black,
+                    color: Colors.blue[50],
+                    padding: const EdgeInsets.all(10.0),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(40)),
+                    onPressed: () {
+                      //createDialog(context)
+                    },
+                    child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                        child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Expanded(
+                                  flex: 3,
+                                  child: Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Text(eventItems[index],
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              color: Colors.black87)))),
+                              Expanded(
+                                  flex: 1,
+                                  child: Icon(Icons.add_circle,
+                                      color: Colors.blue[200], size: 40)),
+                            ])));
+              },
+            ))
           ],
         ),
       ),
