@@ -1,21 +1,55 @@
-/// Flutter code sample for BottomNavigationBar
-
-// This example shows a [BottomNavigationBar] as it is used within a [Scaffold]
-// widget. The [BottomNavigationBar] has three [BottomNavigationBarItem]
-// widgets and the [currentIndex] is set to index 0. The selected item is
-// amber. The `_onItemTapped` function changes the selected item's index
-// and displays a corresponding message in the center of the [Scaffold].
-//
-// ![A scaffold with a bottom navigation bar containing three bottom navigation
-// bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
-
 import 'package:flutter/material.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
 import 'SignInScreen.dart';
 import 'scan.dart';
+import 'package:websona/Events.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+
+const String API_URL =
+    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
 
 void main() => runApp(MyApp());
+
+Future<String> getAuthorizationToken(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  if (prefs.getInt('tokenExpiryTime') <=
+      DateTime.now().millisecondsSinceEpoch) {
+    // tokens expired, get new tokens
+    final secureStorage = new FlutterSecureStorage();
+    String password = await secureStorage.read(key: 'websona-password');
+    // no password found in keychain, ask user to login so we can get new auth tokens
+    if (password == null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SignInScreen(),
+        ),
+      );
+
+      return null;
+    }
+
+    // obtain new token
+    Response response = await post(API_URL + "/login",
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, String>{
+          'email': prefs.getString('email'),
+          'password': password
+        }));
+    final responseBody = jsonDecode(response.body);
+    await prefs.setString('access_token', responseBody['accessToken']);
+    prefs.setInt(
+        'tokenExpiryTime',
+        (responseBody['tokenExpiryTime'] * 1000) +
+            DateTime.now().millisecondsSinceEpoch);
+  }
+
+  return 'Bearer ' + prefs.getString('access_token');
+}
 
 /// This is the main application widget.
 class MyApp extends StatelessWidget {
@@ -49,7 +83,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
+  final List<Widget> _widgetOptions = <Widget>[
     Text(
       'Index 0: Codes',
       style: optionStyle,
@@ -58,10 +92,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       'Index 1: Contacts',
       style: optionStyle,
     ),
-    Text(
-      'Index 2: Events',
-      style: optionStyle,
-    ),
+    Event(),
     Text(
       'Index 3: Setttings',
       style: optionStyle,
@@ -103,6 +134,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.black,
+        showUnselectedLabels: true,
         onTap: _onItemTapped,
       ),
       floatingActionButton: FloatingActionButton(
