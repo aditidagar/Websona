@@ -8,6 +8,7 @@ class Event extends StatefulWidget {
 class _EventState extends State<Event> {
   DateTime selectedDate = DateTime.now();
   List<String> eventItems = [];
+  List<String> eventLocations = [];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -21,38 +22,6 @@ class _EventState extends State<Event> {
       });
   }
 
-  // createDialog(BuildContext context) {
-  //   TextEditingController customController = TextEditingController();
-  //   return showDialog(
-  //       context: context,
-  //       builder: (context) {
-  //         return AlertDialog(
-  //           title: Text("New event"),
-  //           content:new Column(children: <Widget>[
-  //             new TextField(
-  //               controller: customController,
-  //               decoration: InputDecoration(hintText: "Event Name"),
-  //             ),
-  //             new TextField(
-  //               controller: customController,
-  //               decoration: InputDecoration(hintText: "Location"),
-  //             ),
-  //             new RaisedButton(
-  //               onPressed: () => _selectDate(context),
-  //               child: Text("Select date"),
-  //             )
-  //           ]),
-  //           actions: <Widget>[
-  //             MaterialButton(
-  //                 child: Text("Create"),
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop(customController.text.toString());
-  //                 }),
-  //           ],
-  //         );
-  //       });
-  // }
-
   createDialog(BuildContext context) {
     TextEditingController nameController = TextEditingController();
     TextEditingController locationController = TextEditingController();
@@ -61,7 +30,7 @@ class _EventState extends State<Event> {
         builder: (BuildContext context) {
           return Dialog(
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0)), //this right here
+                borderRadius: BorderRadius.circular(20.0)),
             child: Container(
               height: 250,
               child: Padding(
@@ -87,6 +56,7 @@ class _EventState extends State<Event> {
                       child: RaisedButton(
                         onPressed: () {
                           eventItems.add(nameController.text);
+                          eventLocations.add(locationController.text);
                           setState(() {});
                           Navigator.of(context).pop();
                         },
@@ -119,74 +89,43 @@ class _EventState extends State<Event> {
           children: <Widget>[
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.9,
-              child: RaisedButton(
-                  textColor: Colors.black,
-                  color: Colors.blue[50],
-                  padding: const EdgeInsets.all(10.0),
+              child: ListTile(
+                  tileColor: Color(0xFFEAF4FE),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(40)),
-                  onPressed: () {
-                    //eventItems.add("QR Code");
-                    //setState(() {});
+                      borderRadius: BorderRadius.horizontal()),
+                  title: Text(
+                    "Create New Event",
+                    style: TextStyle(fontSize: 18, color: Colors.black, fontWeight:FontWeight.w600),
+                  ),
+                  trailing: Icon(Icons.add_circle, color: Colors.blue[200],size:40,),
+                  onTap: () {
                     createDialog(context);
                   },
-                  child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                      child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                                flex: 3,
-                                child: Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Text('Create New Event',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.black87)))),
-                            Expanded(
-                                flex: 1,
-                                child: Icon(Icons.add_circle,
-                                    color: Colors.blue[200], size: 40)),
-                          ]))),
+                ),
+          
             ),
             new Expanded(
                 child: ListView.separated(
-               padding: EdgeInsets.only(top:15),
-               
+              padding: EdgeInsets.only(top: 15),
               itemCount: eventItems.length,
               separatorBuilder: (BuildContext context, int index) => Divider(
                 color: Colors.white,
               ),
               itemBuilder: (BuildContext ctxt, int index) {
-                return new RaisedButton(
-                    textColor: Colors.black,
-                    color: Colors.blue[50],
-                    padding: const EdgeInsets.all(10.0),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(40)),
-                    onPressed: () {
-                      //createDialog(context)
-                    },
-                    child: Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                        child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Expanded(
-                                  flex: 3,
-                                  child: Padding(
-                                      padding: const EdgeInsets.only(left: 10),
-                                      child: Text(eventItems[index],
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.black87)))),
-                              Expanded(
-                                  flex: 1,
-                                  child: Icon(Icons.add_circle,
-                                      color: Colors.blue[200], size: 40)),
-                            ])));
+                return new ListTile(
+                  tileColor: Colors.blue[50] ,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.horizontal()),
+                  title: Text(
+                    eventItems[index],
+                    style: TextStyle(fontSize: 18, color: Colors.black, fontWeight:FontWeight.w600),
+                  ),
+                  subtitle: Text(eventLocations[index]),
+                  trailing: Icon(Icons.list),
+                  onTap: () {
+                    //code to see each event here
+                  },
+                );
               },
             ))
           ],
