@@ -8,7 +8,7 @@ class Event extends StatefulWidget {
 class _EventState extends State<Event> {
   DateTime selectedDate = DateTime.now();
   List<String> eventItems = [];
-  List<String> eventLocations = [];
+  List<String> eventDates = [];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -56,7 +56,8 @@ class _EventState extends State<Event> {
                       child: RaisedButton(
                         onPressed: () {
                           eventItems.add(nameController.text);
-                          eventLocations.add(locationController.text);
+                          eventDates.add(
+                              "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year.toString()}");
                           setState(() {});
                           Navigator.of(context).pop();
                         },
@@ -79,7 +80,14 @@ class _EventState extends State<Event> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Events'),
+        title: const Text(
+          '  Events',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: Colors.transparent,
+        bottomOpacity: 0.0,
+        elevation: 0.0,
+        centerTitle: false,
         automaticallyImplyLeading: false,
       ),
       body: new Container(
@@ -90,19 +98,25 @@ class _EventState extends State<Event> {
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.9,
               child: ListTile(
-                  tileColor: Color(0xFFEAF4FE),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.horizontal()),
-                  title: Text(
-                    "Create New Event",
-                    style: TextStyle(fontSize: 18, color: Colors.black, fontWeight:FontWeight.w600),
-                  ),
-                  trailing: Icon(Icons.add_circle, color: Colors.blue[200],size:40,),
-                  onTap: () {
-                    createDialog(context);
-                  },
+                tileColor: Color(0xFFEAF4FE),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.horizontal()),
+                title: Text(
+                  "Create New Event",
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600),
                 ),
-          
+                trailing: Icon(
+                  Icons.add_circle,
+                  color: Colors.blue[200],
+                  size: 40,
+                ),
+                onTap: () {
+                  createDialog(context);
+                },
+              ),
             ),
             new Expanded(
                 child: ListView.separated(
@@ -113,14 +127,17 @@ class _EventState extends State<Event> {
               ),
               itemBuilder: (BuildContext ctxt, int index) {
                 return new ListTile(
-                  tileColor: Colors.blue[50] ,
+                  tileColor: Colors.blue[50],
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.horizontal()),
                   title: Text(
                     eventItems[index],
-                    style: TextStyle(fontSize: 18, color: Colors.black, fontWeight:FontWeight.w600),
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600),
                   ),
-                  subtitle: Text(eventLocations[index]),
+                  subtitle: Text(eventDates[index]),
                   trailing: Icon(Icons.list),
                   onTap: () {
                     //code to see each event here
