@@ -58,8 +58,9 @@ app.post("/signup", (req, res) => {
     };
     DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
-        emailer_1.sendVerificationEmail(requestData.activationId, requestData.email)
-            .catch((err) => console.log(err));
+        if (process.env.NODE_ENV !== 'test')
+            emailer_1.sendVerificationEmail(requestData.activationId, requestData.email)
+                .catch((err) => console.log(err));
         const accessToken = authentication_1.generateAccessToken({
             firstName: requestData.firstName,
             email: requestData.email
@@ -83,6 +84,10 @@ app.post("/login", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: requestData.email })
         .then((users) => {
         const user = users[0];
+        if (user.activationId) {
+            res.status(403).send("Account isn't verified. Check your email for the verification mail");
+            return;
+        }
         if (bcrypt_1.default.compareSync(requestData.password, user.password)) {
             // Passwords match
             const accessToken = authentication_1.generateAccessToken({

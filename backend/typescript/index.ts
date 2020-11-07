@@ -55,7 +55,7 @@ app.post("/signup", (req, res) => {
 
     insertUser(requestData)
 		.then(async (result) => {
-            sendVerificationEmail(requestData.activationId, requestData.email)
+            if (process.env.NODE_ENV !== 'test') sendVerificationEmail(requestData.activationId, requestData.email)
             .catch((err) => console.log(err));
 
             const accessToken: string = generateAccessToken({

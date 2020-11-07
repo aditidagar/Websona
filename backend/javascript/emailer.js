@@ -4,7 +4,7 @@ exports.sendVerificationEmail = void 0;
 const nodemailer_1 = require("nodemailer");
 function sendVerificationEmail(activationId, to) {
     const transporter = nodemailer_1.createTransport(`smtps://${process.env.GMAIL_USER}%40gmail.com:${process.env.GMAIL_PASS}@smtp.gmail.com`);
-    const verificationURL = `http://localhost:3000/verify/${activationId}`;
+    const verificationURL = `http://websona-alb-356962330.us-east-1.elb.amazonaws.com/verify/${activationId}`;
     const mailOptions = {
         from: 'noreply.websona@gmail.com',
         to,
