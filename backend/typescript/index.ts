@@ -2,9 +2,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
+import jwt from 'jsonwebtoken';
+import { createHash } from 'crypto';
+import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
-import { SignUpInfo, LoginInfo, User } from './interfaces';
+import { SignUpInfo, LoginInfo, User, Code } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
@@ -115,13 +117,53 @@ app.post('/updateWebhook', (req, res) => {
 // with a valid access token
 app.use(authenticateToken);
 
+// sample route to test jwt authentication
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
+});
+
+app.post("/newCode", async (req, res) => {
+    const codeId = await getUniqueCodeId();
+    if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
+    else {
+        // generate a PUT URL to allow for qr code upload from client (waiting on aditi's task)
+        const putUrl = "";
+        const token = req.headers.authorization?.split(' ')[1] as string;
+        const decodedToken = jwt.decode(token) as { [key: string]: any };
+        // insert code into db
+        insertCode({ id: codeId, src: putUrl, owner: decodedToken.email }).then((writeResult) => {
+            res.status(201).send(putUrl);
+            // enqueue a get request for this qr for future (60 seconds or so?)
+            // to verify if client uploaded the code or not. On failure, delete this entry
+            // from the database (waiting on aditi's task to implement this)
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db insertion');
+        });
+    }
 });
 
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });
+
+/**
+ * Generate unique id for a qr code
+ */
+async function getUniqueCodeId() {
+    const currentDate = (new Date()).valueOf().toString();
+    const random = Math.random().toString();
+
+    while (true) {
+        const newId = createHash('sha1').update(currentDate + random).digest('hex');
+        try {
+            const codes = await fetchCodes({ id: newId }) as Code[];
+            if (codes.length === 0) return newId;
+        } catch (error) {
+            return null;
+        }
+    }
+}
 
 export default app;

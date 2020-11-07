@@ -16,10 +16,12 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const crypto_1 = require("crypto");
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
+const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
-dotenv_1.default.config();
 const PORT = process.env.PORT;
 const app = express_1.default();
 let isServerOutdated = false;
@@ -29,6 +31,7 @@ app.use((req, res, next) => {
     else
         res.status(503).send("Server is updating...").end();
 });
+app.use(body_parser_1.json());
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
 });
@@ -111,10 +114,53 @@ app.post('/updateWebhook', (req, res) => {
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
+// sample route to test jwt authentication
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
+app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const codeId = yield getUniqueCodeId();
+    if (codeId === null)
+        res.status(500).send('500: Internal Server Error during db lookup').end();
+    else {
+        // generate a PUT URL to allow for qr code upload from client (waiting on aditi's task)
+        const putUrl = "";
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        const decodedToken = jsonwebtoken_1.default.decode(token);
+        // insert code into db
+        DatabaseHandler_1.insertCode({ id: codeId, src: putUrl, owner: decodedToken.email }).then((writeResult) => {
+            res.status(201).send(putUrl);
+            // enqueue a get request for this qr for future (60 seconds or so?)
+            // to verify if client uploaded the code or not. On failure, delete this entry
+            // from the database (waiting on aditi's task to implement this)
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db insertion');
+        });
+    }
+}));
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });
+/**
+ * Generate unique id for a qr code
+ */
+function getUniqueCodeId() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const currentDate = (new Date()).valueOf().toString();
+        const random = Math.random().toString();
+        while (true) {
+            const newId = crypto_1.createHash('sha1').update(currentDate + random).digest('hex');
+            try {
+                const codes = yield DatabaseHandler_1.fetchCodes({ id: newId });
+                if (codes.length === 0)
+                    return newId;
+            }
+            catch (error) {
+                return null;
+            }
+        }
+    });
+}
 exports.default = app;
