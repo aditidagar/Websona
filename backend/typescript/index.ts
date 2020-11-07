@@ -132,7 +132,7 @@ app.post("/newCode", async (req, res) => {
         const decodedToken = jwt.decode(token) as { [key: string]: any };
         // insert code into db
         insertCode({ id: codeId, src: putUrl, owner: decodedToken.email }).then((writeResult) => {
-            res.status(201).send(putUrl);
+            res.status(201).send({ codeId, putUrl});
             // enqueue a get request for this qr for future (60 seconds or so?)
             // to verify if client uploaded the code or not. On failure, delete this entry
             // from the database (waiting on aditi's task to implement this)
@@ -143,6 +143,33 @@ app.post("/newCode", async (req, res) => {
     }
 });
 
+app.get("/code/:id", (req, res) => {
+    const codeId = req.params.id;
+    fetchCodes({ id: codeId }).then((codes) => {
+        codes = codes as Code[];
+        if (codes.length === 0) {
+            res.status(404).send('Code not found');
+            return;
+        }
+
+        const email = codes[0].owner;
+        fetchUsers({ email }).then((users) => {
+            users = users as User[];
+            if (users.length === 0) {
+                res.status(404).send('User not found');
+                return;
+            }
+
+            res.status(200).send(users[0]);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        })
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send('500: Internal Server Error during db fetch');
+    })
+});
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
