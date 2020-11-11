@@ -12,12 +12,13 @@ aws_sdk_1.default.config = new aws_sdk_1.default.Config({
 });
 const Bucket = process.env.BUCKET_NAME;
 const S3 = new aws_sdk_1.default.S3();
-function generateSignedPutUrl(Key) {
+function generateSignedPutUrl(Key, filetype) {
     return new Promise((resolve, reject) => {
         const params = {
             Bucket,
             Key,
-            Expires: 30
+            Expires: 30,
+            ContentType: filetype === undefined ? "image/jpeg" : filetype,
         };
         S3.getSignedUrl("putObject", params, (err, url) => {
             if (err)
