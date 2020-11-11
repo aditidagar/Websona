@@ -8,7 +8,7 @@ import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
-
+import { generateSignedPutUrl} from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -109,6 +109,12 @@ app.post('/updateWebhook', (req, res) => {
 
 	res.status(200);
 	res.end();
+});
+
+app.get("/updateProfilePicture", async (req, res) => {
+	const email = req.params.email;
+	const url = await generateSignedPutUrl("profile-pictures/" + email);
+	res.status(200).send(url);
 });
 
 // routes created after the line below will be reachable only by the clients

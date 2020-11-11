@@ -18,8 +18,9 @@ const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
+const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
-dotenv_1.default.config();
+const AWSPresigner_1 = require("./AWSPresigner");
 const PORT = process.env.PORT;
 const app = express_1.default();
 let isServerOutdated = false;
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
     else
         res.status(503).send("Server is updating...").end();
 });
+app.use(body_parser_1.json());
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
 });
@@ -108,6 +110,11 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
+app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const email = req.params.email;
+    const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + email);
+    res.status(200).send(url);
+}));
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
