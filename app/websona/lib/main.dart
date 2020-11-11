@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
+import 'package:websona/Events.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
-const String API_URL = "http://192.168.8.31:3000";
+const String API_URL =
+    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
 
 void main() => runApp(MyApp());
 
@@ -86,6 +88,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       style: optionStyle,
     ),
     SettingsScreen(),
+    Event(),
+    Text(
+      'Index 3: Setttings',
+      style: optionStyle,
+    ),
   ];
 
   void _onItemTapped(int index) {
@@ -97,9 +104,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Websona"),
-      ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
