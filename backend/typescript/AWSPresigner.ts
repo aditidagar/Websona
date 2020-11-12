@@ -16,7 +16,7 @@ export function generateSignedPutUrl(Key, filetype) {
 			Bucket,
 			Key,
             Expires: 30,
-            ContentType: filetype === undefined ? "image/jpeg" : filetype,
+            ContentType: filetype === undefined ? "image/jpeg" : filetype
 		};
 
 		S3.getSignedUrl("putObject", params, (err, url) => {

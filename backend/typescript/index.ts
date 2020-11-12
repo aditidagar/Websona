@@ -113,7 +113,7 @@ app.post('/updateWebhook', (req, res) => {
 
 app.put("/updateProfilePicture", async (req, res) => {
 	const email = req.query.email;
-	const url = await generateSignedPutUrl("profile-pictures/" + email, req.query.type);
+    const url = await generateSignedPutUrl("profile-pictures/" + email, req.query.type);
 	res.status(200).send(url);
 });
 
