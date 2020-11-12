@@ -110,7 +110,7 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
-app.put("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const email = req.query.email;
     const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures" + email, req.query.type);
     res.status(200).send(url);
