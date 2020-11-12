@@ -112,7 +112,8 @@ app.post('/updateWebhook', (req, res) => {
 });
 app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const email = req.query.email;
-    const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + email, req.query.type);
+    const profilePicture = bcrypt_1.default.hashSync(email, 1);
+    const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
     res.status(200).send(url);
 }));
 // routes created after the line below will be reachable only by the clients
