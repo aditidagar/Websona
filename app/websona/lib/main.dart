@@ -7,7 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
 const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
+    "http://api.thewebsonaapp.com";
 
 void main() => runApp(MyApp());
 

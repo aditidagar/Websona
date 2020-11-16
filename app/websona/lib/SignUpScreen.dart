@@ -9,8 +9,7 @@ const Pattern emailRegexPattern =
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$";
 
 RegExp emailValidator = new RegExp(emailRegexPattern);
-const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
+const String API_URL = "http://api.thewebsonaapp.com";
 
 class SignUpScreen extends StatefulWidget {
   @override
