@@ -111,6 +111,10 @@ app.post('/updateWebhook', (req, res) => {
 	res.end();
 });
 
+// routes created after the line below will be reachable only by the clients
+// with a valid access token
+app.use(authenticateToken);
+
 app.get("/updateProfilePicture", async (req, res) => {
     const email = req.query.email;
     const profilePicture = bcrypt.hashSync(email, 1);
@@ -118,13 +122,10 @@ app.get("/updateProfilePicture", async (req, res) => {
 	res.status(200).send(url);
 });
 
-// routes created after the line below will be reachable only by the clients
-// with a valid access token
-app.use(authenticateToken);
-
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
+
 
 
 app.listen(process.env.PORT || PORT, () => {
