@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
+import 'package:websona/Events.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'GenerateQrScreen.dart';
 
-const String API_URL = "http://192.168.8.31:3000";
+const String API_URL = "http://api.thewebsonaapp.com";
 
 void main() => runApp(MyApp());
 
@@ -74,14 +76,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
     MyCodes(),
+    //GenerateQrScreen(),
     Text(
       'Index 1: Contacts',
       style: optionStyle,
     ),
-    Text(
-      'Index 2: Events',
-      style: optionStyle,
-    ),
+    Event(),
     Text(
       'Index 3: Setttings',
       style: optionStyle,
@@ -106,9 +106,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text("Websona"),
-      // ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
