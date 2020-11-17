@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'GenerateQrScreen.dart';
 
 const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
+    "http://api.thewebsonaapp.com";
 
 void main() => runApp(MyApp());
 
