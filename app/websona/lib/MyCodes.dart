@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'GenerateQrScreen.dart';
 
 class MyCodes extends StatefulWidget {
   @override
@@ -30,6 +31,7 @@ class _MyCodesState extends State<MyCodes> {
                   padding: EdgeInsets.only(right: 20.0),
                   child: GestureDetector(
                     onTap: () {
+                      
                       if (counter < 5) {
                         litems.add("QR Code");
                         setState(() {});
@@ -55,7 +57,11 @@ class _MyCodesState extends State<MyCodes> {
                           crossAxisSpacing: 25.0,
                           mainAxisSpacing: 25.0),
                       itemBuilder: (BuildContext ctxt, int index) {
-                        return new Container(
+                        return new Material(
+                          color: Colors.white.withOpacity(0.0),
+                          child : InkWell(
+                            splashColor: Colors.white,
+                            child : Container(
                           height: 50.0,
                           width: 50.0,
                           color: Colors.transparent,
@@ -75,6 +81,11 @@ class _MyCodesState extends State<MyCodes> {
                                   textAlign: TextAlign.center,
                                 ),
                               )),
+                        ),
+                        onTap: () {
+                          print("Click");
+                        },
+                          )
                         );
                       }))
             ],
