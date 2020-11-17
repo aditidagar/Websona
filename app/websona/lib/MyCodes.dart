@@ -56,41 +56,26 @@ class _MyCodesState extends State<MyCodes> {
                           mainAxisSpacing: 25.0),
                       itemBuilder: (BuildContext ctxt, int index) {
                         return new Container(
-                          width: 200,
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            color: Colors.pink,
-                            elevation: 10,
-                            child: Container(
+                          height: 50.0,
+                          width: 50.0,
+                          color: Colors.transparent,
+                          child: Container(
                               decoration: BoxDecoration(
                                   image: DecorationImage(
+                                      fit: BoxFit.cover,
                                       image: AssetImage(
-                                          'asset/img/background.png'))),
-                            ),
-                          ),
-                          // height: 50.0,
-                          // width: 50.0,
-                          // color: Colors.transparent,
-                          // child: Container(
-                          //     decoration: BoxDecoration(
-                          //         image: DecorationImage(
-                          //             fit: BoxFit.cover,
-                          //             image: AssetImage(
-                          //                 'asset/img/background.png')),
-                          //         borderRadius:
-                          //             BorderRadius.all(Radius.circular(25.0))),
-                          //     child: new Center(
-                          //       child: new Text(
-                          //         "QR Code",
-                          //         style: TextStyle(
-                          //             fontSize: 22, color: Colors.white),
-                          //         textAlign: TextAlign.center,
-                          //       ),
-                          //     )),
+                                          'asset/img/background.png')),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(25.0))),
+                              child: new Center(
+                                child: new Text(
+                                  "QR Code",
+                                  style: TextStyle(
+                                      fontSize: 22, color: Colors.white),
+                                  textAlign: TextAlign.center,
+                                ),
+                              )),
                         );
-                        // Text(litems[index]);
                       }))
             ],
           )),
