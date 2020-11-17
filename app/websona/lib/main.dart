@@ -5,6 +5,7 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'GenerateQrScreen.dart';
 
 const String API_URL =
     "http://api.thewebsonaapp.com";
@@ -74,10 +75,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
+
+    //GenerateQrScreen(),
+
     Text(
       'Index 0: Codes',
       style: optionStyle,
     ),
+
     Text(
       'Index 1: Contacts',
       style: optionStyle,
