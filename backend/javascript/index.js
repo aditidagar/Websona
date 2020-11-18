@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
+const https_1 = __importDefault(require("https"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = require("crypto");
@@ -38,12 +39,12 @@ app.get("/", (req, res) => {
 });
 if (process.env.NODE_ENV === "test") {
     app.get("/token", (req, res) => {
-        const username = req.query.name;
-        if (!username) {
+        const email = req.query.name;
+        if (!email) {
             res.status(400).send('Missing username for access token request');
             return;
         }
-        const accessToken = authentication_1.generateAccessToken({ username });
+        const accessToken = authentication_1.generateAccessToken({ email });
         res.status(200).send(accessToken);
     });
 }
@@ -112,16 +113,15 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
+// routes created after the line below will be reachable only by the clients
+// with a valid access token
+app.use(authentication_1.authenticateToken);
 app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const email = req.query.email;
     const profilePicture = bcrypt_1.default.hashSync(email, 1);
     const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
     res.status(200).send(url);
 }));
-// routes created after the line below will be reachable only by the clients
-// with a valid access token
-app.use(authentication_1.authenticateToken);
-// sample route to test jwt authentication
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
@@ -131,16 +131,18 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
     if (codeId === null)
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
-        // generate a PUT URL to allow for qr code upload from client (waiting on aditi's task)
-        const putUrl = "";
+        // generate a PUT URL to allow for qr code upload from client
+        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
         const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
+        const socials = req.body.socials;
         // insert code into db
-        DatabaseHandler_1.insertCode({ id: codeId, src: putUrl, owner: decodedToken.email }).then((writeResult) => {
+        DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
             res.status(201).send({ codeId, putUrl });
-            // enqueue a get request for this qr for future (60 seconds or so?)
-            // to verify if client uploaded the code or not. On failure, delete this entry
-            // from the database (waiting on aditi's task to implement this)
+            // enqueue a get request for this qr for future to verify
+            // if client uploaded the code or not. On failure, delete this entry
+            // from the database
+            setTimeout(verifyQRupload, 1000 * 10, codeId);
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db insertion');
@@ -193,6 +195,17 @@ function getUniqueCodeId() {
                 return null;
             }
         }
+    });
+}
+function verifyQRupload(codeId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const downloadUrl = yield AWSPresigner_1.generateSignedGetUrl('codes/' + codeId, 3000);
+        https_1.default.get(downloadUrl, ((res) => {
+            if (res.statusCode !== 200) {
+                // client didn't upload the code, delete it's entry from db
+                DatabaseHandler_1.deleteCode(codeId);
+            }
+        }));
     });
 }
 exports.default = app;

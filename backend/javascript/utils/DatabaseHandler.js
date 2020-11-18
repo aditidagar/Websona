@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchCodes = exports.insertCode = exports.updateUser = exports.fetchUsers = exports.insertUser = void 0;
+exports.deleteCode = exports.fetchCodes = exports.insertCode = exports.updateUser = exports.fetchUsers = exports.insertUser = void 0;
 const mongodb_1 = require("mongodb");
 const DB_NAME = "test";
 const MONGO_URL = `mongodb+srv://websona_backend:${process.env.DATABASE_PASS}@cluster0.if06i.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
@@ -139,3 +139,11 @@ function fetchCodes(query, options = {}) {
     });
 }
 exports.fetchCodes = fetchCodes;
+function deleteCode(codeId) {
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_CODES).then((collection) => {
+            collection.deleteOne({ id: codeId }).catch((err) => reject(err));
+        }).catch((reason) => reject(reason));
+    });
+}
+exports.deleteCode = deleteCode;

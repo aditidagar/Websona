@@ -1,16 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import https from 'https';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
-import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode } from "./utils/DatabaseHandler";
+import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
 import { SignUpInfo, LoginInfo, User, Code } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
-import { generateSignedPutUrl} from './AWSPresigner'
+import { generateSignedGetUrl, generateSignedPutUrl } from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -18,7 +19,7 @@ let isServerOutdated = false;
 
 app.use((req, res, next) => {
     if (!isServerOutdated) next();
-	else res.status(503).send("Server is updating...").end();
+    else res.status(503).send("Server is updating...").end();
 });
 
 app.use(_bodyParser());
@@ -29,13 +30,13 @@ app.get("/", (req, res) => {
 
 if (process.env.NODE_ENV === "test") {
     app.get("/token", (req, res) => {
-        const username = req.query.name;
-        if (!username) {
+        const email = req.query.name;
+        if (!email) {
             res.status(400).send('Missing username for access token request');
             return;
         }
 
-        const accessToken: string = generateAccessToken({ username });
+        const accessToken: string = generateAccessToken({ email });
         res.status(200).send(accessToken);
     });
 }
@@ -43,15 +44,15 @@ if (process.env.NODE_ENV === "test") {
 
 app.post("/signup", (req, res) => {
 
-	const requestData: SignUpInfo = {
+    const requestData: SignUpInfo = {
         firstName: req.body.first,
         lastName: req.body.last,
-		email: req.body.email,
-		password: bcrypt.hashSync(req.body.password, 10)
-	};
+        email: req.body.email,
+        password: bcrypt.hashSync(req.body.password, 10)
+    };
 
     insertUser(requestData)
-		.then(async (result) => {
+        .then(async (result) => {
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
                 email: requestData.email
@@ -60,12 +61,12 @@ app.post("/signup", (req, res) => {
                 accessToken,
                 tokenExpiryTime
             });
-		})
-		.catch((err) => {
-			// unsuccessful insert, reply back with unsuccess response code
-			console.log(err);
-			res.status(500).send("Insert Failed");
-		});
+        })
+        .catch((err) => {
+            // unsuccessful insert, reply back with unsuccess response code
+            console.log(err);
+            res.status(500).send("Insert Failed");
+        });
 
 });
 
@@ -105,12 +106,12 @@ app.post('/updateWebhook', (req, res) => {
         return;
     }
     const isMaster = req.body.ref === "refs/heads/master";
-	if (isMaster) {
-		isServerOutdated = true;
-	}
+    if (isMaster) {
+        isServerOutdated = true;
+    }
 
-	res.status(200);
-	res.end();
+    res.status(200);
+    res.end();
 });
 
 // routes created after the line below will be reachable only by the clients
@@ -121,7 +122,7 @@ app.get("/updateProfilePicture", async (req, res) => {
     const email = req.query.email;
     const profilePicture = bcrypt.hashSync(email, 1);
     const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
-	res.status(200).send(url);
+    res.status(200).send(url);
 });
 
 app.get("/protectedResource", (req, res) => {
@@ -132,16 +133,18 @@ app.post("/newCode", async (req, res) => {
     const codeId = await getUniqueCodeId();
     if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
-        // generate a PUT URL to allow for qr code upload from client (waiting on aditi's task)
-        const putUrl = "";
+        // generate a PUT URL to allow for qr code upload from client
+        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
         const token = req.headers.authorization?.split(' ')[1] as string;
         const decodedToken = jwt.decode(token) as { [key: string]: any };
+        const socials = req.body.socials;
         // insert code into db
-        insertCode({ id: codeId, src: putUrl, owner: decodedToken.email }).then((writeResult) => {
-            res.status(201).send({ codeId, putUrl});
-            // enqueue a get request for this qr for future (60 seconds or so?)
-            // to verify if client uploaded the code or not. On failure, delete this entry
-            // from the database (waiting on aditi's task to implement this)
+        insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
+            res.status(201).send({ codeId, putUrl });
+            // enqueue a get request for this qr for future to verify
+            // if client uploaded the code or not. On failure, delete this entry
+            // from the database
+            setTimeout(verifyQRupload, 1000 * 10, codeId);
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db insertion');
@@ -198,6 +201,16 @@ async function getUniqueCodeId() {
             return null;
         }
     }
+}
+
+async function verifyQRupload(codeId: string): Promise<void> {
+    const downloadUrl = await generateSignedGetUrl('codes/' + codeId, 3000);
+	https.get(downloadUrl as string, ((res) => {
+		if (res.statusCode !== 200) {
+			// client didn't upload the code, delete it's entry from db
+			deleteCode(codeId);
+		}
+	}));
 }
 
 export default app;

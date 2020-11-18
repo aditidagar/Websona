@@ -150,3 +150,11 @@ export function fetchCodes(query, options={}): Promise<Code[] | MongoError> {
     });
 }
 
+export function deleteCode(codeId: string) {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_CODES).then((collection: Collection) => {
+            collection.deleteOne({ id: codeId }).catch((err) => reject(err));
+        }).catch((reason) => reject(reason))
+    })
+}

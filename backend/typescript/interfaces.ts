@@ -23,6 +23,9 @@ export interface User {
 
 export interface Code {
     id: string;
-    src: string;
-    owner: string
+    owner: string;
+    socials: {
+        social: string;
+        username: string;
+    }[];
 }
