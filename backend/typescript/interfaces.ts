@@ -6,7 +6,12 @@ export interface SignUpInfo {
     lastName: string;
     email: string;
     password: string;
-
+    events: {
+        [key: string]: {
+        name: string,
+        location: string,
+        }
+    };  
 }
 
 export interface LoginInfo {
@@ -19,4 +24,10 @@ export interface User {
     lastName: string;
     email: string;
     password: string;
+    events: {
+        [key: string]: {
+        name: string,
+        location: string,
+        }
+    };  
 }

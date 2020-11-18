@@ -1,4 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:websona/main.dart';
+
+const String API_URL = "http://api.thewebsonaapp.com";
 
 class Event extends StatefulWidget {
   @override
@@ -8,6 +15,7 @@ class Event extends StatefulWidget {
 class _EventState extends State<Event> {
   DateTime selectedDate = DateTime.now();
   List<String> eventItems = [];
+  List<String> eventLocations = [];
   List<String> eventDates = [];
 
   Future<void> _selectDate(BuildContext context) async {
@@ -20,6 +28,15 @@ class _EventState extends State<Event> {
       setState(() {
         selectedDate = picked;
       });
+  }
+
+  Future<Response> sendEvents(eventName, eventLocation, eventDate) async {
+    final response = await post("http://10.0.2.2:3000/createEvents",
+        body: jsonEncode(
+            <String, String>{'eventName': eventName, 'eventDate': eventDate, 'eventLocation': eventLocation}),
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context)
+        });
   }
 
   createDialog(BuildContext context) {
@@ -56,10 +73,13 @@ class _EventState extends State<Event> {
                       child: RaisedButton(
                         onPressed: () {
                           eventItems.add(nameController.text);
+                          eventLocations.add(locationController.text);
                           eventDates.add(
                               "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year.toString()}");
                           setState(() {});
                           Navigator.of(context).pop();
+                          sendEvents(nameController.text, locationController.text,
+                              "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year.toString()}");
                         },
                         child: Text(
                           "Create",

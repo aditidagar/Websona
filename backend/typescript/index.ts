@@ -45,7 +45,8 @@ app.post("/signup", (req, res) => {
         firstName: req.body.first,
         lastName: req.body.last,
 		email: req.body.email,
-		password: bcrypt.hashSync(req.body.password, 10)
+        password: bcrypt.hashSync(req.body.password, 10),
+        events: {},
 	};
 
     insertUser(requestData)
@@ -126,6 +127,13 @@ app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
 
+app.post("/createEvents", (req, res) => {
+    const eventName = req.body.eventName;
+    const eventDate = req.body.eventDate;
+    const eventLocation = req.body.eventLocation;
+
+    res.status(200).send("Event data has been received")
+} );
 
 
 app.listen(process.env.PORT || PORT, () => {

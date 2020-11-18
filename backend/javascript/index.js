@@ -110,17 +110,22 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
+// routes created after the line below will be reachable only by the clients
+// with a valid access token
+app.use(authentication_1.authenticateToken);
 app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const email = req.query.email;
     const profilePicture = bcrypt_1.default.hashSync(email, 1);
     const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
     res.status(200).send(url);
 }));
-// routes created after the line below will be reachable only by the clients
-// with a valid access token
-app.use(authentication_1.authenticateToken);
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
+});
+app.post("/createEvents", (req, res) => {
+    const eventName = req.body.eventName;
+    const eventDate = req.body.eventDate;
+    res.status(200).send("Event data has been received");
 });
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
