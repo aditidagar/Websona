@@ -28,6 +28,16 @@ resource "aws_s3_bucket_object" "object" {
   etag = filemd5("../backend/.env")
 }
 
+# resource "aws_acm_certificate" "cert" {
+#   domain_name       = "thewebsonaapp.com"
+#   validation_method = "DNS"
+#   subject_alternative_names = [ "*.thewebsonaapp.com" ]
+
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
+
 resource "aws_launch_configuration" "instance_launch_config" {
   image_id        = "ami-0b69ea66ff7391e80"
   instance_type   = "t2.micro"
@@ -118,6 +128,7 @@ resource "aws_lb_listener" "request_listener" {
   }
 }
 
+# not working, gotta fix it later
 # resource "aws_lb_listener" "request_listener_https" {
 #   load_balancer_arn = aws_lb.websona-alb.arn
 #   port              = "443"
@@ -171,11 +182,27 @@ resource "aws_default_vpc" "default" {
   }
 }
 
+resource "aws_route53_record" "api" {
+  zone_id = var.dns_zone_id
+  name = "api.thewebsonaapp.com"
+  type = "A"
+
+  alias {
+    name = aws_lb.websona-alb.dns_name
+    zone_id = aws_lb.websona-alb.zone_id
+    evaluate_target_health = false
+  }
+}
+
 data "aws_subnet_ids" "all" {
   vpc_id = aws_default_vpc.default.id
 }
 
 output "lb_address" {
   value = "${aws_lb.websona-alb.dns_name}"
+}
+
+output "dns_fqdn" {
+  value = "${aws_route53_record.api.fqdn}"
 }
 
