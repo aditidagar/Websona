@@ -44,7 +44,8 @@ app.post("/signup", (req, res) => {
 	const requestData: SignUpInfo = {
         firstName: req.body.first,
         lastName: req.body.last,
-		email: req.body.email,
+        email: req.body.email,
+        phone: req.body.phone,
 		password: bcrypt.hashSync(req.body.password, 10)
 	};
 
@@ -118,6 +119,34 @@ app.use(authenticateToken);
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
+
+app.get("/fetchUserInfo", (req, res) => {
+    const requestData: LoginInfo = {
+        email: req.body.email,
+        password: req.body.password,
+    };
+
+    fetchUsers({ email: requestData.email })
+    .then((users: User[] | MongoError) => {
+        const user: User = users[0];
+        if (bcrypt.compareSync(requestData.password, user.password)) {
+            // Passwords match
+            const name = user.firstName + user.lastName;
+            const phone = user.phone;
+            res.status(200).send({
+                name,
+                phone
+            });
+        } else {
+            // Passwords don't match
+            res.status(401).send("Invalid password");
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
+})
 
 
 app.listen(process.env.PORT || PORT, () => {

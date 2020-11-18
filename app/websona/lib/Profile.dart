@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -16,8 +19,8 @@ class MapScreenState extends State<ProfilePage>
   TextEditingController _nameController;
   static List<String> _media_link = [];
   static List<String> media = [];
-  String _name = 'Ibrahim Fazili';
-  String _email = 'fazili.ibrahim@gmail.com';
+  String _name = 'Ibrahim';
+  String _email = '';
   String _phone_number = '6479045015';
 
   static bool _status = true;
@@ -32,22 +35,31 @@ class MapScreenState extends State<ProfilePage>
     'Twitter'
   ];
 
+  initializeProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _email = prefs.getString('email');
+    });
+    Response response =
+        await get("http://10.0.2.2:3000" + "/fetchUserInfo",
+          body: jsonEncode(<String, String>{
+          
+        }));
+  }
+
   final FocusNode myFocusNode = FocusNode();
 
   @override
-  void initState() {
+  initState() {
     // ignore: todo
     // TODO: implement initState
     super.initState();
     _nameController = TextEditingController();
+    initializeProfile();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Friend list is ");
-    print(_media_link);
-    print("Chat list is ");
-    print(media);
     return new Scaffold(
         body: new Container(
       color: Colors.white,
@@ -419,21 +431,35 @@ class MapScreenState extends State<ProfilePage>
   }
 
   _imgFromCamera() async {
-    File image = await ImagePicker.pickImage(
-        source: ImageSource.camera, imageQuality: 50);
+    final _picker = ImagePicker();
+    PickedFile image =
+        await _picker.getImage(source: ImageSource.camera, imageQuality: 50);
 
     setState(() {
-      _image = image;
+      _image = File(image.path);
     });
+    // File image = await ImagePicker.pickImage(
+    //     source: ImageSource.camera, imageQuality: 50);
+
+    // setState(() {
+    //   _image = image;
+    // });
   }
 
   _imgFromGallery() async {
-    File image = await ImagePicker.pickImage(
-        source: ImageSource.gallery, imageQuality: 50);
+    final _picker = ImagePicker();
+    PickedFile image =
+        await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
 
     setState(() {
-      _image = image;
+      _image = File(image.path);
     });
+    // File image = await ImagePicker.pickImage(
+    //     source: ImageSource.gallery, imageQuality: 50);
+
+    // setState(() {
+    //   _image = image;
+    // });
   }
 
   Widget _getActionButtons() {

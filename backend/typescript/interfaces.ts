@@ -6,7 +6,7 @@ export interface SignUpInfo {
     lastName: string;
     email: string;
     password: string;
-
+    phone: string
 }
 
 export interface LoginInfo {
@@ -19,4 +19,5 @@ export interface User {
     lastName: string;
     email: string;
     password: string;
+    phone: string
 }
