@@ -11,6 +11,7 @@ import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
 
+import { generateSignedPutUrl} from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -142,9 +143,17 @@ app.post('/updateWebhook', (req, res) => {
 // with a valid access token
 app.use(authenticateToken);
 
+app.get("/updateProfilePicture", async (req, res) => {
+    const email = req.query.email;
+    const profilePicture = bcrypt.hashSync(email, 1);
+    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+	res.status(200).send(url);
+});
+
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
+
 
 
 app.listen(process.env.PORT || PORT, () => {

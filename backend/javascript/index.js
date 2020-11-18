@@ -22,6 +22,7 @@ const authentication_1 = require("./authentication");
 const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
 const emailer_1 = require("./emailer");
+const AWSPresigner_1 = require("./AWSPresigner");
 const PORT = process.env.PORT;
 const app = express_1.default();
 let isServerOutdated = false;
@@ -136,6 +137,12 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
+app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const email = req.query.email;
+    const profilePicture = bcrypt_1.default.hashSync(email, 1);
+    const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+    res.status(200).send(url);
+}));
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
