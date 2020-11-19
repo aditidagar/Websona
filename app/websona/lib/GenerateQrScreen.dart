@@ -22,6 +22,33 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   String dropdownValue3 = 'Social Media 3';
   String dropdownValue4 = 'Social Media 4';
   String qrData = '';
+  Map<String, dynamic> toJson() => {
+        'socials': [
+          dropdownValue,
+          dropdownValue2,
+          dropdownValue3,
+          dropdownValue4
+        ]
+      };
+
+  void handleSubmit() async {
+    Response response = await post(API_URL + "/newCode",
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, dynamic>{
+          'socials': [
+            dropdownValue,
+            dropdownValue2,
+            dropdownValue3,
+            dropdownValue4
+          ]
+        }));
+
+    if (response.statusCode == 200) {
+      //Navigate to QR Codes Page
+
+      debugPrint("Working");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +250,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
             padding: EdgeInsets.all(8.0),
             splashColor: Colors.blueAccent,
             onPressed: () {
-              /*...*/
+              handleSubmit();
             },
             child: Text(
               "Create",
