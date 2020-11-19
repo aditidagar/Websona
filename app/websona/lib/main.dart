@@ -9,7 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'GenerateQrScreen.dart';
 
-const String API_URL = "http://api.thewebsonaapp.com";
+const String API_URL = "https://api.thewebsonaapp.com";
 
 void main() => runApp(MyApp());
 
