@@ -16,10 +16,12 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const crypto_1 = require("crypto");
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
 const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
+const emailer_1 = require("./emailer");
 const AWSPresigner_1 = require("./AWSPresigner");
 const PORT = process.env.PORT;
 const app = express_1.default();
@@ -46,14 +48,20 @@ if (process.env.NODE_ENV === "test") {
     });
 }
 app.post("/signup", (req, res) => {
+    const currentDate = (new Date()).valueOf().toString();
+    const random = Math.random().toString();
     const requestData = {
         firstName: req.body.first,
         lastName: req.body.last,
         email: req.body.email,
-        password: bcrypt_1.default.hashSync(req.body.password, 10)
+        password: bcrypt_1.default.hashSync(req.body.password, 10),
+        activationId: crypto_1.createHash('sha1').update(currentDate + random).digest('hex')
     };
     DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
+        if (process.env.NODE_ENV !== 'test')
+            emailer_1.sendVerificationEmail(requestData.activationId, requestData.email)
+                .catch((err) => console.log(err));
         const accessToken = authentication_1.generateAccessToken({
             firstName: requestData.firstName,
             email: requestData.email
@@ -77,6 +85,10 @@ app.post("/login", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: requestData.email })
         .then((users) => {
         const user = users[0];
+        if (user.activationId) {
+            res.status(403).send("Account isn't verified. Check your email for the verification mail");
+            return;
+        }
         if (bcrypt_1.default.compareSync(requestData.password, user.password)) {
             // Passwords match
             const accessToken = authentication_1.generateAccessToken({
@@ -97,6 +109,21 @@ app.post("/login", (req, res) => {
         console.log(err);
         res.status(500).send("Server error");
     });
+});
+app.get("/verify/:id", (req, res) => {
+    if (!req.params.id)
+        res.status(400).send("Missing activation id").end();
+    else {
+        DatabaseHandler_1.fetchUsers({ activationId: req.params.id }).then((users) => {
+            if (users.length === 0)
+                res.status(404).send("User not found");
+            else {
+                DatabaseHandler_1.updateUser({ activationId: undefined }, { _id: users[0]._id })
+                    .then((val) => res.status(201).send("Verification Successful"))
+                    .catch((err) => res.status(500).send("500: Server Error. Verification failed"));
+            }
+        });
+    }
 });
 app.post('/updateWebhook', (req, res) => {
     if (!webhook_1.verifyGithubPayload(req)) {

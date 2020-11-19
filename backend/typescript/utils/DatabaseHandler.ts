@@ -1,4 +1,5 @@
-import { Collection, InsertOneWriteOpResult, MongoClient, MongoError } from 'mongodb';
+import { Collection, FilterQuery, InsertOneWriteOpResult, MongoClient, MongoError, UpdateQuery } from 'mongodb';
+import { User } from '../interfaces';
 
 const DB_NAME = "test";
 const MONGO_URL =
@@ -74,7 +75,7 @@ export function insertUser(profile: object): Promise<InsertOneWriteOpResult<any>
     });
 }
 
-export function fetchUsers(query, options={}): Promise<any[] | MongoError> {
+export function fetchUsers(query, options={}): Promise<User[]> {
 
     return new Promise((resolve, reject) => {
         getCollection(COLLECTION_USERS).then((collection: Collection) => {
@@ -86,6 +87,24 @@ export function fetchUsers(query, options={}): Promise<any[] | MongoError> {
         }).catch((reason) => {
             reject(reason);
         });
+    });
+}
+
+export function updateUser(updatedUserObject: UpdateQuery<any> | Partial<any>, queryObject: FilterQuery<any>) {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_USERS).then((collection: Collection) => {
+            const updateDoc = { $set: updatedUserObject }
+            collection.updateOne(queryObject, updateDoc, (err, updateResult) => {
+                if (err) reject(err);
+
+                resolve(updateResult);
+            });
+
+        }).catch((reason) => {
+            reject(reason);
+        });
+
     });
 }
 

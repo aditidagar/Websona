@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchUsers = exports.insertUser = void 0;
+exports.updateUser = exports.fetchUsers = exports.insertUser = void 0;
 const mongodb_1 = require("mongodb");
 const DB_NAME = "test";
 const MONGO_URL = `mongodb+srv://websona_backend:${process.env.DATABASE_PASS}@cluster0.if06i.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
@@ -86,3 +86,18 @@ function fetchUsers(query, options = {}) {
     });
 }
 exports.fetchUsers = fetchUsers;
+function updateUser(updatedUserObject, queryObject) {
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_USERS).then((collection) => {
+            const updateDoc = { $set: updatedUserObject };
+            collection.updateOne(queryObject, updateDoc, (err, updateResult) => {
+                if (err)
+                    reject(err);
+                resolve(updateResult);
+            });
+        }).catch((reason) => {
+            reject(reason);
+        });
+    });
+}
+exports.updateUser = updateUser;
