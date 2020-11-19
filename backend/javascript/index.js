@@ -18,8 +18,8 @@ const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
+const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
-dotenv_1.default.config();
 const PORT = process.env.PORT;
 const app = express_1.default();
 let isServerOutdated = false;
@@ -29,6 +29,7 @@ app.use((req, res, next) => {
     else
         res.status(503).send("Server is updating...").end();
 });
+app.use(body_parser_1.json());
 app.get("/", (req, res) => {
     res.status(200).send("Websona Backend");
 });
@@ -48,6 +49,7 @@ app.post("/signup", (req, res) => {
         firstName: req.body.first,
         lastName: req.body.last,
         email: req.body.email,
+        phone: req.body.phone,
         password: bcrypt_1.default.hashSync(req.body.password, 10)
     };
     DatabaseHandler_1.insertUser(requestData)
@@ -113,6 +115,33 @@ app.post('/updateWebhook', (req, res) => {
 app.use(authentication_1.authenticateToken);
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
+});
+app.get("/fetchUserInfo", (req, res) => {
+    const requestData = {
+        email: req.body.email,
+        password: req.body.password,
+    };
+    DatabaseHandler_1.fetchUsers({ email: requestData.email })
+        .then((users) => {
+        const user = users[0];
+        if (bcrypt_1.default.compareSync(requestData.password, user.password)) {
+            // Passwords match
+            const name = user.firstName + user.lastName;
+            const phone = user.phone;
+            res.status(200).send({
+                name,
+                phone
+            });
+        }
+        else {
+            // Passwords don't match
+            res.status(401).send("Invalid password");
+        }
+    })
+        .catch((err) => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
 });
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);

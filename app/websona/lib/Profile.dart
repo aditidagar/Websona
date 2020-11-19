@@ -3,9 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'main.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -37,14 +40,22 @@ class MapScreenState extends State<ProfilePage>
 
   initializeProfile() async {
     final prefs = await SharedPreferences.getInstance();
+    final secureStorage = new FlutterSecureStorage();
+    String password = await secureStorage.read(key: 'websona-password');
+
+    print(password);
     setState(() {
       _email = prefs.getString('email');
     });
-    Response response =
-        await get("http://10.0.2.2:3000" + "/fetchUserInfo",
-          body: jsonEncode(<String, String>{
-          
-        }));
+    print(_email);
+    Response response = await post("http://10.0.2.2:3000" + "/fetchUserInfo",
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context)
+        },
+        body: jsonEncode(
+            <String, String>{'email': _email, 'password': password}));
+
+    print(response.statusCode);
   }
 
   final FocusNode myFocusNode = FocusNode();
