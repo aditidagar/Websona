@@ -6,6 +6,8 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'package:flutter_qr_bar_scanner/qr_bar_scanner_camera.dart';
+
 import 'GenerateQrScreen.dart';
 
 const String API_URL = "http://api.thewebsonaapp.com";
@@ -72,6 +74,9 @@ class MyStatefulWidget extends StatefulWidget {
 /// This is the private State class that goes with MyStatefulWidget.
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
+  bool _camState = true;
+  String _qrInfo = 'Scan a QR/Bar code';
+
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
@@ -87,6 +92,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       style: optionStyle,
     ),
   ];
+
+  _qrCallback(String code) {
+    setState(() {
+      _camState = true;
+      _qrInfo = code;
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -145,32 +157,76 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   void opencamera(context) async {
-    showModalBottomSheet(
+    showModalBottomSheet<dynamic>(
         context: context,
+        isScrollControlled: true,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
         builder: (BuildContext bc) {
-          return Container(
-            alignment: Alignment.topCenter,
-            margin: EdgeInsets.all(30),
-            height: MediaQuery.of(context).size.height * 0.6,
-            child: Row(
-              children: <Widget>[
-                SizedBox(
-                  width: 70,
-                  child: SelectableText("Cancel",
-                      onTap: () => {Navigator.pop(context)},
-                      style: TextStyle(color: Colors.blue[800])),
-                ),
-                Text(
-                  'Scan the QR code',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
+          if (this._camState) {
+            return Container(
+                height: MediaQuery.of(context).size.height * 0.5,
+                margin: EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(10.0),
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      'Scan the QR code',
+                      style:
+                          TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: 300,
+                      width: 500,
+                      child: QRBarScannerCamera(
+                        onError: (context, error) => Text(
+                          error.toString(),
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        qrCodeCallback: (code) {
+                          _qrCallback(code);
+                        },
+                      ),
+                    ),
+                  ],
+                ));
+          }
+          return Text("Profile page here");
+
+          // Container();
+          // child: Row(
+          //   children: <Widget>[
+          //     SizedBox(
+          //       width: 70,
+          //       child: SelectableText("Cancel",
+          //           onTap: () => {Navigator.pop(context)},
+          //           style: TextStyle(color: Colors.blue[800])),
+          //     ),
+          //     Text(
+          //       'Scan the QR code',
+          //       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+          //       textAlign: TextAlign.center,
+          //     ),
+          //   ],
+          //     child: QRBarScannerCamera(
+          //             onError: (context, error) => Text(
+          //               error.toString(),
+          //               style: TextStyle(color: Colors.red),
+          //             ),
+          //             qrCodeCallback: (code) {
+          //               _qrCallback(code);
+          //             },
+          //           ),
+          //         ),
+          //         Text(
+          //           _qrInfo,
+          //           style: TextStyle(color: Colors.black26),
+          //         ),
+          //     ),
+          //   );
+          // });
         });
   }
 }
