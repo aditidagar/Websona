@@ -8,7 +8,7 @@ import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
-import { generateSignedPutUrl} from './AWSPresigner'
+import { generateSignedPutUrl } from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -16,7 +16,7 @@ let isServerOutdated = false;
 
 app.use((req, res, next) => {
     if (!isServerOutdated) next();
-	else res.status(503).send("Server is updating...").end();
+    else res.status(503).send("Server is updating...").end();
 });
 
 app.use(_bodyParser());
@@ -41,15 +41,15 @@ if (process.env.NODE_ENV === "test") {
 
 app.post("/signup", (req, res) => {
 
-	const requestData: SignUpInfo = {
+    const requestData: SignUpInfo = {
         firstName: req.body.first,
         lastName: req.body.last,
-		email: req.body.email,
-		password: bcrypt.hashSync(req.body.password, 10)
-	};
+        email: req.body.email,
+        password: bcrypt.hashSync(req.body.password, 10)
+    };
 
     insertUser(requestData)
-		.then(async (result) => {
+        .then(async (result) => {
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
                 email: requestData.email
@@ -58,12 +58,12 @@ app.post("/signup", (req, res) => {
                 accessToken,
                 tokenExpiryTime
             });
-		})
-		.catch((err) => {
-			// unsuccessful insert, reply back with unsuccess response code
-			console.log(err);
-			res.status(500).send("Insert Failed");
-		});
+        })
+        .catch((err) => {
+            // unsuccessful insert, reply back with unsuccess response code
+            console.log(err);
+            res.status(500).send("Insert Failed");
+        });
 
 });
 
@@ -103,12 +103,12 @@ app.post('/updateWebhook', (req, res) => {
         return;
     }
     const isMaster = req.body.ref === "refs/heads/master";
-	if (isMaster) {
-		isServerOutdated = true;
-	}
+    if (isMaster) {
+        isServerOutdated = true;
+    }
 
-	res.status(200);
-	res.end();
+    res.status(200);
+    res.end();
 });
 
 // routes created after the line below will be reachable only by the clients
@@ -119,7 +119,7 @@ app.get("/updateProfilePicture", async (req, res) => {
     const email = req.query.email;
     const profilePicture = bcrypt.hashSync(email, 1);
     const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
-	res.status(200).send(url);
+    res.status(200).send(url);
 });
 
 app.get("/protectedResource", (req, res) => {

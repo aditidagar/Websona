@@ -31,6 +31,25 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   String qrData = '';
   TextEditingController qrController = TextEditingController();
 
+  void handleSubmit() async {
+    Response response = await post(API_URL + "/newCode",
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, dynamic>{
+          'socials': [
+            dropdownValue,
+            dropdownValue2,
+            dropdownValue3,
+            dropdownValue4
+          ]
+        }));
+
+    if (response.statusCode == 200) {
+      //Navigate to QR Codes Page
+
+      debugPrint("Working");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -246,11 +265,10 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                   padding: EdgeInsets.all(8.0),
                   splashColor: Colors.blueAccent,
                   onPressed: () {
-                    // if (widget.info.counter < 5) {
+                    handleSubmit();
                     widget.info.litems.add(qrController.text);
                     widget.info.counter = widget.info.counter + 1;
                     widget?._callback();
-                    // }
                     Navigator.pop(context);
                   },
                   child: Text(
