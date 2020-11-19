@@ -29,10 +29,11 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   String dropdownValue3 = 'Social Media 3';
   String dropdownValue4 = 'Social Media 4';
   String qrData = '';
+  TextEditingController qrController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController qrController = TextEditingController();
+
     return MaterialApp(
       title: 'QR Code',
       home: Scaffold(
