@@ -6,9 +6,20 @@ class MyCodes extends StatefulWidget {
   _MyCodesState createState() => _MyCodesState();
 }
 
+//info class
+class Info {
+  List<String> litems;
+  int counter;
+  Info(this.litems, this.counter);
+}
+
 class _MyCodesState extends State<MyCodes> {
-  List<String> litems = [];
-  int counter = 0;
+  Info info = new Info([], 0);
+
+  void changeState() {
+    setState(() {});
+  }
+
   final TextEditingController eCtrl = new TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -31,17 +42,27 @@ class _MyCodesState extends State<MyCodes> {
                   padding: EdgeInsets.only(right: 20.0),
                   child: GestureDetector(
                     onTap: () {
-                      
-                      if (counter < 5) {
-                        litems.add("QR Code");
-                        setState(() {});
-                        counter = counter + 1;
+                      if (info.counter < 5) {
+                        // go to the QR page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GenerateQrScreen(
+                              info: info,
+                              changeStateCallBack: changeState,
+                            ),
+                          ),
+                        );
+                        
                       }
+
+                     
                     },
                     child: Icon(
                       Icons.add,
                       size: 26.0,
                       color: Colors.blue,
+
                     ),
                   )),
             ],
@@ -51,42 +72,41 @@ class _MyCodesState extends State<MyCodes> {
               new Expanded(
                   child: GridView.builder(
                       padding: EdgeInsets.all(25.0),
-                      itemCount: litems.length,
+                      itemCount: info.litems.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 25.0,
                           mainAxisSpacing: 25.0),
                       itemBuilder: (BuildContext ctxt, int index) {
                         return new Material(
-                          color: Colors.white.withOpacity(0.0),
-                          child : InkWell(
-                            splashColor: Colors.white,
-                            child : Container(
-                          height: 50.0,
-                          width: 50.0,
-                          color: Colors.transparent,
-                          child: Container(
-                              decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: AssetImage(
-                                          'asset/img/background.png')),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(25.0))),
-                              child: new Center(
-                                child: new Text(
-                                  "QR Code",
-                                  style: TextStyle(
-                                      fontSize: 22, color: Colors.white),
-                                  textAlign: TextAlign.center,
-                                ),
-                              )),
-                        ),
-                        onTap: () {
-                          print("Click");
-                        },
-                          )
-                        );
+                            color: Colors.white.withOpacity(0.0),
+                            child: InkWell(
+                              splashColor: Colors.white,
+                              child: Container(
+                                height: 50.0,
+                                width: 50.0,
+                                color: Colors.transparent,
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                            fit: BoxFit.cover,
+                                            image: AssetImage(
+                                                'asset/img/background.png')),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(25.0))),
+                                    child: new Center(
+                                      child: new Text(
+                                        info.litems[index],
+                                        style: TextStyle(
+                                            fontSize: 22, color: Colors.white),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    )),
+                              ),
+                              onTap: () {
+                                //add code here to see QR Code
+                              },
+                            ));
                       }))
             ],
           )),
