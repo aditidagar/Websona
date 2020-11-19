@@ -22,9 +22,9 @@ class MapScreenState extends State<ProfilePage>
   TextEditingController _nameController;
   static List<String> _media_link = [];
   static List<String> media = [];
-  String _name = 'Ibrahim';
+  String _name = '';
   String _email = '';
-  String _phone_number = '6479045015';
+  String _phone = '';
 
   static bool _status = true;
   File _image;
@@ -38,24 +38,37 @@ class MapScreenState extends State<ProfilePage>
     'Twitter'
   ];
 
-  initializeProfile() async {
+  void initializeProfile() async {
     final prefs = await SharedPreferences.getInstance();
-    final secureStorage = new FlutterSecureStorage();
-    String password = await secureStorage.read(key: 'websona-password');
 
-    print(password);
+    Response response = await get(
+        "http://10.0.2.2:3000/user/" + prefs.getString('email'),
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context),
+        });
+
+    final responseBody = jsonDecode(response.body);
+
     setState(() {
       _email = prefs.getString('email');
+      _name = responseBody['name'];
+      _phone = responseBody['phone'];
     });
-    print(_email);
-    Response response = await post("http://10.0.2.2:3000" + "/fetchUserInfo",
-        headers: <String, String>{
-          'authorization': await getAuthorizationToken(context)
-        },
-        body: jsonEncode(
-            <String, String>{'email': _email, 'password': password}));
+  }
 
-    print(response.statusCode);
+  Future<void> updateProfile() async {
+    final secureStorage = new FlutterSecureStorage();
+    String password = await secureStorage.read(key: 'websona-password');
+    String last_name = _name.split(" ")[_name.split(" ").length - 1];
+    String first_name = _name.substring(0, _name.length - last_name.length - 1);
+    var updatedUser = {
+      'firstName': first_name,
+      'lastName': last_name,
+      'email': _email,
+      'password': password,
+      'phone': _phone
+    };
+    print(updatedUser);
   }
 
   final FocusNode myFocusNode = FocusNode();
@@ -218,11 +231,12 @@ class MapScreenState extends State<ProfilePage>
                               children: <Widget>[
                                 new Flexible(
                                   child: new TextFormField(
+                                    controller:
+                                        TextEditingController(text: _name),
                                     keyboardType: TextInputType.text,
                                     textInputAction: TextInputAction.next,
                                     textCapitalization:
                                         TextCapitalization.words,
-                                    initialValue: _name,
                                     decoration: const InputDecoration(
                                       hintText: "Enter Your Name",
                                     ),
@@ -302,7 +316,8 @@ class MapScreenState extends State<ProfilePage>
                               children: <Widget>[
                                 new Flexible(
                                   child: new TextFormField(
-                                    initialValue: _phone_number,
+                                    controller:
+                                        TextEditingController(text: _phone),
                                     keyboardType: TextInputType.emailAddress,
                                     textInputAction: TextInputAction.next,
                                     decoration: const InputDecoration(
@@ -317,7 +332,7 @@ class MapScreenState extends State<ProfilePage>
                                       else
                                         return null;
                                     },
-                                    onSaved: (value) => _phone_number = value,
+                                    onSaved: (value) => _phone = value,
                                   ),
                                 ),
                               ],
@@ -493,6 +508,8 @@ class MapScreenState extends State<ProfilePage>
                     _formKey.currentState.save();
                     setState(() {
                       _status = true;
+                      updateProfile();
+                      // fix this
                       FocusScope.of(context).requestFocus(new FocusNode());
                     });
                   }

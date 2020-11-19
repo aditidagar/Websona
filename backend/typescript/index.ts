@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { insertUser, fetchUsers } from "./utils/DatabaseHandler";
+import { insertUser, fetchUsers, updateUser} from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
 import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
@@ -73,7 +73,7 @@ app.post("/login", (req, res) => {
         email: req.body.email,
         password: req.body.password,
     };
-
+    console.log("requestData")
     fetchUsers({ email: requestData.email })
         .then((users: User[] | MongoError) => {
             const user: User = users[0];
@@ -120,32 +120,34 @@ app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
 
-app.get("/fetchUserInfo", (req, res) => {
-    const requestData: LoginInfo = {
-        email: req.body.email,
-        password: req.body.password,
-    };
-
-    fetchUsers({ email: requestData.email })
+app.get("/user/:email", (req, res) => {
+    fetchUsers({ email: req.params.email })
     .then((users: User[] | MongoError) => {
         const user: User = users[0];
-        if (bcrypt.compareSync(requestData.password, user.password)) {
-            // Passwords match
-            const name = user.firstName + user.lastName;
-            const phone = user.phone;
-            res.status(200).send({
-                name,
-                phone
-            });
-        } else {
-            // Passwords don't match
-            res.status(401).send("Invalid password");
-        }
+        const name = user.firstName + " " + user.lastName;
+        const phone = user.phone;
+        res.status(200).send({
+            name,
+            phone
+        });
     })
     .catch((err) => {
         console.log(err);
         res.status(500).send("Server error");
     });
+})
+
+app.post("/updateUser", (req, res) => {
+    const singleUser: User = req.body.user;
+    fetchUsers({email: singleUser.email}).
+    then((users: User[] | MongoError) => {
+        const user: User = users[0];
+        updateUser(user, {email: singleUser.email})
+        res.status(200).send("update successful")
+    }
+    ).catch((err) =>{
+        res.status(500).send("Error with server")
+    })
 })
 
 

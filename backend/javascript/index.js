@@ -74,6 +74,7 @@ app.post("/login", (req, res) => {
         email: req.body.email,
         password: req.body.password,
     };
+    console.log("requestData");
     DatabaseHandler_1.fetchUsers({ email: requestData.email })
         .then((users) => {
         const user = users[0];
@@ -116,31 +117,31 @@ app.use(authentication_1.authenticateToken);
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
-app.get("/fetchUserInfo", (req, res) => {
-    const requestData = {
-        email: req.body.email,
-        password: req.body.password,
-    };
-    DatabaseHandler_1.fetchUsers({ email: requestData.email })
+app.get("/user/:email", (req, res) => {
+    DatabaseHandler_1.fetchUsers({ email: req.params.email })
         .then((users) => {
         const user = users[0];
-        if (bcrypt_1.default.compareSync(requestData.password, user.password)) {
-            // Passwords match
-            const name = user.firstName + user.lastName;
-            const phone = user.phone;
-            res.status(200).send({
-                name,
-                phone
-            });
-        }
-        else {
-            // Passwords don't match
-            res.status(401).send("Invalid password");
-        }
+        const name = user.firstName + " " + user.lastName;
+        const phone = user.phone;
+        res.status(200).send({
+            name,
+            phone
+        });
     })
         .catch((err) => {
         console.log(err);
         res.status(500).send("Server error");
+    });
+});
+app.post("/updateUser", (req, res) => {
+    const singleUser = req.body.user;
+    DatabaseHandler_1.fetchUsers({ email: singleUser.email }).
+        then((users) => {
+        const user = users[0];
+        DatabaseHandler_1.updateUser(user, { email: singleUser.email });
+        res.status(200).send("update successful");
+    }).catch((err) => {
+        res.status(500).send("Error with server");
     });
 });
 app.listen(process.env.PORT || PORT, () => {
