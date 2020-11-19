@@ -95,6 +95,7 @@ function updateUser(updatedUserObject, queryObject) {
                     reject(err);
                 resolve(updateResult);
             });
+            console.log(updateDoc);
         }).catch((reason) => {
             reject(reason);
         });

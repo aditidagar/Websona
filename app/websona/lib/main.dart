@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
+import 'MyCodes.dart';
 import 'package:websona/Events.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'GenerateQrScreen.dart';
 
-const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
+const String API_URL = "https://api.thewebsonaapp.com";
 
 void main() => runApp(MyApp());
 
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SignInScreen(),
+      home: MyStatefulWidget(),
     );
   }
 }
@@ -75,10 +76,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Index 0: Codes',
-      style: optionStyle,
-    ),
+    MyCodes(),
+    //GenerateQrScreen(),
     Text(
       'Index 1: Contacts',
       style: optionStyle,
@@ -98,6 +97,15 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      // if (index == 0) {
+      //   // go to the my codes page
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => MyCodes(),
+      //     ),
+      //   );
+      // }
     });
   }
 

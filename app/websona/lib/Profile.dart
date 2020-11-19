@@ -57,18 +57,19 @@ class MapScreenState extends State<ProfilePage>
   }
 
   Future<void> updateProfile() async {
-    final secureStorage = new FlutterSecureStorage();
-    String password = await secureStorage.read(key: 'websona-password');
-    String last_name = _name.split(" ")[_name.split(" ").length - 1];
-    String first_name = _name.substring(0, _name.length - last_name.length - 1);
-    var updatedUser = {
-      'firstName': first_name,
-      'lastName': last_name,
-      'email': _email,
-      'password': password,
-      'phone': _phone
-    };
-    print(updatedUser);
+    String lastName = _name.split(" ")[_name.split(" ").length - 1];
+    String firstName = _name.substring(0, _name.length - lastName.length - 1);
+    Response response = await post("http://10.0.2.2:3000/updateUser",
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context),
+          'Content-Type': 'application/json'
+        },
+        body: jsonEncode(<String, String>{
+          'firstName': firstName,
+          'lastName': lastName,
+          'email': _email,
+          'phone': _phone
+        }));
   }
 
   final FocusNode myFocusNode = FocusNode();

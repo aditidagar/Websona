@@ -20,6 +20,7 @@ const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
 const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
+const AWSPresigner_1 = require("./AWSPresigner");
 const PORT = process.env.PORT;
 const app = express_1.default();
 let isServerOutdated = false;
@@ -74,7 +75,6 @@ app.post("/login", (req, res) => {
         email: req.body.email,
         password: req.body.password,
     };
-    console.log("requestData");
     DatabaseHandler_1.fetchUsers({ email: requestData.email })
         .then((users) => {
         const user = users[0];
@@ -114,6 +114,12 @@ app.post('/updateWebhook', (req, res) => {
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
+app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const email = req.query.email;
+    const profilePicture = bcrypt_1.default.hashSync(email, 1);
+    const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+    res.status(200).send(url);
+}));
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
@@ -134,11 +140,17 @@ app.get("/user/:email", (req, res) => {
     });
 });
 app.post("/updateUser", (req, res) => {
-    const singleUser = req.body.user;
-    DatabaseHandler_1.fetchUsers({ email: singleUser.email }).
+    const singleUser = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone
+    };
+    const _email = req.body.email;
+    console.log("The single user", singleUser);
+    DatabaseHandler_1.fetchUsers({ email: _email }).
         then((users) => {
         const user = users[0];
-        DatabaseHandler_1.updateUser(user, { email: singleUser.email });
+        DatabaseHandler_1.updateUser(singleUser, { email: _email });
         res.status(200).send("update successful");
     }).catch((err) => {
         res.status(500).send("Error with server");

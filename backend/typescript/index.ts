@@ -8,7 +8,7 @@ import { SignUpInfo, LoginInfo, User } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
-
+import { generateSignedPutUrl} from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -73,7 +73,6 @@ app.post("/login", (req, res) => {
         email: req.body.email,
         password: req.body.password,
     };
-    console.log("requestData")
     fetchUsers({ email: requestData.email })
         .then((users: User[] | MongoError) => {
             const user: User = users[0];
@@ -116,6 +115,13 @@ app.post('/updateWebhook', (req, res) => {
 // with a valid access token
 app.use(authenticateToken);
 
+app.get("/updateProfilePicture", async (req, res) => {
+    const email = req.query.email;
+    const profilePicture = bcrypt.hashSync(email, 1);
+    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+	res.status(200).send(url);
+});
+
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
@@ -138,17 +144,23 @@ app.get("/user/:email", (req, res) => {
 })
 
 app.post("/updateUser", (req, res) => {
-    const singleUser: User = req.body.user;
-    fetchUsers({email: singleUser.email}).
+    const singleUser = {
+        firstName : req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone
+    };
+    const _email = req.body.email;
+    fetchUsers({email: _email}).
     then((users: User[] | MongoError) => {
         const user: User = users[0];
-        updateUser(user, {email: singleUser.email})
+        updateUser(singleUser, {email: _email})
         res.status(200).send("update successful")
     }
     ).catch((err) =>{
         res.status(500).send("Error with server")
     })
 })
+
 
 
 app.listen(process.env.PORT || PORT, () => {
