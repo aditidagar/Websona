@@ -15,7 +15,7 @@ class GenerateQrScreen extends StatefulWidget {
   final info;
   final _callback;
 
-  GenerateQrScreen({@required this.info, @required changeStateCallBack })
+  GenerateQrScreen({@required this.info, @required changeStateCallBack})
       : _callback = changeStateCallBack;
 
   @override
@@ -33,7 +33,6 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: 'QR Code',
       home: Scaffold(
@@ -248,9 +247,9 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                   splashColor: Colors.blueAccent,
                   onPressed: () {
                     // if (widget.info.counter < 5) {
-                      widget.info.litems.add(qrController.text);
-                      widget.info.counter = widget.info.counter + 1;
-                      widget?._callback();
+                    widget.info.litems.add(qrController.text);
+                    widget.info.counter = widget.info.counter + 1;
+                    widget?._callback();
                     // }
                     Navigator.pop(context);
                   },

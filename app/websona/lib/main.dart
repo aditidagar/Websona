@@ -76,7 +76,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
     MyCodes(),
-    // GenerateQrScreen(),
     Text(
       'Index 1: Contacts',
       style: optionStyle,
