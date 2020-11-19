@@ -11,6 +11,14 @@ resource "aws_s3_bucket" "websona-backend-s3bucket" {
   bucket = "websona-backend-s3bucket"
   acl    = "private"
 
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "GET"]
+    allowed_origins = ["*"]
+    expose_headers  = []
+    max_age_seconds = 3000
+  }
+
   tags = {
     Name        = "Bucket for Websona API Server"
     Environment = "Dev"
@@ -28,15 +36,29 @@ resource "aws_s3_bucket_object" "object" {
   etag = filemd5("../backend/.env")
 }
 
-# resource "aws_acm_certificate" "cert" {
-#   domain_name       = "thewebsonaapp.com"
-#   validation_method = "DNS"
-#   subject_alternative_names = [ "*.thewebsonaapp.com" ]
+resource "aws_acm_certificate" "cert" {
+  domain_name       = "thewebsonaapp.com"
+  validation_method = "DNS"
+  subject_alternative_names = [ "*.thewebsonaapp.com" ]
 
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "cert_validation" {
+  allow_overwrite = true
+  name = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_name
+  records = [ tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_value ]
+  type = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_type
+  zone_id = var.dns_zone_id
+  ttl = 60
+}
+
+resource "aws_acm_certificate_validation" "cert" {
+  certificate_arn         = aws_acm_certificate.cert.arn
+  validation_record_fqdns = [ aws_route53_record.cert_validation.fqdn ]
+}
 
 resource "aws_launch_configuration" "instance_launch_config" {
   image_id        = "ami-0b69ea66ff7391e80"
@@ -117,29 +139,34 @@ resource "aws_lb_target_group" "backend_target_group" {
   }
 }
 
+# HTTP listener to redirect clients to HTTPS
 resource "aws_lb_listener" "request_listener" {
   load_balancer_arn = aws_lb.websona-alb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "request_listener_https" {
+  load_balancer_arn = aws_lb.websona-alb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  certificate_arn = aws_acm_certificate.cert.arn
+
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.backend_target_group.arn
   }
 }
-
-# not working, gotta fix it later
-# resource "aws_lb_listener" "request_listener_https" {
-#   load_balancer_arn = aws_lb.websona-alb.arn
-#   port              = "443"
-#   protocol          = "HTTPS"
-#   certificate_arn = var.cert
-
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.backend_target_group.arn
-#   }
-# }
 
 resource "aws_security_group" "webson-api-server-network-rules" {
   name        = "webson-api-server-network-rules"
