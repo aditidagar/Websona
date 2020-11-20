@@ -51,7 +51,8 @@ app.post("/signup", (req, res) => {
         lastName: req.body.last,
         email: req.body.email,
         phone: req.body.phone,
-        password: bcrypt_1.default.hashSync(req.body.password, 10)
+        password: bcrypt_1.default.hashSync(req.body.password, 10),
+        socials: [],
     };
     DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
@@ -129,9 +130,11 @@ app.get("/user/:email", (req, res) => {
         const user = users[0];
         const name = user.firstName + " " + user.lastName;
         const phone = user.phone;
+        const socials = user.socials;
         res.status(200).send({
             name,
-            phone
+            phone,
+            socials
         });
     })
         .catch((err) => {
@@ -143,14 +146,16 @@ app.post("/updateUser", (req, res) => {
     const singleUser = {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        phone: req.body.phone
+        phone: req.body.phone,
+        email: req.body.email,
+        socials: req.body.socials
     };
-    const _email = req.body.email;
-    console.log("The single user", singleUser);
-    DatabaseHandler_1.fetchUsers({ email: _email }).
+    DatabaseHandler_1.fetchUsers({ email: singleUser.email }).
         then((users) => {
         const user = users[0];
-        DatabaseHandler_1.updateUser(singleUser, { email: _email });
+        const emailT = singleUser.email;
+        delete singleUser.email;
+        DatabaseHandler_1.updateUser(singleUser, { email: emailT });
         res.status(200).send("update successful");
     }).catch((err) => {
         res.status(500).send("Error with server");

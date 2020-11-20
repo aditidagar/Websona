@@ -144,7 +144,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'last': lastName,
           'email': email,
           'password': password,
-          'phone': ""
+          'phone': "",
         }));
     if (response.statusCode == 201) {
       // successful signup

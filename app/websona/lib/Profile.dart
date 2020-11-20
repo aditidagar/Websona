@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +19,7 @@ class MapScreenState extends State<ProfilePage>
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController _nameController;
-  static List<String> _media_link = [];
+  static List<String> _mediaLink = [];
   static List<String> media = [];
   String _name = '';
   String _email = '';
@@ -48,6 +47,12 @@ class MapScreenState extends State<ProfilePage>
         });
 
     final responseBody = jsonDecode(response.body);
+    for (int index = 0; index < responseBody['socials'].length; index++) {
+      setState(() {
+        media.add(responseBody['socials'][index]['social']);
+        _mediaLink.add(responseBody['socials'][index]['username']);
+      });
+    }
 
     setState(() {
       _email = prefs.getString('email');
@@ -59,16 +64,23 @@ class MapScreenState extends State<ProfilePage>
   Future<void> updateProfile() async {
     String lastName = _name.split(" ")[_name.split(" ").length - 1];
     String firstName = _name.substring(0, _name.length - lastName.length - 1);
+
+    var socialProject = [];
+    for (int index = 0; index < media.length; index++) {
+      socialProject
+          .add({'social': media[index], 'username': _mediaLink[index]});
+    }
     Response response = await post("http://10.0.2.2:3000/updateUser",
         headers: <String, String>{
           'authorization': await getAuthorizationToken(context),
           'Content-Type': 'application/json'
         },
-        body: jsonEncode(<String, String>{
+        body: jsonEncode({
           'firstName': firstName,
           'lastName': lastName,
           'email': _email,
-          'phone': _phone
+          'phone': _phone,
+          'socials': socialProject
         }));
   }
 
@@ -396,7 +408,7 @@ class MapScreenState extends State<ProfilePage>
                                                 if (media.contains(val) ==
                                                     false) {
                                                   media.insert(0, val);
-                                                  _media_link.insert(0, null);
+                                                  _mediaLink.insert(0, null);
                                                 }
                                               },
                                             );
@@ -598,7 +610,7 @@ class MapScreenState extends State<ProfilePage>
 
   List<Widget> _getLinks() {
     List<Widget> linkTextfields = [];
-    for (int i = 0; i < _media_link.length; i++) {
+    for (int i = 0; i < _mediaLink.length; i++) {
       linkTextfields.add(Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Row(
@@ -621,7 +633,7 @@ class MapScreenState extends State<ProfilePage>
     return MapScreenState._status == false
         ? InkWell(
             onTap: () {
-              _media_link.removeAt(index);
+              _mediaLink.removeAt(index);
               media.removeAt(index);
               if (media.length == 0) {
                 media = [''];
@@ -670,7 +682,7 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _nameController.text = MapScreenState._media_link[widget.index] ?? '';
+      _nameController.text = MapScreenState._mediaLink[widget.index] ?? '';
     });
     return Padding(
       padding: EdgeInsets.only(left: 5.0, right: 25.0, top: 2.0),
@@ -683,7 +695,7 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
             enabled: !MapScreenState._status,
             controller: _nameController,
             onSaved: (v) => {
-              MapScreenState._media_link[widget.index] = v,
+              MapScreenState._mediaLink[widget.index] = v,
             },
             decoration:
                 InputDecoration(hintText: 'Enter your social media link'),
