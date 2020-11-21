@@ -8,18 +8,9 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
-// import 'package:flutter_qr_bar_scanner/qr_bar_scanner_camera.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
-
 import 'GenerateQrScreen.dart';
 
 const String API_URL = "https://api.thewebsonaapp.com";
-
-const flashOn = 'FLASH ON';
-const flashOff = 'FLASH OFF';
-const frontCamera = 'FRONT CAMERA';
-const backCamera = 'BACK CAMERA';
-
 void main() => runApp(MyApp());
 
 Future<String> getAuthorizationToken(BuildContext context) async {
@@ -82,14 +73,6 @@ class MyStatefulWidget extends StatefulWidget {
 /// This is the private State class that goes with MyStatefulWidget.
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
-  bool _camState = true;
-  // String _qrInfo = 'Scan a QR codee';
-  var qrText = 'Scan a Code';
-  var flashState = flashOn;
-  var cameraState = frontCamera;
-  QRViewController controller;
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
@@ -119,11 +102,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       //   );
       // }
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -167,55 +145,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-  // void _onQRViewCreated(QRViewController controller) {
-  //   this.controller = controller;
-  //   controller.scannedDataStream.listen((scanData) {
-  //     setState(() {
-  //       _camState = false;
-  //       qrText = scanData;
-  //     });
-  //   });
-  // }
-
   void opencamera(context) async {
     showModalBottomSheet<void>(
         context: context,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
-        // builder: (BuildContext bc) {
-        //   return Container(
-        //       height: 2000,
-        //       margin: EdgeInsets.all(20.0),
-        //       padding: EdgeInsets.all(10.0),
-        //       child: Column(
-        //         children: <Widget>[
-        //           Text(
-        //             'Scan the QR code',
-        //             style: this._camState == true
-        //                 ? TextStyle(fontSize: 26, fontWeight: FontWeight.bold)
-        //                 : TextStyle(fontSize: 12),
-        //             textAlign: TextAlign.center,
-        //           ),
-        //           SizedBox(
-        //             height: 350,
-        //             width: 300,
-        //             child: QRView(
-        //               key: qrKey,
-        //               onQRViewCreated: _onQRViewCreated,
-        //               overlay: QrScannerOverlayShape(
-        //                 borderColor: Colors.red,
-        //                 borderRadius: 10,
-        //                 borderLength: 30,
-        //                 borderWidth: 10,
-        //                 cutOutSize: 300,
-        //               ),
-        //             ),
-        //           ),
-        //           Text(qrText, style: TextStyle(color: Colors.black)),
-        //         ],
-        //       ));
-        // }
         builder: (BuildContext bc) {
           return QRScanner();
         });
