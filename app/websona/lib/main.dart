@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
+import 'qrscanner.dart';
 import 'package:websona/Events.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,14 +105,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     ),
   ];
 
-  // _qrCallback(String code) {
-  //   print("seSTate called");
-  //   setState(() {
-  //     _camState = false;
-  //     _qrInfo = code;
-  //   });
-  // }
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -173,87 +166,57 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        _camState = false;
-        qrText = scanData;
-      });
-    });
-  }
+  // void _onQRViewCreated(QRViewController controller) {
+  //   this.controller = controller;
+  //   controller.scannedDataStream.listen((scanData) {
+  //     setState(() {
+  //       _camState = false;
+  //       qrText = scanData;
+  //     });
+  //   });
+  // }
 
   void opencamera(context) async {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
         context: context,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
+        // builder: (BuildContext bc) {
+        //   return Container(
+        //       height: 2000,
+        //       margin: EdgeInsets.all(20.0),
+        //       padding: EdgeInsets.all(10.0),
+        //       child: Column(
+        //         children: <Widget>[
+        //           Text(
+        //             'Scan the QR code',
+        //             style: this._camState == true
+        //                 ? TextStyle(fontSize: 26, fontWeight: FontWeight.bold)
+        //                 : TextStyle(fontSize: 12),
+        //             textAlign: TextAlign.center,
+        //           ),
+        //           SizedBox(
+        //             height: 350,
+        //             width: 300,
+        //             child: QRView(
+        //               key: qrKey,
+        //               onQRViewCreated: _onQRViewCreated,
+        //               overlay: QrScannerOverlayShape(
+        //                 borderColor: Colors.red,
+        //                 borderRadius: 10,
+        //                 borderLength: 30,
+        //                 borderWidth: 10,
+        //                 cutOutSize: 300,
+        //               ),
+        //             ),
+        //           ),
+        //           Text(qrText, style: TextStyle(color: Colors.black)),
+        //         ],
+        //       ));
+        // }
         builder: (BuildContext bc) {
-          return Container(
-              height: 2000,
-              margin: EdgeInsets.all(20.0),
-              padding: EdgeInsets.all(10.0),
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    'Scan the QR code',
-                    style: this._camState == true
-                        ? TextStyle(fontSize: 26, fontWeight: FontWeight.bold)
-                        : TextStyle(fontSize: 12),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(
-                    height: 350,
-                    width: 300,
-                    child: QRView(
-                      key: qrKey,
-                      onQRViewCreated: _onQRViewCreated,
-                      overlay: QrScannerOverlayShape(
-                        borderColor: Colors.red,
-                        borderRadius: 10,
-                        borderLength: 30,
-                        borderWidth: 10,
-                        cutOutSize: 300,
-                      ),
-                    ),
-                  ),
-                  Text(qrText, style: TextStyle(color: Colors.black)),
-                ],
-              ));
-
-          // Container();
-          // child: Row(
-          //   children: <Widget>[
-          //     SizedBox(
-          //       width: 70,
-          //       child: SelectableText("Cancel",
-          //           onTap: () => {Navigator.pop(context)},
-          //           style: TextStyle(color: Colors.blue[800])),
-          //     ),
-          //     Text(
-          //       'Scan the QR code',
-          //       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-          //       textAlign: TextAlign.center,
-          //     ),
-          //   ],
-          //     child: QRBarScannerCamera(
-          //             onError: (context, error) => Text(
-          //               error.toString(),
-          //               style: TextStyle(color: Colors.red),
-          //             ),
-          //             qrCodeCallback: (code) {
-          //               _qrCallback(code);
-          //             },
-          //           ),
-          //         ),
-          //         Text(
-          //           _qrInfo,
-          //           style: TextStyle(color: Colors.black26),
-          //         ),
-          //     ),
-          //   );
-          // });
+          return QRScanner();
         });
   }
 }
