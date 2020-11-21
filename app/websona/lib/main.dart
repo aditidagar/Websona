@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
 import 'qrscanner.dart';
@@ -12,7 +13,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 import 'GenerateQrScreen.dart';
 
-const String API_URL = "http://api.thewebsonaapp.com";
+const String API_URL = "https://api.thewebsonaapp.com";
 
 const flashOn = 'FLASH ON';
 const flashOff = 'FLASH OFF';

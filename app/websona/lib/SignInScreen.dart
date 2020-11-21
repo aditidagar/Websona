@@ -11,10 +11,7 @@ const Pattern emailRegexPattern =
 
 RegExp emailValidator = new RegExp(emailRegexPattern);
 
-const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
-
-
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class SignInScreen extends StatefulWidget {
   @override
