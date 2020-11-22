@@ -32,6 +32,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   String dropdownValue3 = 'Social Media 3';
   String dropdownValue4 = 'Social Media 4';
   String qrData = '';
+  Uint8List qrImage;
   TextEditingController qrController = TextEditingController();
   var qrKey = GlobalKey();
   void handleSubmit() async {
@@ -53,7 +54,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
     }
   }
 
-  Future<Uint8List> _getWidgetImage() async {
+  void _getWidgetImage() async {
     try {
       RenderRepaintBoundary boundary = qrKey.currentContext.findRenderObject();
 
@@ -63,8 +64,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       var pngBytes = byteData.buffer.asUint8List();
       var bs64 = base64Encode(pngBytes);
       debugPrint(bs64.length.toString());
-
-      return pngBytes;
+      qrImage = pngBytes;
     } catch (exception) {}
   }
 
