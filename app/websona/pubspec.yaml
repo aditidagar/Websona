@@ -28,6 +28,7 @@ dependencies:
   shared_preferences:
   flutter_secure_storage: 3.2.1+1
   font_awesome_flutter: 8.7.0
+  contacts_service: ^0.4.6
   
   
   qr_flutter: ^3.0.1
