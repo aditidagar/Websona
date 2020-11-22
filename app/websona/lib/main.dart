@@ -81,6 +81,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       'Index 1: Contacts',
       style: optionStyle,
     ),
+    Text(
+      'Index 2: Events',
+      style: optionStyle,
+    ),
+    SettingsScreen(),
     Event(),
     Text(
       'Index 3: Setttings',
