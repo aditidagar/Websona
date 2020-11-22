@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
+import 'qrscanner.dart';
 import 'package:websona/Events.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +11,6 @@ import 'dart:convert';
 import 'GenerateQrScreen.dart';
 
 const String API_URL = "https://api.thewebsonaapp.com";
-
 void main() => runApp(MyApp());
 
 Future<String> getAuthorizationToken(BuildContext context) async {
@@ -146,32 +146,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   void opencamera(context) async {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
         context: context,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
         builder: (BuildContext bc) {
-          return Container(
-            alignment: Alignment.topCenter,
-            margin: EdgeInsets.all(30),
-            height: MediaQuery.of(context).size.height * 0.6,
-            child: Row(
-              children: <Widget>[
-                SizedBox(
-                  width: 70,
-                  child: SelectableText("Cancel",
-                      onTap: () => {Navigator.pop(context)},
-                      style: TextStyle(color: Colors.blue[800])),
-                ),
-                Text(
-                  'Scan the QR code',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
+          return QRScanner();
         });
   }
 }
