@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'MyCodes.dart' as mycodes;
 import 'SignUpScreen.dart';
 import 'Main.dart';
@@ -30,16 +33,16 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   String dropdownValue4 = 'Social Media 4';
   String qrData = '';
   TextEditingController qrController = TextEditingController();
-
+  var qrKey = GlobalKey();
   void handleSubmit() async {
     Response response = await post(API_URL + "/newCode",
         headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode(<String, dynamic>{
           'socials': [
-            dropdownValue,
-            dropdownValue2,
-            dropdownValue3,
-            dropdownValue4
+            {'social': 'snapchat', 'username': dropdownValue},
+            {'social': 'snapchat', 'username': dropdownValue},
+            {'social': 'snapchat', 'username': dropdownValue},
+            {'social': 'snapchat', 'username': dropdownValue}
           ]
         }));
 
@@ -48,6 +51,21 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
 
       debugPrint("Working");
     }
+  }
+
+  Future<Uint8List> _getWidgetImage() async {
+    try {
+      RenderRepaintBoundary boundary = qrKey.currentContext.findRenderObject();
+
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      var pngBytes = byteData.buffer.asUint8List();
+      var bs64 = base64Encode(pngBytes);
+      debugPrint(bs64.length.toString());
+
+      return pngBytes;
+    } catch (exception) {}
   }
 
   @override
@@ -70,9 +88,12 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
           body: Center(
             child: Column(
               children: <Widget>[
-                QrImage(
-                  data: qrData,
-                  size: 200,
+                RepaintBoundary(
+                  key: qrKey,
+                  child: QrImage(
+                    data: qrData,
+                    size: 200,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -265,7 +286,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                   padding: EdgeInsets.all(8.0),
                   splashColor: Colors.blueAccent,
                   onPressed: () {
-                    handleSubmit();
+                    _getWidgetImage();
                     widget.info.litems.add(qrController.text);
                     widget.info.counter = widget.info.counter + 1;
                     widget?._callback();
