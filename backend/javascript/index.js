@@ -119,6 +119,7 @@ app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0,
     const email = req.query.email;
     const profilePicture = bcrypt_1.default.hashSync(email, 1);
     const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+    console.log(url);
     res.status(200).send(url);
 }));
 app.get("/protectedResource", (req, res) => {

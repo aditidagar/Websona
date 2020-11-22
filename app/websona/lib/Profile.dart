@@ -47,10 +47,12 @@ class MapScreenState extends State<ProfilePage>
         });
 
     final responseBody = jsonDecode(response.body);
+    List<String> mediaLink_temp = [];
+    List<String> media_temp = [];
     for (int index = 0; index < responseBody['socials'].length; index++) {
       setState(() {
-        media.add(responseBody['socials'][index]['social']);
-        _mediaLink.add(responseBody['socials'][index]['username']);
+        media_temp.add(responseBody['socials'][index]['social']);
+        mediaLink_temp.add(responseBody['socials'][index]['username']);
       });
     }
 
@@ -58,6 +60,8 @@ class MapScreenState extends State<ProfilePage>
       _email = prefs.getString('email');
       _name = responseBody['name'];
       _phone = responseBody['phone'];
+      media = media_temp;
+      _mediaLink = mediaLink_temp;
     });
   }
 
@@ -150,8 +154,8 @@ class MapScreenState extends State<ProfilePage>
                                   decoration: new BoxDecoration(
                                     shape: BoxShape.circle,
                                     image: new DecorationImage(
-                                      image: new AssetImage(
-                                          'asset/img/unsettled_pikachu.jpg'),
+                                      image: NetworkImage(
+                                          'https://picsum.photos/250?image=9'),
                                       fit: BoxFit.cover,
                                     ),
                                   )),
@@ -477,28 +481,24 @@ class MapScreenState extends State<ProfilePage>
     setState(() {
       _image = File(image.path);
     });
-    // File image = await ImagePicker.pickImage(
-    //     source: ImageSource.camera, imageQuality: 50);
-
-    // setState(() {
-    //   _image = image;
-    // });
   }
 
-  _imgFromGallery() async {
+  Future _imgFromGallery() async {
+    print("im here");
     final _picker = ImagePicker();
     PickedFile image =
         await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
-
     setState(() {
       _image = File(image.path);
     });
-    // File image = await ImagePicker.pickImage(
-    //     source: ImageSource.gallery, imageQuality: 50);
-
-    // setState(() {
-    //   _image = image;
-    // });
+    final prefs = await SharedPreferences.getInstance();
+    var _email = prefs.getString('email');
+    Response response = await get(
+      'http://10.0.2.2:3000/updateProfilePicture?email=$_email',
+      headers: <String, String>{
+        'authorization': await getAuthorizationToken(context),
+      },
+    );
   }
 
   Widget _getActionButtons() {

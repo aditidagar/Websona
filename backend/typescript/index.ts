@@ -9,6 +9,7 @@ import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { generateSignedPutUrl} from './AWSPresigner'
+import { profileEnd } from 'console';
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -120,6 +121,7 @@ app.get("/updateProfilePicture", async (req, res) => {
     const email = req.query.email;
     const profilePicture = bcrypt.hashSync(email, 1);
     const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+    console.log(url)
 	res.status(200).send(url);
 });
 
