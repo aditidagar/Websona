@@ -45,6 +45,8 @@ git clone https://github.com/csc301-fall-2020/team-project-29-websona.git
 * If you are on Windows, our preference would be to download Android Studio, from which you can then pick specific devices to run our application on
 * Once you emulator is downloaded, simply launch the emulator
 * You can now run the application with the command: flutter run
+
+### Note: On the profile page, don't try to update the profile picture for the user. The feature is a bit buggy right now. If you're on iOS, you'll get stuck on the image selection screen
  
  ## Deployment and Github Workflow
 
@@ -53,7 +55,7 @@ git clone https://github.com/csc301-fall-2020/team-project-29-websona.git
 
  * As for the naming branches convention, it's always named something relevant to the feature of the branch. E.g, if the branch is supposed to be the backend code for sign-up logic, it would be called “sign-up-backend”
 
- * For deployment, we use a variety of tools. We use CircleCI for continuous integration for automated testing of our unit tests. This is to make sure that our code always compiles and doesn’t break certain conditions. We also use AWS to host our cloud infrastructure. Our EC2 is behind a load balancer and we also use Github Workflows to notify our EC2 of new code, so this triggers a new instance to be deployed and the old instance to be destroyed.
+ * For deployment, we use a variety of tools. We use CircleCI for continuous integration for automated testing of our unit tests. This is to make sure that our code always compiles and doesn’t break certain conditions. We also use AWS to host our cloud infrastructure. We have EC2 instances running behind a load balancer. We use AWS S3 buckets to store & serve media & secret enviroment variables needed by the server. We also use Github Webhooks to notify our server of new updated on push to master branch. The webhook triggers a new instances to be deployed and the old instances to be destroyed.
 
  ## Licenses 
 
