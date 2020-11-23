@@ -27,23 +27,62 @@ class GenerateQrScreen extends StatefulWidget {
 
 class _GenerateQrScreenState extends State<GenerateQrScreen> {
   //Add some state initialization later
-  String dropdownValue = 'Social Media 1';
-  String dropdownValue2 = 'Social Media 2';
-  String dropdownValue3 = 'Social Media 3';
-  String dropdownValue4 = 'Social Media 4';
+  String media1 = '';
+  String media2 = '';
+  String media3 = '';
+  String media4 = '';
+  String dropdownValue = '';
+  String dropdownValue2 = '';
+  String dropdownValue3 = '';
+  String dropdownValue4 = '';
   String qrData = '';
+  static List<String> _mediaLink = [];
+  static List<String> media = [];
+  String _name = '';
+  String _email = '';
+  String _phone = '';
+
   Uint8List qrImage;
   TextEditingController qrController = TextEditingController();
   var qrKey = GlobalKey();
+
+  void initializeProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    Response response = await get(
+        "http://10.0.2.2:3000/user/" + prefs.getString('email'),
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context),
+        });
+
+    final responseBody = jsonDecode(response.body);
+    List<String> mediaLink_temp = [];
+    List<String> media_temp = [];
+    for (int index = 0; index < responseBody['socials'].length; index++) {
+      setState(() {
+        media_temp.add(responseBody['socials'][index]['social']);
+        mediaLink_temp.add(responseBody['socials'][index]['username']);
+      });
+    }
+
+    setState(() {
+      _email = prefs.getString('email');
+      _name = responseBody['name'];
+      _phone = responseBody['phone'];
+      media = media_temp;
+      _mediaLink = mediaLink_temp;
+    });
+  }
+
   void handleSubmit() async {
     Response response = await post(API_URL + "/newCode",
         headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode(<String, dynamic>{
           'socials': [
-            {'social': 'snapchat', 'username': dropdownValue},
-            {'social': 'snapchat', 'username': dropdownValue},
-            {'social': 'snapchat', 'username': dropdownValue},
-            {'social': 'snapchat', 'username': dropdownValue}
+            {'social': media1, 'username': dropdownValue},
+            {'social': media2, 'username': dropdownValue},
+            {'social': media3, 'username': dropdownValue},
+            {'social': media4, 'username': dropdownValue}
           ]
         }));
 
@@ -139,15 +178,13 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                 setState(() {
                                   qrData = qrData + newValue;
                                   qrData = qrData + ", ";
+                                  int index = _mediaLink.indexOf(newValue);
+                                  media1 = media.elementAt(index);
                                   dropdownValue = newValue;
                                 });
                               },
-                              items: <String>[
-                                'Social Media 1',
-                                'Social Media 2',
-                                'Social Media 3',
-                                'Social Media 4'
-                              ].map<DropdownMenuItem<String>>((String value) {
+                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                                  (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(value),
@@ -179,15 +216,13 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                 setState(() {
                                   qrData = qrData + newValue;
                                   qrData = qrData + ", ";
+                                  int index = _mediaLink.indexOf(newValue);
+                                  media2 = media.elementAt(index);
                                   dropdownValue2 = newValue;
                                 });
                               },
-                              items: <String>[
-                                'Social Media 1',
-                                'Social Media 2',
-                                'Social Media 3',
-                                'Social Media 4'
-                              ].map<DropdownMenuItem<String>>((String value) {
+                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                                  (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(value),
@@ -219,15 +254,13 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                 setState(() {
                                   qrData = qrData + newValue;
                                   qrData = qrData + ", ";
+                                  int index = _mediaLink.indexOf(newValue);
+                                  media3 = media.elementAt(index);
                                   dropdownValue3 = newValue;
                                 });
                               },
-                              items: <String>[
-                                'Social Media 1',
-                                'Social Media 2',
-                                'Social Media 3',
-                                'Social Media 4'
-                              ].map<DropdownMenuItem<String>>((String value) {
+                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                                  (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(value),
@@ -259,15 +292,13 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                 setState(() {
                                   qrData = qrData + newValue;
                                   qrData = qrData + ", ";
+                                  int index = _mediaLink.indexOf(newValue);
+                                  media4 = media.elementAt(index);
                                   dropdownValue4 = newValue;
                                 });
                               },
-                              items: <String>[
-                                'Social Media 1',
-                                'Social Media 2',
-                                'Social Media 3',
-                                'Social Media 4'
-                              ].map<DropdownMenuItem<String>>((String value) {
+                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                                  (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(value),
