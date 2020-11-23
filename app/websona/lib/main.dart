@@ -3,7 +3,6 @@ import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
 import 'Contacts.dart';
-import 'Profile.dart';
 import 'qrscanner.dart';
 import 'package:websona/Events.dart';
 import 'package:http/http.dart';

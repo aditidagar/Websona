@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
-import { SignUpInfo, LoginInfo, User, Code } from './interfaces';
+import { SignUpInfo, LoginInfo, User, Code, PartialUserData } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
@@ -52,7 +52,9 @@ app.post("/signup", (req, res) => {
         firstName: req.body.first,
         lastName: req.body.last,
         email: req.body.email,
+        phone: req.body.phone,
         password: bcrypt.hashSync(req.body.password, 10),
+        socials: [],
         activationId: createHash('sha1').update(currentDate + random).digest('hex')
     };
 
@@ -83,7 +85,6 @@ app.post("/login", (req, res) => {
         email: req.body.email,
         password: req.body.password,
     };
-
     fetchUsers({ email: requestData.email })
         .then((users: User[] | MongoError) => {
             const user: User = users[0];
@@ -155,6 +156,46 @@ app.get("/updateProfilePicture", async (req, res) => {
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
+
+app.get("/user/:email", (req, res) => {
+    fetchUsers({ email: req.params.email })
+    .then((users: User[] | MongoError) => {
+        const user: User = users[0];
+        const name = user.firstName + " " + user.lastName;
+        const phone = user.phone;
+        const socials = user.socials;
+        res.status(200).send({
+            name,
+            phone,
+            socials
+        });
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
+})
+
+app.post("/updateUser", (req, res) => {
+    const singleUser: PartialUserData = {
+        firstName : req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+        socials: req.body.socials
+    };
+    fetchUsers({email: singleUser.email}).
+    then((users: User[] | MongoError) => {
+        const user: User = users[0];
+        const emailT = singleUser.email;
+        delete singleUser.email;
+        updateUser(singleUser, {email: emailT})
+        res.status(200).send("update successful")
+    }
+    ).catch((err) =>{
+        res.status(500).send("Error with server")
+    })
+})
 
 app.post("/newCode", async (req, res) => {
     const codeId = await getUniqueCodeId();
