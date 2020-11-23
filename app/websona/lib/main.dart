@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:flutter/material.dart';
 import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
