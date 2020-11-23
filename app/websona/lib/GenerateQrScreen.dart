@@ -11,8 +11,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class GenerateQrScreen extends StatefulWidget {
   final info;
