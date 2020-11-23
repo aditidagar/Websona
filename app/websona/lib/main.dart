@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 // import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
+import 'Contacts.dart';
+import 'Profile.dart';
 import 'qrscanner.dart';
 import 'package:websona/Events.dart';
 import 'package:http/http.dart';
@@ -91,11 +93,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
     MyCodes(),
-    //GenerateQrScreen(),
-    Text(
-      'Index 1: Contacts',
-      style: optionStyle,
-    ),
+    Contacts(),
     Event(),
     Text(
       'Index 3: Setttings',

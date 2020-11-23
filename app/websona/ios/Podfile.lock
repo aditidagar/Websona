@@ -1,4 +1,6 @@
 PODS:
+  - contacts_service (0.2.2):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_qr_bar_scanner (0.0.1):
     - Flutter
@@ -18,8 +20,6 @@ PODS:
   - "GoogleToolboxForMac/NSData+zlib (2.3.0)":
     - GoogleToolboxForMac/Defines (= 2.3.0)
   - GTMSessionFetcher/Core (1.5.0)
-  - image_picker (0.0.1):
-    - Flutter
   - MTBBarcodeScanner (5.0.11)
   - native_device_orientation (0.0.1):
     - Flutter
@@ -27,10 +27,13 @@ PODS:
   - qr_code_scanner (0.0.2):
     - Flutter
     - MTBBarcodeScanner
+  - image_picker (0.0.1):
+    - Flutter
   - shared_preferences (0.0.1):
     - Flutter
 
 DEPENDENCIES:
+  - contacts_service (from `.symlinks/plugins/contacts_service/ios`)
   - Flutter (from `Flutter`)
   - flutter_qr_bar_scanner (from `.symlinks/plugins/flutter_qr_bar_scanner/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
@@ -48,6 +51,8 @@ SPEC REPOS:
     - Protobuf
 
 EXTERNAL SOURCES:
+  contacts_service:
+    :path: ".symlinks/plugins/contacts_service/ios"
   Flutter:
     :path: Flutter
   flutter_qr_bar_scanner:
@@ -64,6 +69,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/shared_preferences/ios"
 
 SPEC CHECKSUMS:
+  contacts_service: 849e1f84281804c8bfbec1b4c3eedcb23c5d3eca
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_qr_bar_scanner: 5c0324d036b4db9e5492dc876e6689dc7c38f203
   flutter_secure_storage: 0c5779648ff644110e507909b77a57e620cbbf8b
