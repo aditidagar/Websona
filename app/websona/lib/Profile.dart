@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'main.dart';
+
+final String API_URL = "https://api.thewebsonapp.com";
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -40,8 +40,7 @@ class MapScreenState extends State<ProfilePage>
   void initializeProfile() async {
     final prefs = await SharedPreferences.getInstance();
 
-    Response response = await get(
-        "http://10.0.2.2:3000/user/" + prefs.getString('email'),
+    Response response = await get(API_URL + "/user/" + prefs.getString('email'),
         headers: <String, String>{
           'authorization': await getAuthorizationToken(context),
         });
@@ -74,7 +73,7 @@ class MapScreenState extends State<ProfilePage>
       socialProject
           .add({'social': media[index], 'username': _mediaLink[index]});
     }
-    Response response = await post("http://10.0.2.2:3000/updateUser",
+    Response response = await post(API_URL + "/updateUser",
         headers: <String, String>{
           'authorization': await getAuthorizationToken(context),
           'Content-Type': 'application/json'
@@ -494,7 +493,7 @@ class MapScreenState extends State<ProfilePage>
     final prefs = await SharedPreferences.getInstance();
     var _email = prefs.getString('email');
     Response response = await get(
-      'http://10.0.2.2:3000/updateProfilePicture?email=$_email',
+      API_URL + '/updateProfilePicture?email=$_email',
       headers: <String, String>{
         'authorization': await getAuthorizationToken(context),
       },
