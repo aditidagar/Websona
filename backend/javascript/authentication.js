@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateAccessToken = exports.authenticateToken = exports.tokenExpiryTime = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-exports.tokenExpiryTime = 3600;
+exports.tokenExpiryTime = 30;
 /**
  * Authenticate incoming request. If the incoming request contains a valid authorization token, call the
  * next middleware. Otherwise respond with a 401 (Forbidden)
@@ -20,7 +20,7 @@ function authenticateToken(req, res, next) {
     const token = authHeader.split(' ')[1];
     jsonwebtoken_1.default.verify(token, process.env.JWT_TOKEN_SECRET, (err, user) => {
         if (err) {
-            res.status(401).send("Invalid authorization token");
+            res.status(401).send(`${err.name}: ${err.message}`);
         }
         else {
             next(); // user is authorized, let them access the requested resource

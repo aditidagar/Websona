@@ -1,4 +1,6 @@
-import { Collection, InsertOneWriteOpResult, MongoClient, MongoError } from 'mongodb';
+import { Collection, FilterQuery, InsertOneWriteOpResult, MongoClient, MongoError, UpdateQuery } from 'mongodb';
+import { Code } from '../interfaces';
+import { User } from '../interfaces';
 
 const DB_NAME = "test";
 const MONGO_URL =
@@ -6,7 +8,9 @@ const MONGO_URL =
 
 let client = new MongoClient(MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true });
 const COLLECTION_USERS = "Users";
-let USERS_COLLECTION_LOCAL = null;
+const COLLECTION_CODES = "Codes";
+let USERS_COLLECTION_LOCAL: Collection<any> | null = null;
+let CODES_COLLECTION_LOCAL: Collection<any> | null = null;
 
 
 /**
@@ -42,15 +46,24 @@ function getCollection(collectionName): Promise<Collection | any> {
     return new Promise((resolve, reject) => {
         if (client.isConnected()) {
             if (collectionName === COLLECTION_USERS) {
-                resolve(USERS_COLLECTION_LOCAL ? USERS_COLLECTION_LOCAL : client.db(DB_NAME).collection(collectionName))
-            } else throw Error("Invalid Collection Name");
+                resolve(USERS_COLLECTION_LOCAL ? USERS_COLLECTION_LOCAL : client.db(DB_NAME).collection(collectionName));
+            }
+            else if (collectionName === COLLECTION_CODES) {
+                resolve(CODES_COLLECTION_LOCAL ? CODES_COLLECTION_LOCAL : client.db(DB_NAME).collection(collectionName));
+            }
+            else throw Error("Invalid Collection Name");
         }
         else {
-            connectToDatabse().then((connection) => {
+            connectToDatabse().then((connection: MongoClient) => {
                 if (collectionName === COLLECTION_USERS) {
                     USERS_COLLECTION_LOCAL = connection.db(DB_NAME).collection(collectionName);
                     resolve(USERS_COLLECTION_LOCAL);
-                } else throw Error("Invalid Collection Name");
+                }
+                else if (collectionName === COLLECTION_CODES) {
+                    CODES_COLLECTION_LOCAL = connection.db(DB_NAME).collection(collectionName);
+                    resolve(CODES_COLLECTION_LOCAL);
+                }
+                else throw Error("Invalid Collection Name");
             }).catch((reason) => {
                 reject(reason);
             })
@@ -74,7 +87,7 @@ export function insertUser(profile: object): Promise<InsertOneWriteOpResult<any>
     });
 }
 
-export function fetchUsers(query, options={}): Promise<any[] | MongoError> {
+export function fetchUsers(query, options={}): Promise<User[]> {
 
     return new Promise((resolve, reject) => {
         getCollection(COLLECTION_USERS).then((collection: Collection) => {
@@ -89,13 +102,14 @@ export function fetchUsers(query, options={}): Promise<any[] | MongoError> {
     });
 }
 
-export function updateUser(updatedUserObject, queryObject) {
+export function updateUser(updatedUserObject: UpdateQuery<any> | Partial<any>, queryObject: FilterQuery<any>) {
 
     return new Promise((resolve, reject) => {
-        getCollection(COLLECTION_USERS).then((collection) => {
-            const updateDoc  = { $set: updatedUserObject }
+        getCollection(COLLECTION_USERS).then((collection: Collection) => {
+            const updateDoc = { $set: updatedUserObject }
             collection.updateOne(queryObject, updateDoc, (err, updateResult) => {
                 if (err) reject(err);
+
                 resolve(updateResult);
             });
 
@@ -104,4 +118,44 @@ export function updateUser(updatedUserObject, queryObject) {
         });
 
     });
+}
+
+export function insertCode(code: Code): Promise<InsertOneWriteOpResult<any>> {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_CODES).then((collection: Collection) => {
+            collection.insertOne(code).then((result) => {
+                resolve(result);
+            }).catch((err) => {
+                reject(err);
+            })
+
+        }).catch((reason) => {
+            reject(reason);
+        });
+    });
+}
+
+export function fetchCodes(query, options={}): Promise<Code[] | MongoError> {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_CODES).then((collection: Collection) => {
+            collection.find(query, options).toArray((err, result) => {
+                if (err) { reject(err); }
+
+                resolve(result);
+            });
+        }).catch((reason) => {
+            reject(reason);
+        });
+    });
+}
+
+export function deleteCode(codeId: string) {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_CODES).then((collection: Collection) => {
+            collection.deleteOne({ id: codeId }).catch((err) => reject(err));
+        }).catch((reason) => reject(reason))
+    })
 }
