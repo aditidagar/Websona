@@ -50,4 +50,4 @@ List any **process-related** (i.e. team organization and how you work) changes y
  * Were there change requests?
  * What did you learn from the demo from either a process or product perspective?
  * *This section will be marked very leniently so keep it brief and just make sure the points are addressed*
-
+We split up into two groups, one for the front-end and one for the back-end so that it is convenient for us to explain our work to our partners. Each group prepared their own presentation so that together we could explain the functionality of the whole app. We arranged a zoom meeting with our partners to give the presentation. Our partners accepted all features but suggested some new ones too. 
