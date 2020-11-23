@@ -170,7 +170,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             child: TextField(
                               focusNode: emailNode,
                               enableSuggestions: true,
-                              autocorrect: true,
+                              autocorrect: false,
                               onChanged: handleEmailChange,
                               decoration: InputDecoration(
                                   suffixText: emailError ? "Invalid Email" : "",
