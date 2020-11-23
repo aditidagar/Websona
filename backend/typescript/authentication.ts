@@ -16,7 +16,7 @@ export function authenticateToken(req: Express.Request, res: Express.Response, n
     const token = authHeader.split(' ')[1];
     jwt.verify(token, process.env.JWT_TOKEN_SECRET as string, (err, user) => {
         if (err) {
-            res.status(401).send("Invalid authorization token");
+            res.status(401).send(`${err.name}: ${err.message}`);
         } else {
             next(); // user is authorized, let them access the requested resource
         }

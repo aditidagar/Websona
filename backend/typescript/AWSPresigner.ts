@@ -26,7 +26,7 @@ export function generateSignedGetUrl(Key, timeout=10) {
 
 
 
-export function generateSignedPutUrl(Key, filetype) {
+export function generateSignedPutUrl(Key: string, filetype): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const params = {
 			Bucket,
