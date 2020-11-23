@@ -202,7 +202,7 @@ app.post("/newCode", async (req, res) => {
     if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
+        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = req.headers.authorization?.split(' ')[1] as string;
         const decodedToken = jwt.decode(token) as { [key: string]: any };
         const socials = req.body.socials;
