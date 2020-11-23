@@ -21,7 +21,8 @@ export interface User {
     email: string;
     password: string;
     codes: Code[];
-    activationId: string | undefined
+    activationId: string | undefined;
+    contacts: {};
 
 }
 

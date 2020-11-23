@@ -14,6 +14,7 @@ import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
 
 import { generateSignedPutUrl, generateSignedGetUrl} from './AWSPresigner'
+import { stringify } from 'querystring';
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -207,6 +208,25 @@ app.get("/code/:id", (req, res) => {
     })
 });
 
+app.post("/addContact", async (req, res) => {
+    const user1 = req.body.user1;
+    const code = req.body.code;
+
+    // updateUser({ activationId: undefined }, { _id: user1 })
+
+    fetchUsers({ _id: user1 }).then((users: User[]) => {
+        if (users.length === 0) res.status(404).send("User not found");
+        else {
+            const userContacts = users[0].contacts;
+            userContacts[code.id] = code.socials.username ;
+            updateUser({ contacts: userContacts }, { _id: users[0]._id })
+            .then((val) => res.status(201).send("Contact added successfully"))
+            .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+        }
+
+    });
+
+});
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);

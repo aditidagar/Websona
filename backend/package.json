@@ -36,7 +36,7 @@
     "jsonwebtoken": "^8.5.1",
     "mocha": "^8.2.0",
     "mongodb": "^3.6.2",
-    "nodemailer": "^6.4.14",
+    "nodemailer": "^6.4.16",
     "nodemailer-direct-transport": "^3.3.2",
     "ts-mocha": "^8.0.0",
     "tslint": "^6.1.3",
