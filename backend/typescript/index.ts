@@ -54,7 +54,8 @@ app.post("/signup", (req, res) => {
         lastName: req.body.last,
 		email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 10),
-        activationId: createHash('sha1').update(currentDate + random).digest('hex')
+        activationId: createHash('sha1').update(currentDate + random).digest('hex'),
+        contacts: {}
 	};
 
     insertUser(requestData)
@@ -142,6 +143,28 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 
+
+app.post("/addContact", async (req, res) => {
+    const user1 = req.body.user1;
+    const code = req.body.code;
+
+    fetchUsers({ email: user1 }).then((users: User[]) => {
+        if (users.length === 0) res.status(404).send("User not found");
+        else {
+            const userContacts = users[0].contacts;
+            userContacts[code.socials.username] = code.socials.social ;
+            updateUser({ contacts: userContacts }, { email: users[0].email })
+            .then((val) => res.status(201).send("Contact added successfully"))
+            .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+        }
+
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send('500: Internal Server Error during db fetch');
+    });
+
+});
+
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authenticateToken);
@@ -207,18 +230,16 @@ app.get("/code/:id", (req, res) => {
         res.status(500).send('500: Internal Server Error during db fetch');
     })
 });
-
+/*
 app.post("/addContact", async (req, res) => {
     const user1 = req.body.user1;
     const code = req.body.code;
-
-    // updateUser({ activationId: undefined }, { _id: user1 })
 
     fetchUsers({ _id: user1 }).then((users: User[]) => {
         if (users.length === 0) res.status(404).send("User not found");
         else {
             const userContacts = users[0].contacts;
-            userContacts[code.id] = code.socials.username ;
+            userContacts[code.socials.username] = code.socials.social ;
             updateUser({ contacts: userContacts }, { _id: users[0]._id })
             .then((val) => res.status(201).send("Contact added successfully"))
             .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
@@ -226,7 +247,7 @@ app.post("/addContact", async (req, res) => {
 
     });
 
-});
+}); */
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
