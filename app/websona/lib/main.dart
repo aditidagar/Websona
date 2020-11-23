@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:websona/SettingsScreen.dart';
+import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
 import 'Contacts.dart';
@@ -95,10 +95,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     MyCodes(),
     Contacts(),
     Event(),
-    Text(
-      'Index 3: Setttings',
-      style: optionStyle,
-    ),
+    SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {

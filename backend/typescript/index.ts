@@ -13,7 +13,7 @@ import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
 
-import { generateSignedPutUrl, generateSignedGetUrl} from './AWSPresigner'
+import { generateSignedPutUrl, generateSignedGetUrl } from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -51,15 +51,15 @@ app.post("/signup", (req, res) => {
     const requestData: SignUpInfo = {
         firstName: req.body.first,
         lastName: req.body.last,
-		email: req.body.email,
+        email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 10),
         activationId: createHash('sha1').update(currentDate + random).digest('hex')
-	};
+    };
 
     insertUser(requestData)
-		.then(async (result) => {
+        .then(async (result) => {
             if (process.env.NODE_ENV !== 'test') sendVerificationEmail(requestData.activationId, requestData.email)
-            .catch((err) => console.log(err));
+                .catch((err) => console.log(err));
 
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
@@ -119,8 +119,8 @@ app.get("/verify/:id", (req, res) => {
             if (users.length === 0) res.status(404).send("User not found");
             else {
                 updateUser({ activationId: undefined }, { _id: users[0]._id })
-                .then((val) => res.status(201).send("Verification Successful"))
-                .catch((err) => res.status(500).send("500: Server Error. Verification failed"));
+                    .then((val) => res.status(201).send("Verification Successful"))
+                    .catch((err) => res.status(500).send("500: Server Error. Verification failed"));
             }
 
         });
@@ -232,12 +232,12 @@ async function getUniqueCodeId() {
 
 async function verifyQRupload(codeId: string): Promise<void> {
     const downloadUrl = await generateSignedGetUrl('codes/' + codeId, 3000);
-	https.get(downloadUrl as string, ((res) => {
-		if (res.statusCode !== 200) {
-			// client didn't upload the code, delete it's entry from db
-			deleteCode(codeId);
-		}
-	}));
+    https.get(downloadUrl as string, ((res) => {
+        if (res.statusCode !== 200) {
+            // client didn't upload the code, delete it's entry from db
+            deleteCode(codeId);
+        }
+    }));
 }
 
 export default app;
