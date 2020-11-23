@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 
-final String API_URL = "https://api.thewebsonapp.com";
+final String API_URL = "https://api.thewebsonaapp.com";
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -44,7 +44,6 @@ class MapScreenState extends State<ProfilePage>
         headers: <String, String>{
           'authorization': await getAuthorizationToken(context),
         });
-
     final responseBody = jsonDecode(response.body);
     List<String> mediaLink_temp = [];
     List<String> media_temp = [];
