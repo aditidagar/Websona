@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:contacts_service/contacts_service.dart';
+import 'Contact.dart';
 
 class Contacts extends StatefulWidget {
   @override
   _ContactsState createState() => _ContactsState();
 }
 
+//Person class
+class Person {
+  String name;
+  List<String> socialLinks;
+  Person(this.name, this.socialLinks);
+}
+
 class _ContactsState extends State<Contacts> {
-  List<String> contacts = ['Chetan', 'Anay', 'Reshma', 'Saakshi','Sarah'];
+  Person person1 = new Person('John', ['john@gmail.com', 'john123']);
+  Person person2 = new Person('Julie', ['julie@yahoo.com', 'julie_s']);
+  List<Person> contactInfo = [];
+  List<String> contacts = [];
   List<String> contactsFiltered = [];
   TextEditingController searchController = new TextEditingController();
 
@@ -17,6 +27,13 @@ class _ContactsState extends State<Contacts> {
     searchController.addListener(() {
       filterContacts();
     });
+    //adds two people
+    contactInfo.add(person1);
+    contactInfo.add(person2);
+    //loops through list of 'Persons' to extract contact names
+    for (int i = 0; i < contactInfo.length; i++) {
+      contacts.add(contactInfo[i].name);
+    }
   }
 
   filterContacts() {
@@ -60,7 +77,7 @@ class _ContactsState extends State<Contacts> {
                       child: TextField(
                         controller: searchController,
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.all(10),
+                            contentPadding: EdgeInsets.all(10),
                             labelText: 'Search',
                             border: new OutlineInputBorder(
                                 borderSide:
@@ -73,13 +90,15 @@ class _ContactsState extends State<Contacts> {
                     ),
                     Expanded(
                         child: ListView.builder(
-                          padding: EdgeInsets.all(10.0),
+                            padding: EdgeInsets.all(10.0),
                             shrinkWrap: true,
                             itemCount: isSearching == true
                                 ? contactsFiltered.length
                                 : contacts.length,
                             itemBuilder: (context, idex) {
-                              String contact = isSearching == true ? contactsFiltered[idex] : contacts[idex];
+                              String contact = isSearching == true
+                                  ? contactsFiltered[idex]
+                                  : contacts[idex];
                               return ListTile(
                                 title: Text(contact),
                                 //COULD ADD SUBTITLE HERE FOR THE TAGS FEATURE
@@ -87,8 +106,15 @@ class _ContactsState extends State<Contacts> {
                                 leading: CircleAvatar(
                                   child: Text(contact[0]),
                                 ),
-                                onTap: (){
-                                  //code to see each contact
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Contact(
+                                        person: contactInfo[idex],
+                                      ),
+                                    ),
+                                  );
                                 },
                               );
                             }))
