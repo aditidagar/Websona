@@ -35,7 +35,7 @@ class _ContactsState extends State<Contacts> {
     contactInfo.add(person2);
     contactInfo.add(person3);
     contactInfo.add(person4);
-    
+
     contactInfo.sort((a, b) => a.name.compareTo(b.name));
   }
 
@@ -60,6 +60,7 @@ class _ContactsState extends State<Contacts> {
     return MaterialApp(
         title: 'Contacts',
         home: Scaffold(
+            resizeToAvoidBottomInset: false,
             appBar: AppBar(
               title: const Text(
                 '  Contacts',
@@ -76,7 +77,7 @@ class _ContactsState extends State<Contacts> {
                 child: Column(
               children: <Widget>[
                 Container(
-                  padding: EdgeInsets.only(left: 20, right: 20.0, top: 20.0),
+                  padding: EdgeInsets.only(left: 20, right: 20.0, top: 0.0),
                   child: TextField(
                     controller: searchController,
                     decoration: InputDecoration(
@@ -93,7 +94,7 @@ class _ContactsState extends State<Contacts> {
                 ),
                 Expanded(
                     child: ListView.builder(
-                        padding: EdgeInsets.all(10.0),
+                        padding: EdgeInsets.all(5.0),
                         shrinkWrap: true,
                         itemCount: isSearching == true
                             ? contactsFiltered.length
