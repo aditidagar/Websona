@@ -1,10 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 const flashOn = 'FLASH ON';
 const flashOff = 'FLASH OFF';
 const frontCamera = 'FRONT CAMERA';
 const backCamera = 'BACK CAMERA';
+
+const String API_URL =
+    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
 
 class QRScanner extends StatefulWidget {
   QRScanner({Key key}) : super(key: key);
@@ -34,6 +41,16 @@ class _QRScannerState extends State<QRScanner> {
         qrText = scanData;
       });
     });
+    fetchQRData(qrText);
+  }
+
+  void fetchQRData(code) async {
+    http.Response response = await http.get(API_URL + "/code" + code);
+    if (response.statusCode == 200) {
+      print(response.body);
+    } else {
+      print("Fetch call failed");
+    }
   }
 
   @override
