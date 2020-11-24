@@ -45,7 +45,7 @@ class _QRScannerState extends State<QRScanner> {
   }
 
   void fetchQRData(code) async {
-    http.Response response = await http.get(API_URL + "/code" + code);
+    http.Response response = await http.get(code);
     if (response.statusCode == 200) {
       print(response.body);
     } else {
