@@ -161,7 +161,14 @@ app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
     .then(async (users: User[] | MongoError) => {
         const user: PartialUserData = users[0];
-        user.codes = await fetchCodes({ owner: user.email }) as Code[];
+        user.codes = [];
+        // generate get urls for all the codes so the app can load the images for the codes
+        (await fetchCodes({ owner: user.email }) as Code[]).forEach(async (code) => {
+            const url = await generateSignedGetUrl("codes/" + code.id, 30);
+            code.url = url;
+            (user.codes as Code[]).push(code);
+        })
+
         delete user.password;
 
         res.status(200).send(user);
@@ -238,6 +245,7 @@ app.get("/code/:id", (req, res) => {
             delete user.phone;
             delete user.activationId;
             delete user.email;
+            delete user.codes;
             // only provide socials associated with the code
             user.socials = (codes[0] as Code).socials;
             res.status(200).send(user);

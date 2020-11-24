@@ -9,7 +9,7 @@ AWS.config = new AWS.Config({
 const Bucket = process.env.BUCKET_NAME;
 const S3 = new AWS.S3();
 
-export function generateSignedGetUrl(Key, timeout=10) {
+export function generateSignedGetUrl(Key, timeout=10): Promise<string {
 	return new Promise((resolve, reject) => {
 		const params = {
 			Bucket,
