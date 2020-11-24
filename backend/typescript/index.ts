@@ -55,7 +55,7 @@ app.post("/signup", (req, res) => {
 		email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 10),
         activationId: createHash('sha1').update(currentDate + random).digest('hex'),
-        contacts: {}
+        contacts: []
 	};
 
     insertUser(requestData)
@@ -152,7 +152,8 @@ app.post("/addContact", async (req, res) => {
         if (users.length === 0) res.status(404).send("User not found");
         else {
             const userContacts = users[0].contacts;
-            userContacts[code.socials.username] = code.socials.social ;
+            const contact = {email: code.owner, sharedSocials: [{social: code.socials.social, username: code.socials.username}]}
+            userContacts.push(contact)
             updateUser({ contacts: userContacts }, { email: users[0].email })
             .then((val) => res.status(201).send("Contact added successfully"))
             .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));

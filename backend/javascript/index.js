@@ -58,7 +58,7 @@ app.post("/signup", (req, res) => {
         email: req.body.email,
         password: bcrypt_1.default.hashSync(req.body.password, 10),
         activationId: crypto_1.createHash('sha1').update(currentDate + random).digest('hex'),
-        contacts: {}
+        contacts: []
     };
     DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
@@ -148,7 +148,8 @@ app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function
             res.status(404).send("User not found");
         else {
             const userContacts = users[0].contacts;
-            userContacts[code.socials.username] = code.socials.social;
+            const contact = { email: code.owner, sharedSocials: [{ social: code.socials.social, username: code.socials.username }] };
+            userContacts.push(contact);
             DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
                 .then((val) => res.status(201).send("Contact added successfully"))
                 .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));

@@ -7,7 +7,7 @@ export interface SignUpInfo {
     email: string;
     password: string;
     activationId: string;
-    contacts: {}
+    contacts: any[]
 }
 
 export interface LoginInfo {
@@ -23,7 +23,7 @@ export interface User {
     password: string;
     codes: Code[];
     activationId: string | undefined;
-    contacts: {};
+    contacts: any[];
 
 }
 
