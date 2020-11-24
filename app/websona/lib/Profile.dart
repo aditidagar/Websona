@@ -56,7 +56,7 @@ class MapScreenState extends State<ProfilePage>
 
     setState(() {
       _email = prefs.getString('email');
-      _name = responseBody['name'];
+      _name = responseBody['firstName'] + " " + responseBody['lastName'];
       _phone = responseBody['phone'];
       media = media_temp;
       _mediaLink = mediaLink_temp;
