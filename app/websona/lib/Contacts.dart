@@ -27,9 +27,9 @@ class _ContactsState extends State<Contacts> {
   @override
   void initState() {
     super.initState();
-    searchController.addListener(() {
-      filterContacts();
-    });
+    // searchController.addListener(() {
+    //   filterContacts();
+    // });
     //adds two people
     contactInfo.add(person1);
     contactInfo.add(person2);
@@ -39,21 +39,21 @@ class _ContactsState extends State<Contacts> {
     contactInfo.sort((a, b) => a.name.compareTo(b.name));
   }
 
-  filterContacts() {
-    List<Person> _contacts = [];
-    _contacts.addAll(contactInfo);
-    if (searchController.text.isNotEmpty) {
-      _contacts.retainWhere((contact) {
-        String searchTerm = searchController.text.toLowerCase();
-        String contactName = contact.name.toLowerCase();
-        return contactName.startsWith(searchTerm);
-      });
+  // filterContacts() {
+  //   List<Person> _contacts = [];
+  //   _contacts.addAll(contactInfo);
+  //   if (searchController.text.isNotEmpty) {
+  //     _contacts.retainWhere((contact) {
+  //       String searchTerm = searchController.text.toLowerCase();
+  //       String contactName = contact.name.toLowerCase();
+  //       return contactName.startsWith(searchTerm);
+  //     });
 
-      setState(() {
-        contactsFiltered = _contacts;
-      });
-    }
-  }
+  //     setState(() {
+  //       contactsFiltered = _contacts;
+  //     });
+  //   }
+  // }
 
   Widget build(BuildContext context) {
     bool isSearching = searchController.text.isNotEmpty;
@@ -76,22 +76,22 @@ class _ContactsState extends State<Contacts> {
             body: Container(
                 child: Column(
               children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(left: 20, right: 20.0, top: 0.0),
-                  child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                        contentPadding: EdgeInsets.all(10),
-                        labelText: 'Search',
-                        border: new OutlineInputBorder(
-                            borderSide:
-                                new BorderSide(color: Colors.blue[800])),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.blue[800],
-                        )),
-                  ),
-                ),
+                // Container(
+                //   padding: EdgeInsets.only(left: 20, right: 20.0, top: 0.0),
+                //   child: TextField(
+                //     controller: searchController,
+                //     decoration: InputDecoration(
+                //         contentPadding: EdgeInsets.all(10),
+                //         labelText: 'Search',
+                //         border: new OutlineInputBorder(
+                //             borderSide:
+                //                 new BorderSide(color: Colors.blue[800])),
+                //         prefixIcon: Icon(
+                //           Icons.search,
+                //           color: Colors.blue[800],
+                //         )),
+                //   ),
+                // ),
                 Expanded(
                     child: ListView.builder(
                         padding: EdgeInsets.all(5.0),

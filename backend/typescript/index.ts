@@ -181,23 +181,23 @@ app.get("/user/:email", (req, res) => {
 
 app.post("/updateUser", (req, res) => {
     const singleUser: PartialUserData = {
-        firstName : req.body.firstName,
+        firstName: req.body.firstName,
         lastName: req.body.lastName,
         phone: req.body.phone,
         email: req.body.email,
         socials: req.body.socials
     };
-    fetchUsers({email: singleUser.email}).
-    then((users: User[] | MongoError) => {
-        const user: User = users[0];
-        const emailT = singleUser.email;
-        delete singleUser.email;
-        updateUser(singleUser, {email: emailT})
-        res.status(200).send("update successful")
-    }
-    ).catch((err) =>{
-        res.status(500).send("Error with server")
-    })
+    fetchUsers({ email: singleUser.email }).
+        then((users: User[] | MongoError) => {
+            const user: User = users[0];
+            const emailT = singleUser.email;
+            delete singleUser.email;
+            updateUser(singleUser, { email: emailT })
+            res.status(200).send("update successful")
+        }
+        ).catch((err) => {
+            res.status(500).send("Error with server")
+        })
 })
 
 app.post("/newCode", async (req, res) => {
@@ -205,7 +205,7 @@ app.post("/newCode", async (req, res) => {
     if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
+        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = req.headers.authorization?.split(' ')[1] as string;
         const decodedToken = jwt.decode(token) as { [key: string]: any };
         const socials = req.body.socials;
