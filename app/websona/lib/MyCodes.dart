@@ -1,5 +1,12 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'main.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'GenerateQrScreen.dart';
+
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class MyCodes extends StatefulWidget {
   @override
@@ -8,75 +15,96 @@ class MyCodes extends StatefulWidget {
 
 //info class
 class Info {
-  List<String> litems;
+  List<dynamic> litems;
   int counter;
   Info(this.litems, this.counter);
 }
 
 class _MyCodesState extends State<MyCodes> {
-  Info info = new Info([], 0);
+  Info info;
 
   void changeState() {
     setState(() {});
   }
 
-    createDialog(BuildContext context, String text) {
+  void loadCodes(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    Response response = await get(
+      "http://localhost:3000" + "/user/" + prefs.getString('email'),
+      headers: <String, String>{
+        'authorization': await getAuthorizationToken(context)
+      },
+    );
+    print(response.body);
+
+    var data = jsonDecode(response.body);
+    var codes = data['codes'];
+    setState(() {
+      info.litems = codes;
+      info.counter = codes.length;
+      // print(codes);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    info = new Info([], 0);
+    loadCodes(context);
+  }
+
+  createDialog(BuildContext context, String text) {
     TextEditingController nameController = TextEditingController();
     TextEditingController locationController = TextEditingController();
+
     return showDialog(
-      
         context: context,
         builder: (BuildContext context) {
           return Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0)),
-            child: Container(
-        height: 500.0,
-        margin: EdgeInsets.all(20.0),
-        padding: EdgeInsets.all(10.0),
-        child: Column(
-          children: <Widget>[
-            Container(
-              width: 200.0,
-              height: 200.0,
-              margin: EdgeInsets.only(top: 20, bottom: 20),
-              decoration: new BoxDecoration(
-      
-                image: new DecorationImage(
-                  image: new ExactAssetImage('asset/img/background.png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              
-            ),
-            Center(
-              child: Text(text,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 40.0,
-                      fontFamily: 'sans-serif-light',
-                      color: Colors.black)),
-            ),
-            
-            
-            RaisedButton(
-              color: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(80.0),
-                  side: BorderSide(color: Colors.blue, width: 2)),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Dismiss',
-                  style: TextStyle(fontSize: 20, color: Colors.blue)),
-            ),
-          ],
-        ))
-            
-            );
-        
+                  borderRadius: BorderRadius.circular(20.0)),
+              child: Container(
+                  height: 500.0,
+                  margin: EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(10.0),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        width: 200.0,
+                        height: 200.0,
+                        margin: EdgeInsets.only(top: 20, bottom: 20),
+                        decoration: new BoxDecoration(
+                          image: new DecorationImage(
+                            image:
+                                new ExactAssetImage('asset/img/background.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Text(text,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 40.0,
+                                fontFamily: 'sans-serif-light',
+                                color: Colors.black)),
+                      ),
+                      RaisedButton(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(80.0),
+                            side: BorderSide(color: Colors.blue, width: 2)),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Dismiss',
+                            style: TextStyle(fontSize: 20, color: Colors.blue)),
+                      ),
+                    ],
+                  )));
         });
   }
+
 //Navigator.of(context).pop();
   final TextEditingController eCtrl = new TextEditingController();
   @override
@@ -111,16 +139,12 @@ class _MyCodesState extends State<MyCodes> {
                             ),
                           ),
                         );
-                        
                       }
-
-                     
                     },
                     child: Icon(
                       Icons.add,
                       size: 26.0,
                       color: Colors.blue,
-
                     ),
                   )),
             ],
@@ -154,7 +178,8 @@ class _MyCodesState extends State<MyCodes> {
                                             Radius.circular(25.0))),
                                     child: new Center(
                                       child: new Text(
-                                        info.litems[index],
+                                        info.litems[index]['socials'][0]
+                                            ['social'],
                                         style: TextStyle(
                                             fontSize: 22, color: Colors.white),
                                         textAlign: TextAlign.center,

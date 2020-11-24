@@ -339,10 +339,10 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                   splashColor: Colors.blueAccent,
                   onPressed: () {
                     handleSubmit();
-                    widget.info.litems.add(qrController.text);
-                    widget.info.counter = widget.info.counter + 1;
-                    widget?._callback();
-                    Navigator.pop(context);
+                    // widget.info.litems.add(qrController.text);
+                    // widget.info.counter = widget.info.counter + 1;
+                    // widget?._callback();
+                    // Navigator.pop(context);
                   },
                   child: Text(
                     "Create",

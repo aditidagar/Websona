@@ -197,7 +197,7 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
+        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
