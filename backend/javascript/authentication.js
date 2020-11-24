@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateAccessToken = exports.authenticateToken = exports.tokenExpiryTime = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-exports.tokenExpiryTime = 30;
+exports.tokenExpiryTime = 3600;
 /**
  * Authenticate incoming request. If the incoming request contains a valid authorization token, call the
  * next middleware. Otherwise respond with a 401 (Forbidden)

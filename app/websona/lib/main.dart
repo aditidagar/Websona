@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:websona/SettingsScreen.dart';
 import 'SignInScreen.dart';
 import 'MyCodes.dart';
+import 'Contacts.dart';
 import 'qrscanner.dart';
 import 'package:websona/Events.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
-import 'GenerateQrScreen.dart';
 
 const String API_URL = "https://api.thewebsonaapp.com";
 void main() => runApp(MyApp());
@@ -54,10 +54,25 @@ Future<String> getAuthorizationToken(BuildContext context) async {
 class MyApp extends StatelessWidget {
   static const String _title = 'Flutter Code Sample';
 
+  // buggy rn, dont use it
+  void checkLoggedIn(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('email') != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyStatefulWidget(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // checkLoggedIn(context);
+
     return MaterialApp(
-      home: MyStatefulWidget(),
+      home: SignInScreen(),
     );
   }
 }
@@ -77,16 +92,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
     MyCodes(),
-    //GenerateQrScreen(),
-    Text(
-      'Index 1: Contacts',
-      style: optionStyle,
-    ),
+    Contacts(),
     Event(),
-    Text(
-      'Index 3: Setttings',
-      style: optionStyle,
-    ),
+    SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {

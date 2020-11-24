@@ -7,13 +7,13 @@ import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
-import { SignUpInfo, LoginInfo, User, Code } from './interfaces';
+import { SignUpInfo, LoginInfo, User, Code, PartialUserData } from './interfaces';
 import { MongoError } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
 
-import { generateSignedPutUrl, generateSignedGetUrl} from './AWSPresigner'
+import { generateSignedPutUrl, generateSignedGetUrl } from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -51,15 +51,17 @@ app.post("/signup", (req, res) => {
     const requestData: SignUpInfo = {
         firstName: req.body.first,
         lastName: req.body.last,
-		email: req.body.email,
+        email: req.body.email,
+        phone: req.body.phone,
         password: bcrypt.hashSync(req.body.password, 10),
+        socials: [],
         activationId: createHash('sha1').update(currentDate + random).digest('hex')
-	};
+    };
 
     insertUser(requestData)
-		.then(async (result) => {
+        .then(async (result) => {
             if (process.env.NODE_ENV !== 'test') sendVerificationEmail(requestData.activationId, requestData.email)
-            .catch((err) => console.log(err));
+                .catch((err) => console.log(err));
 
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
@@ -83,7 +85,6 @@ app.post("/login", (req, res) => {
         email: req.body.email,
         password: req.body.password,
     };
-
     fetchUsers({ email: requestData.email })
         .then((users: User[] | MongoError) => {
             const user: User = users[0];
@@ -119,8 +120,8 @@ app.get("/verify/:id", (req, res) => {
             if (users.length === 0) res.status(404).send("User not found");
             else {
                 updateUser({ activationId: undefined }, { _id: users[0]._id })
-                .then((val) => res.status(201).send("Verification Successful"))
-                .catch((err) => res.status(500).send("500: Server Error. Verification failed"));
+                    .then((val) => res.status(201).send("Verification Successful"))
+                    .catch((err) => res.status(500).send("500: Server Error. Verification failed"));
             }
 
         });
@@ -156,12 +157,55 @@ app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
 
+app.get("/user/:email", (req, res) => {
+    fetchUsers({ email: req.params.email })
+    .then(async (users: User[] | MongoError) => {
+        const user: PartialUserData = users[0];
+        user.codes = [];
+        // generate get urls for all the codes so the app can load the images for the codes
+        (await fetchCodes({ owner: user.email }) as Code[]).forEach(async (code) => {
+            const url = await generateSignedGetUrl("codes/" + code.id, 30);
+            code.url = url;
+            (user.codes as Code[]).push(code);
+        })
+
+        delete user.password;
+
+        res.status(200).send(user);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
+})
+
+app.post("/updateUser", (req, res) => {
+    const singleUser: PartialUserData = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+        socials: req.body.socials
+    };
+    fetchUsers({ email: singleUser.email }).
+        then((users: User[] | MongoError) => {
+            const user: User = users[0];
+            const emailT = singleUser.email;
+            delete singleUser.email;
+            updateUser(singleUser, { email: emailT })
+            res.status(200).send("update successful")
+        }
+        ).catch((err) => {
+            res.status(500).send("Error with server")
+        })
+})
+
 app.post("/newCode", async (req, res) => {
     const codeId = await getUniqueCodeId();
     if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
+        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = req.headers.authorization?.split(' ')[1] as string;
         const decodedToken = jwt.decode(token) as { [key: string]: any };
         const socials = req.body.socials;
@@ -195,8 +239,16 @@ app.get("/code/:id", (req, res) => {
                 res.status(404).send('User not found');
                 return;
             }
-
-            res.status(200).send(users[0]);
+            const user = users[0] as PartialUserData;
+            // delete unneccessary fields
+            delete user.password;
+            delete user.phone;
+            delete user.activationId;
+            delete user.email;
+            delete user.codes;
+            // only provide socials associated with the code
+            user.socials = (codes[0] as Code).socials;
+            res.status(200).send(user);
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
@@ -232,12 +284,12 @@ async function getUniqueCodeId() {
 
 async function verifyQRupload(codeId: string): Promise<void> {
     const downloadUrl = await generateSignedGetUrl('codes/' + codeId, 3000);
-	https.get(downloadUrl as string, ((res) => {
-		if (res.statusCode !== 200) {
-			// client didn't upload the code, delete it's entry from db
-			deleteCode(codeId);
-		}
-	}));
+    https.get(downloadUrl as string, ((res) => {
+        if (res.statusCode !== 200) {
+            // client didn't upload the code, delete it's entry from db
+            deleteCode(codeId);
+        }
+    }));
 }
 
 export default app;

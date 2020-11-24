@@ -56,7 +56,9 @@ app.post("/signup", (req, res) => {
         firstName: req.body.first,
         lastName: req.body.last,
         email: req.body.email,
+        phone: req.body.phone,
         password: bcrypt_1.default.hashSync(req.body.password, 10),
+        socials: [],
         activationId: crypto_1.createHash('sha1').update(currentDate + random).digest('hex')
     };
     DatabaseHandler_1.insertUser(requestData)
@@ -150,6 +152,38 @@ app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0,
 }));
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
+});
+app.get("/user/:email", (req, res) => {
+    DatabaseHandler_1.fetchUsers({ email: req.params.email })
+        .then((users) => __awaiter(void 0, void 0, void 0, function* () {
+        const user = users[0];
+        user.codes = (yield DatabaseHandler_1.fetchCodes({ owner: user.email }));
+        delete user.password;
+        res.status(200).send(user);
+    }))
+        .catch((err) => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
+});
+app.post("/updateUser", (req, res) => {
+    const singleUser = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone,
+        email: req.body.email,
+        socials: req.body.socials
+    };
+    DatabaseHandler_1.fetchUsers({ email: singleUser.email }).
+        then((users) => {
+        const user = users[0];
+        const emailT = singleUser.email;
+        delete singleUser.email;
+        DatabaseHandler_1.updateUser(singleUser, { email: emailT });
+        res.status(200).send("update successful");
+    }).catch((err) => {
+        res.status(500).send("Error with server");
+    });
 });
 app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;

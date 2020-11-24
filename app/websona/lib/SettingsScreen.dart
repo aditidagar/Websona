@@ -34,8 +34,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               leading: Icon(Icons.article),
               onTap: () {
                 print("Terms of Service");
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => MyForm()));
               },
             ),
             SettingsTile(

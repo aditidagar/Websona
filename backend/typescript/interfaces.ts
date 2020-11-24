@@ -6,6 +6,11 @@ export interface SignUpInfo {
     lastName: string;
     email: string;
     password: string;
+    phone: string,
+    socials?: {
+        social: string;
+        username: string;
+    }[];
     activationId: string;
 }
 
@@ -20,9 +25,26 @@ export interface User {
     lastName: string;
     email: string;
     password: string;
-    codes: Code[];
+    phone: string,
+    socials: {
+        social: string;
+        username: string;
+    }[];
     activationId: string | undefined
+}
 
+export interface PartialUserData {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    password?: string;
+    phone?: string;
+    socials?: {
+        social: string;
+        username: string;
+    }[];
+    codes?: Code[];
+    activationId?: string | undefined
 }
 
 export interface Code {
@@ -32,4 +54,5 @@ export interface Code {
         social: string;
         username: string;
     }[];
+    url?: string;
 }
