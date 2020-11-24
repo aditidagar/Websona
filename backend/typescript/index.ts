@@ -159,21 +159,24 @@ app.get("/protectedResource", (req, res) => {
 
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
-        .then((users: User[] | MongoError) => {
-            const user: User = users[0];
-            const name = user.firstName + " " + user.lastName;
-            const phone = user.phone;
-            const socials = user.socials;
-            res.status(200).send({
-                name,
-                phone,
-                socials
-            });
+    .then(async (users: User[] | MongoError) => {
+        const user: PartialUserData = users[0];
+        user.codes = [];
+        // generate get urls for all the codes so the app can load the images for the codes
+        (await fetchCodes({ owner: user.email }) as Code[]).forEach(async (code) => {
+            const url = await generateSignedGetUrl("codes/" + code.id, 30);
+            code.url = url;
+            (user.codes as Code[]).push(code);
         })
-        .catch((err) => {
-            console.log(err);
-            res.status(500).send("Server error");
-        });
+
+        delete user.password;
+
+        res.status(200).send(user);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
 })
 
 app.post("/updateUser", (req, res) => {
@@ -236,8 +239,16 @@ app.get("/code/:id", (req, res) => {
                 res.status(404).send('User not found');
                 return;
             }
-
-            res.status(200).send(users[0]);
+            const user = users[0] as PartialUserData;
+            // delete unneccessary fields
+            delete user.password;
+            delete user.phone;
+            delete user.activationId;
+            delete user.email;
+            delete user.codes;
+            // only provide socials associated with the code
+            user.socials = (codes[0] as Code).socials;
+            res.status(200).send(user);
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
