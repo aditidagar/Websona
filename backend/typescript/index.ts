@@ -159,42 +159,42 @@ app.get("/protectedResource", (req, res) => {
 
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
-    .then((users: User[] | MongoError) => {
-        const user: User = users[0];
-        const name = user.firstName + " " + user.lastName;
-        const phone = user.phone;
-        const socials = user.socials;
-        res.status(200).send({
-            name,
-            phone,
-            socials
+        .then((users: User[] | MongoError) => {
+            const user: User = users[0];
+            const name = user.firstName + " " + user.lastName;
+            const phone = user.phone;
+            const socials = user.socials;
+            res.status(200).send({
+                name,
+                phone,
+                socials
+            });
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).send("Server error");
         });
-    })
-    .catch((err) => {
-        console.log(err);
-        res.status(500).send("Server error");
-    });
 })
 
 app.post("/updateUser", (req, res) => {
     const singleUser: PartialUserData = {
-        firstName : req.body.firstName,
+        firstName: req.body.firstName,
         lastName: req.body.lastName,
         phone: req.body.phone,
         email: req.body.email,
         socials: req.body.socials
     };
-    fetchUsers({email: singleUser.email}).
-    then((users: User[] | MongoError) => {
-        const user: User = users[0];
-        const emailT = singleUser.email;
-        delete singleUser.email;
-        updateUser(singleUser, {email: emailT})
-        res.status(200).send("update successful")
-    }
-    ).catch((err) =>{
-        res.status(500).send("Error with server")
-    })
+    fetchUsers({ email: singleUser.email }).
+        then((users: User[] | MongoError) => {
+            const user: User = users[0];
+            const emailT = singleUser.email;
+            delete singleUser.email;
+            updateUser(singleUser, { email: emailT })
+            res.status(200).send("update successful")
+        }
+        ).catch((err) => {
+            res.status(500).send("Error with server")
+        })
 })
 
 app.post("/newCode", async (req, res) => {

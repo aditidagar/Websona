@@ -3,8 +3,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'MyCodes.dart' as mycodes;
+import 'SignUpScreen.dart';
+import 'Main.dart';
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:developer';
 
@@ -59,7 +64,6 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       setState(() {
         media_temp.add(responseBody['socials'][index]['social']);
         mediaLink_temp.add(responseBody['socials'][index]['username']);
-        debugPrint(responseBody['socials'][index]['social']);
       });
     }
 
@@ -120,7 +124,6 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
           await image.toByteData(format: ui.ImageByteFormat.png);
       var pngBytes = byteData.buffer.asUint8List();
       var bs64 = base64Encode(pngBytes);
-      debugPrint(bs64.length.toString());
       return bs64;
     } catch (exception) {}
   }
