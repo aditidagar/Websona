@@ -2,16 +2,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'main.dart';
 
 const flashOn = 'FLASH ON';
 const flashOff = 'FLASH OFF';
 const frontCamera = 'FRONT CAMERA';
 const backCamera = 'BACK CAMERA';
 
-const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class QRScanner extends StatefulWidget {
   QRScanner({Key key}) : super(key: key);
@@ -22,6 +23,7 @@ class QRScanner extends StatefulWidget {
 
 class _QRScannerState extends State<QRScanner> {
   bool _camState = true;
+  String _name = '';
   var qrText = '';
   var flashState = flashOn;
   var cameraState = frontCamera;
@@ -45,12 +47,15 @@ class _QRScannerState extends State<QRScanner> {
   }
 
   void fetchQRData(code) async {
-    http.Response response = await http.get(code);
-    if (response.statusCode == 200) {
-      print(response.body);
-    } else {
-      print("Fetch call failed");
-    }
+    Response response = await get(code, headers: <String, String>{
+      'authorization': await getAuthorizationToken(context),
+    });
+
+    final responseBody = jsonDecode(response.body);
+
+    setState(() {
+      _name = responseBody['firstName'] + responseBody['lastName'];
+    });
   }
 
   @override
@@ -105,7 +110,7 @@ class _QRScannerState extends State<QRScanner> {
                 ),
               ),
               child: Center(
-                child: Text("J",
+                child: Text(this._name[0],
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 60.0,
@@ -114,7 +119,7 @@ class _QRScannerState extends State<QRScanner> {
               ),
             ),
             Center(
-              child: Text("Jane Smith",
+              child: Text(this._name,
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 40.0,
