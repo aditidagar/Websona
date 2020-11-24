@@ -29,7 +29,6 @@ dependencies:
   flutter_secure_storage: 3.2.1+1
   font_awesome_flutter: 8.7.0
   contacts_service: ^0.4.6
-  flutter_qr_bar_scanner: ^1.0.2
 
   qr_flutter: ^3.0.1
 
