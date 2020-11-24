@@ -53,16 +53,12 @@ class _MyCodesState extends State<MyCodes> {
                             ),
                           ),
                         );
-                        
                       }
-
-                     
                     },
                     child: Icon(
                       Icons.add,
                       size: 26.0,
                       color: Colors.blue,
-
                     ),
                   )),
             ],
