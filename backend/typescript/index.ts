@@ -160,12 +160,9 @@ app.get("/protectedResource", (req, res) => {
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
     .then(async (users: User[] | MongoError) => {
-        const user: User = users[0];
-        const name = user.firstName + " " + user.lastName;
-        const phone = user.phone;
-        const socials = user.socials;
-        const codes = await fetchCodes({ owner: user.email });
-        user.password = "";
+        const user: PartialUserData = users[0];
+        user.codes = await fetchCodes({ owner: user.email }) as Code[];
+        delete user.password;
 
         res.status(200).send(user);
     })
@@ -235,8 +232,15 @@ app.get("/code/:id", (req, res) => {
                 res.status(404).send('User not found');
                 return;
             }
-
-            res.status(200).send(users[0]);
+            const user = users[0] as PartialUserData;
+            // delete unneccessary fields
+            delete user.password;
+            delete user.phone;
+            delete user.activationId;
+            delete user.email;
+            // only provide socials associated with the code
+            user.socials = (codes[0] as Code).socials;
+            res.status(200).send(user);
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
