@@ -159,16 +159,15 @@ app.get("/protectedResource", (req, res) => {
 
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
-    .then((users: User[] | MongoError) => {
+    .then(async (users: User[] | MongoError) => {
         const user: User = users[0];
         const name = user.firstName + " " + user.lastName;
         const phone = user.phone;
         const socials = user.socials;
-        res.status(200).send({
-            name,
-            phone,
-            socials
-        });
+        const codes = await fetchCodes({ owner: user.email });
+        user.password = "";
+
+        res.status(200).send(user);
     })
     .catch((err) => {
         console.log(err);
