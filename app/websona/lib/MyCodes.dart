@@ -30,7 +30,7 @@ class _MyCodesState extends State<MyCodes> {
   void loadCodes(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     Response response = await get(
-      "http://localhost:3000" + "/user/" + prefs.getString('email'),
+      API_URL + "/user/" + prefs.getString('email'),
       headers: <String, String>{
         'authorization': await getAuthorizationToken(context)
       },
