@@ -54,4 +54,5 @@ export interface Code {
         social: string;
         username: string;
     }[];
+    url?: string;
 }
