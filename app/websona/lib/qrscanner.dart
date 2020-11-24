@@ -38,23 +38,24 @@ class _QRScannerState extends State<QRScanner> {
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
+      print(scanData);
       setState(() {
         _camState = false;
-        qrText = scanData;
+        fetchQRData(scanData);
       });
     });
-    fetchQRData(qrText);
   }
 
   void fetchQRData(code) async {
+    print(code);
     Response response = await get(code, headers: <String, String>{
       'authorization': await getAuthorizationToken(context),
     });
 
     final responseBody = jsonDecode(response.body);
-
+    print(responseBody);
     setState(() {
-      _name = responseBody['firstName'] + responseBody['lastName'];
+      _name = responseBody['firstName'] + " " + responseBody['lastName'];
     });
   }
 
@@ -110,7 +111,7 @@ class _QRScannerState extends State<QRScanner> {
                 ),
               ),
               child: Center(
-                child: Text(this._name[0],
+                child: Text(this._name.length > 0 ? this._name[0] : "",
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 60.0,
