@@ -8,6 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -156,8 +163,25 @@ app.get("/protectedResource", (req, res) => {
 app.get("/user/:email", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: req.params.email })
         .then((users) => __awaiter(void 0, void 0, void 0, function* () {
+        var e_1, _a;
         const user = users[0];
-        user.codes = (yield DatabaseHandler_1.fetchCodes({ owner: user.email }));
+        const codes = yield DatabaseHandler_1.fetchCodes({ owner: user.email });
+        try {
+            // generate get urls for all the codes so the app can load the images for the codes
+            for (var codes_1 = __asyncValues(codes), codes_1_1; codes_1_1 = yield codes_1.next(), !codes_1_1.done;) {
+                const code = codes_1_1.value;
+                const url = yield AWSPresigner_1.generateSignedGetUrl("codes/" + code.id, 30);
+                code.url = url;
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (codes_1_1 && !codes_1_1.done && (_a = codes_1.return)) yield _a.call(codes_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        user.codes = codes;
         delete user.password;
         res.status(200).send(user);
     }))
@@ -192,7 +216,7 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
+        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
@@ -224,7 +248,16 @@ app.get("/code/:id", (req, res) => {
                 res.status(404).send('User not found');
                 return;
             }
-            res.status(200).send(users[0]);
+            const user = users[0];
+            // delete unneccessary fields
+            delete user.password;
+            delete user.phone;
+            delete user.activationId;
+            delete user.email;
+            delete user.codes;
+            // only provide socials associated with the code
+            user.socials = codes[0].socials;
+            res.status(200).send(user);
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');

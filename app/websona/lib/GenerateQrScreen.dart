@@ -99,7 +99,6 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
         Future.delayed(const Duration(milliseconds: 2000), () {
           _getWidgetImage().then((value) async {
             bytes = base64Decode(value);
-            debugPrint(value);
             String putUrl = data['putUrl'];
             var client = Client();
             var request = Request('PUT', Uri.parse(putUrl));
