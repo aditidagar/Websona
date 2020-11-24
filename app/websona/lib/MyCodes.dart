@@ -35,14 +35,12 @@ class _MyCodesState extends State<MyCodes> {
         'authorization': await getAuthorizationToken(context)
       },
     );
-    print(response.body);
 
     var data = jsonDecode(response.body);
     var codes = data['codes'];
     setState(() {
       info.litems = codes;
       info.counter = codes.length;
-      // print(codes);
     });
   }
 
@@ -53,10 +51,7 @@ class _MyCodesState extends State<MyCodes> {
     loadCodes(context);
   }
 
-  createDialog(BuildContext context, String text) {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController locationController = TextEditingController();
-
+  createDialog(BuildContext context, dynamic code) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -75,14 +70,13 @@ class _MyCodesState extends State<MyCodes> {
                         margin: EdgeInsets.only(top: 20, bottom: 20),
                         decoration: new BoxDecoration(
                           image: new DecorationImage(
-                            image:
-                                new ExactAssetImage('asset/img/background.png'),
+                            image: new NetworkImage(code['url']),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
                       Center(
-                        child: Text(text,
+                        child: Text('Code',
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 40.0,
@@ -178,8 +172,7 @@ class _MyCodesState extends State<MyCodes> {
                                             Radius.circular(25.0))),
                                     child: new Center(
                                       child: new Text(
-                                        info.litems[index]['socials'][0]
-                                            ['social'],
+                                        "Code " + index.toString(),
                                         style: TextStyle(
                                             fontSize: 22, color: Colors.white),
                                         textAlign: TextAlign.center,
