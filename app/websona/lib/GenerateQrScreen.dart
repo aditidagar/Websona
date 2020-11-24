@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'MyCodes.dart' as mycodes;
@@ -10,9 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:developer';
 
-const String API_URL =
-    "http://websona-alb-356962330.us-east-1.elb.amazonaws.com";
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class GenerateQrScreen extends StatefulWidget {
   final info;
@@ -31,16 +32,18 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   String media2 = '';
   String media3 = '';
   String media4 = '';
-  String dropdownValue = '';
-  String dropdownValue2 = '';
-  String dropdownValue3 = '';
-  String dropdownValue4 = '';
+  String dropdownValue;
+  String dropdownValue2;
+  String dropdownValue3;
+  String dropdownValue4;
   String qrData = '';
   static List<String> _mediaLink = [];
   static List<String> media = [];
   String _name = '';
   String _email = '';
   String _phone = '';
+  Image qr;
+  Uint8List bytes;
 
   Uint8List qrImage;
   TextEditingController qrController = TextEditingController();
@@ -49,8 +52,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   void initializeProfile() async {
     final prefs = await SharedPreferences.getInstance();
 
-    Response response = await get(
-        "http://10.0.2.2:3000/user/" + prefs.getString('email'),
+    Response response = await get(API_URL + '/user/' + prefs.getString('email'),
         headers: <String, String>{
           'authorization': await getAuthorizationToken(context),
         });
@@ -62,6 +64,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       setState(() {
         media_temp.add(responseBody['socials'][index]['social']);
         mediaLink_temp.add(responseBody['socials'][index]['username']);
+        debugPrint(responseBody['socials'][index]['social']);
       });
     }
 
@@ -76,24 +79,44 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
 
   void handleSubmit() async {
     Response response = await post(API_URL + "/newCode",
-        headers: <String, String>{'Content-Type': 'application/json'},
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          'authorization': await getAuthorizationToken(context),
+        },
         body: jsonEncode(<String, dynamic>{
           'socials': [
             {'social': media1, 'username': dropdownValue},
-            {'social': media2, 'username': dropdownValue},
-            {'social': media3, 'username': dropdownValue},
-            {'social': media4, 'username': dropdownValue}
+            {'social': media2, 'username': dropdownValue2},
+            {'social': media3, 'username': dropdownValue3},
+            {'social': media4, 'username': dropdownValue4}
           ]
         }));
 
-    if (response.statusCode == 200) {
-      //Navigate to QR Codes Page
-
-      debugPrint("Working");
+    if (response.statusCode == 201) {
+      Map<dynamic, dynamic> data = jsonDecode(response.body);
+      String codeId = data['codeId'];
+      qrData = API_URL + '/code/' + codeId;
+      setState(() {
+        Future.delayed(const Duration(milliseconds: 2000), () {
+          _getWidgetImage().then((value) async {
+            bytes = base64Decode(value);
+            debugPrint(value);
+            String putUrl = data['putUrl'];
+            var client = Client();
+            var request = Request('PUT', Uri.parse(putUrl));
+            request.headers.addAll({"Content-Type": "image/png"});
+            request.bodyBytes = bytes;
+            var streamedResponse = await client.send(request).then((res) {
+              print(res.statusCode);
+            });
+            client.close();
+          });
+        });
+      });
     }
   }
 
-  void _getWidgetImage() async {
+  Future<String> _getWidgetImage() async {
     try {
       RenderRepaintBoundary boundary = qrKey.currentContext.findRenderObject();
 
@@ -103,8 +126,16 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       var pngBytes = byteData.buffer.asUint8List();
       var bs64 = base64Encode(pngBytes);
       debugPrint(bs64.length.toString());
-      qrImage = pngBytes;
+      return bs64;
     } catch (exception) {}
+  }
+
+  @override
+  initState() {
+    // ignore: todo
+    // TODO: implement initState
+    super.initState();
+    initializeProfile();
   }
 
   @override
@@ -176,14 +207,12 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                               ),
                               onChanged: (String newValue) {
                                 setState(() {
-                                  qrData = qrData + newValue;
-                                  qrData = qrData + ", ";
-                                  int index = _mediaLink.indexOf(newValue);
-                                  media1 = media.elementAt(index);
                                   dropdownValue = newValue;
+                                  int index = media.indexOf(newValue);
+                                  media1 = _mediaLink.elementAt(index);
                                 });
                               },
-                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                              items: media.map<DropdownMenuItem<String>>(
                                   (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
@@ -214,14 +243,12 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                               ),
                               onChanged: (String newValue) {
                                 setState(() {
-                                  qrData = qrData + newValue;
-                                  qrData = qrData + ", ";
-                                  int index = _mediaLink.indexOf(newValue);
-                                  media2 = media.elementAt(index);
                                   dropdownValue2 = newValue;
+                                  int index = media.indexOf(newValue);
+                                  media2 = _mediaLink.elementAt(index);
                                 });
                               },
-                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                              items: media.map<DropdownMenuItem<String>>(
                                   (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
@@ -252,14 +279,12 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                               ),
                               onChanged: (String newValue) {
                                 setState(() {
-                                  qrData = qrData + newValue;
-                                  qrData = qrData + ", ";
-                                  int index = _mediaLink.indexOf(newValue);
-                                  media3 = media.elementAt(index);
                                   dropdownValue3 = newValue;
+                                  int index = media.indexOf(newValue);
+                                  media3 = _mediaLink.elementAt(index);
                                 });
                               },
-                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                              items: media.map<DropdownMenuItem<String>>(
                                   (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
@@ -290,14 +315,12 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                               ),
                               onChanged: (String newValue) {
                                 setState(() {
-                                  qrData = qrData + newValue;
-                                  qrData = qrData + ", ";
-                                  int index = _mediaLink.indexOf(newValue);
-                                  media4 = media.elementAt(index);
                                   dropdownValue4 = newValue;
+                                  int index = media.indexOf(newValue);
+                                  media4 = _mediaLink.elementAt(index);
                                 });
                               },
-                              items: _mediaLink.map<DropdownMenuItem<String>>(
+                              items: media.map<DropdownMenuItem<String>>(
                                   (String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
@@ -317,7 +340,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                   padding: EdgeInsets.all(8.0),
                   splashColor: Colors.blueAccent,
                   onPressed: () {
-                    _getWidgetImage();
+                    handleSubmit();
                     widget.info.litems.add(qrController.text);
                     widget.info.counter = widget.info.counter + 1;
                     widget?._callback();
