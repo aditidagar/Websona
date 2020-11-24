@@ -155,17 +155,12 @@ app.get("/protectedResource", (req, res) => {
 });
 app.get("/user/:email", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: req.params.email })
-        .then((users) => {
+        .then((users) => __awaiter(void 0, void 0, void 0, function* () {
         const user = users[0];
-        const name = user.firstName + " " + user.lastName;
-        const phone = user.phone;
-        const socials = user.socials;
-        res.status(200).send({
-            name,
-            phone,
-            socials
-        });
-    })
+        user.codes = (yield DatabaseHandler_1.fetchCodes({ owner: user.email }));
+        delete user.password;
+        res.status(200).send(user);
+    }))
         .catch((err) => {
         console.log(err);
         res.status(500).send("Server error");

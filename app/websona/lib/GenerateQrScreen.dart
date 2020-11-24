@@ -141,6 +141,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
     return MaterialApp(
       title: 'QR Code',
       home: Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(
             title: const Text(
               '  QR Code',
