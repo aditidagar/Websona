@@ -27,6 +27,18 @@
    * Node version 10.16.3
 
 ###  Instructions to run the application (Flutter App)
+
+#### Installing the apk
+* Plug your android device intor your computer and make sure USB tehtering is turned on.
+
+* Open terminal and change directory till you reach the directory called websona(which is located at /app/websona)
+
+* Run the following command
+```bash
+flutter install
+```
+
+#### Running the application through an emulator
 * The first step is to ensure that you have flutter and dart installed on your local machine, to test this run 
 ```bash
 flutter --help
