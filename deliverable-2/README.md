@@ -33,7 +33,12 @@
 
 * Open terminal and change directory till you reach the directory called websona(which is located at /app/websona)
 
-* Run the following command
+*Run the following commmand
+```bash
+flutter build apk --split-per-abi
+```
+
+* Then
 ```bash
 flutter install
 ```
