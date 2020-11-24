@@ -28,7 +28,7 @@ class _ContactsState extends State<Contacts> {
   void initState() {
     super.initState();
     searchController.addListener(() {
-      filterContacts();
+      // filterContacts();
     });
     //adds two people
     contactInfo.add(person1);
