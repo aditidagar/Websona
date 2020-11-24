@@ -20,6 +20,64 @@ class _MyCodesState extends State<MyCodes> {
     setState(() {});
   }
 
+    createDialog(BuildContext context, String text) {
+    TextEditingController nameController = TextEditingController();
+    TextEditingController locationController = TextEditingController();
+    return showDialog(
+      
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)),
+            child: Container(
+        height: 500.0,
+        margin: EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(10.0),
+        child: Column(
+          children: <Widget>[
+            Container(
+              width: 200.0,
+              height: 200.0,
+              margin: EdgeInsets.only(top: 20, bottom: 20),
+              decoration: new BoxDecoration(
+      
+                image: new DecorationImage(
+                  image: new ExactAssetImage('asset/img/background.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              
+            ),
+            Center(
+              child: Text(text,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 40.0,
+                      fontFamily: 'sans-serif-light',
+                      color: Colors.black)),
+            ),
+            
+            
+            RaisedButton(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(80.0),
+                  side: BorderSide(color: Colors.blue, width: 2)),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Dismiss',
+                  style: TextStyle(fontSize: 20, color: Colors.blue)),
+            ),
+          ],
+        ))
+            
+            );
+        
+        });
+  }
+//Navigator.of(context).pop();
   final TextEditingController eCtrl = new TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -104,7 +162,7 @@ class _MyCodesState extends State<MyCodes> {
                                     )),
                               ),
                               onTap: () {
-                                //add code here to see QR Code
+                                createDialog(context, info.litems[index]);
                               },
                             ));
                       }))
