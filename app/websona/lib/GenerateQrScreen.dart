@@ -99,7 +99,6 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
         Future.delayed(const Duration(milliseconds: 2000), () {
           _getWidgetImage().then((value) async {
             bytes = base64Decode(value);
-            debugPrint(value);
             String putUrl = data['putUrl'];
             var client = Client();
             var request = Request('PUT', Uri.parse(putUrl));
@@ -141,6 +140,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
     return MaterialApp(
       title: 'QR Code',
       home: Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(
             title: const Text(
               '  QR Code',
@@ -339,10 +339,10 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                   splashColor: Colors.blueAccent,
                   onPressed: () {
                     handleSubmit();
-                    widget.info.litems.add(qrController.text);
-                    widget.info.counter = widget.info.counter + 1;
-                    widget?._callback();
-                    Navigator.pop(context);
+                    // widget.info.litems.add(qrController.text);
+                    // widget.info.counter = widget.info.counter + 1;
+                    // widget?._callback();
+                    // Navigator.pop(context);
                   },
                   child: Text(
                     "Create",

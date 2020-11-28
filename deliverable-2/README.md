@@ -1,7 +1,5 @@
 # Websona
 
-> _Note:_ This document is intended to be relatively short. Be concise and precise. Assume the reader has no prior knowledge of your application and is non-technical. 
-
 ## Description 
  * Websona is a cross platform(iOS/Android) application that allows people to instantly connect with others through multiple social medias with a simple QR scan. 
  * This will help save the user's time when they meet new people and wish to add them on various social media platforms. Instead of individually adding people on different social media platforms, Websona will provide the person's social media handles through a simple QR code scan. By separately organising one's basic information, social media handles and professional details, users can choose what information they wish to share with a new person.
@@ -29,6 +27,23 @@
    * Node version 10.16.3
 
 ###  Instructions to run the application (Flutter App)
+
+#### Installing the apk
+* Plug your android device intor your computer and make sure USB tehtering is turned on.
+
+* Open terminal and change directory till you reach the directory called websona(which is located at /app/websona)
+
+*Run the following commmand
+```bash
+flutter build apk --split-per-abi
+```
+
+* Then
+```bash
+flutter install
+```
+
+#### Running the application through an emulator
 * The first step is to ensure that you have flutter and dart installed on your local machine, to test this run 
 ```bash
 flutter --help
