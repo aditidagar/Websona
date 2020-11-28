@@ -23,7 +23,13 @@ class _EventState extends State<Event> {
     'saakshi.shah@mail.utoronto.ca',
     'gautam.gireesh@mail.utoronto.ca'
   ];
-
+  List<Map<String, String>> peopleInfo = [
+    {'email': 'harsh.jhunjhunwala@mail.utoronto.ca', 'snapchat': 'harsh_j'},
+    {'email': 'aditi.dagar@mail.utoronto.ca', 'snapchat': 'adits'},
+    {'email': 'ibrahim.fazili@mail.utoronto.ca', 'twitter': 'ibra_'},
+    {'email': 'saakshi.shah@mail.utoronto.ca'},
+    {'email': 'gautam.gireesh@mail.utoronto.ca'}
+  ];
   List<String> eventPictures = [
     'https://picsum.photos/250?image=9',
     'https://picsum.photos/250?image=10',
@@ -98,6 +104,18 @@ class _EventState extends State<Event> {
         });
   }
 
+  Widget stackBehindDismiss() {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: EdgeInsets.only(right: 20.0),
+      color: Colors.red,
+      child: Icon(
+        Icons.delete,
+        color: Colors.white,
+      ),
+    );
+  }
+
   displayEvent(BuildContext context) {
     return showDialog(
         context: context,
@@ -160,7 +178,15 @@ class _EventState extends State<Event> {
                               color: Colors.black,
                               fontWeight: FontWeight.w600),
                         ),
-                        subtitle: Text(eventEmails[index]),
+                        subtitle: Row(
+                          children: [
+                            Icon(
+                              Icons.email_outlined,
+                              size: 15,
+                            ),
+                            Text(eventEmails[index])
+                          ],
+                        ),
                         onTap: () {
                           //code to see each event here
                         },
@@ -238,7 +264,7 @@ class _EventState extends State<Event> {
                           SnackBar(content: Text("Event deleted ")));
                       // }
                     },
-                    background: Container(color: Colors.red),
+                    background: stackBehindDismiss(),
                     child: ListTile(
                       tileColor: Colors.blue[50],
                       shape: RoundedRectangleBorder(
@@ -258,25 +284,6 @@ class _EventState extends State<Event> {
                         },
                       ),
                     ));
-                // ListTile(
-                //   tileColor: Colors.blue[50],
-                //   shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.horizontal()),
-                //   title: Text(
-                //     eventItems[index],
-                //     style: TextStyle(
-                //         fontSize: 18,
-                //         color: Colors.black,
-                //         fontWeight: FontWeight.w600),
-                //   ),
-                //   subtitle: Text(eventDates[index]),
-                //   trailing: InkWell(
-                //     child: Icon(Icons.list),
-                //     onTap: () {
-                //       displayEvent(context);
-                //     },
-                //   ),
-                // );
               },
             ))
           ],
