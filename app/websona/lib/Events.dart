@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Event extends StatefulWidget {
   @override
@@ -24,11 +25,15 @@ class _EventState extends State<Event> {
     'gautam.gireesh@mail.utoronto.ca'
   ];
   List<Map<String, String>> peopleInfo = [
-    {'email': 'harsh.jhunjhunwala@mail.utoronto.ca', 'snapchat': 'harsh_j'},
-    {'email': 'aditi.dagar@mail.utoronto.ca', 'snapchat': 'adits'},
-    {'email': 'ibrahim.fazili@mail.utoronto.ca', 'twitter': 'ibra_'},
-    {'email': 'saakshi.shah@mail.utoronto.ca'},
-    {'email': 'gautam.gireesh@mail.utoronto.ca'}
+    {'email': 'harsh.jhunjhunwa@mail.utoronto.ca', 'snapchat': 'harsh_j'},
+    {'email': 'aditi.dagar@mail.utoronto.ca', 'facebook': 'adits'},
+    {
+      'email': 'ibrahim.fazili@mail.utoronto.ca',
+      'twitter': 'ibra_',
+      'snapchat': 'king3n3rgy'
+    },
+    {'email': 'saakshi.shah@mail.utoronto.ca', 'instagram': 'saakshi_shah_69'},
+    {'email': 'gautam.gireesh@mail.utoronto.ca', 'wechat': 'ga0tamling33'}
   ];
   List<String> eventPictures = [
     'https://picsum.photos/250?image=9',
@@ -116,6 +121,63 @@ class _EventState extends State<Event> {
     );
   }
 
+  displayLinks(int index) {
+    return Column(children: [
+      for (var i in peopleInfo[index].keys)
+        if (i == 'email')
+          Row(children: [
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.mailBulk),
+              iconSize: 15,
+            ),
+            Text(
+              peopleInfo[index]['email'],
+              overflow: TextOverflow.ellipsis,
+            )
+          ])
+        else if (i == 'snapchat')
+          Row(children: [
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.snapchat),
+              iconSize: 15,
+            ),
+            Text(peopleInfo[index]['snapchat'])
+          ])
+        else if (i == 'twitter')
+          Row(children: [
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.twitter),
+              iconSize: 15,
+            ),
+            Text(peopleInfo[index]['twitter'])
+          ])
+        else if (i == 'instagram')
+          Row(children: [
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.instagram),
+              iconSize: 15,
+            ),
+            Text(peopleInfo[index]['instagram'])
+          ])
+        else if (i == 'facebook')
+          Row(children: [
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.facebook),
+              iconSize: 15,
+            ),
+            Text(peopleInfo[index]['facebook'])
+          ])
+        else if (i == 'wechat')
+          Row(children: [
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.textHeight),
+              iconSize: 15,
+            ),
+            Text(peopleInfo[index]['wechat'])
+          ])
+    ]);
+  }
+
   displayEvent(BuildContext context) {
     return showDialog(
         context: context,
@@ -164,33 +226,21 @@ class _EventState extends State<Event> {
                     ),
                     itemBuilder: (BuildContext ctxt, int index) {
                       return new ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(eventPictures[
-                              index]), // no matter how big it is, it won't overflow
-                        ),
-                        tileColor: Colors.blue[50],
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        title: Text(
-                          eventNames[index],
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Row(
-                          children: [
-                            Icon(
-                              Icons.email_outlined,
-                              size: 15,
-                            ),
-                            Text(eventEmails[index])
-                          ],
-                        ),
-                        onTap: () {
-                          //code to see each event here
-                        },
-                      );
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(eventPictures[
+                                index]), // no matter how big it is, it won't overflow
+                          ),
+                          tileColor: Colors.blue[50],
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
+                          title: Text(
+                            eventNames[index],
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: displayLinks(index));
                     },
                   ))
                 ],
