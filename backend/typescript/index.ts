@@ -231,24 +231,6 @@ app.get("/code/:id", (req, res) => {
         res.status(500).send('500: Internal Server Error during db fetch');
     })
 });
-/*
-app.post("/addContact", async (req, res) => {
-    const user1 = req.body.user1;
-    const code = req.body.code;
-
-    fetchUsers({ _id: user1 }).then((users: User[]) => {
-        if (users.length === 0) res.status(404).send("User not found");
-        else {
-            const userContacts = users[0].contacts;
-            userContacts[code.socials.username] = code.socials.social ;
-            updateUser({ contacts: userContacts }, { _id: users[0]._id })
-            .then((val) => res.status(201).send("Contact added successfully"))
-            .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-        }
-
-    });
-
-}); */
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
