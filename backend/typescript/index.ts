@@ -146,23 +146,36 @@ app.post('/updateWebhook', (req, res) => {
 
 app.post("/addContact", async (req, res) => {
     const user1 = req.body.user1;
-    const code = req.body.code;
+    const code_id = req.body.code_id;
 
-    fetchUsers({ email: user1 }).then((users: User[]) => {
-        if (users.length === 0) res.status(404).send("User not found");
-        else {
-            const userContacts = users[0].contacts;
-            const contact = {email: code.owner, sharedSocials: [{social: code.socials.social, username: code.socials.username}]}
-            userContacts.push(contact)
-            updateUser({ contacts: userContacts }, { email: users[0].email })
-            .then((val) => res.status(201).send("Contact added successfully"))
-            .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-        }
+    try {
+        const codes = await fetchCodes({ id: code_id }) as Code[];
+        const code = codes[0]
 
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send('500: Internal Server Error during db fetch');
-    });
+        fetchUsers({ email: user1 }).then((users: User[]) => {
+            if (users.length === 0) res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [] as any;
+                for (let i = 0; i < code.socials.length; i++){
+                    shared.push({social: code.socials[i].social, username: code.socials[i].username})
+                }
+                const contact = {email: code.owner, sharedSocials: shared}
+                userContacts.push(contact)
+                updateUser({ contacts: userContacts }, { email: users[0].email })
+                .then((val) => res.status(201).send("Contact added successfully"))
+                .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+    
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    
+
+    } catch (error) {
+        return null;
+    }
 
 });
 
