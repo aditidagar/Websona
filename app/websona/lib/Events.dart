@@ -178,7 +178,7 @@ class _EventState extends State<Event> {
     ]);
   }
 
-  displayEvent(BuildContext context) {
+  displayEvent(BuildContext context, String eventName) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -193,16 +193,20 @@ class _EventState extends State<Event> {
                   onTap: () {
                     Navigator.pop(context);
                   }),
-              title: const Text(
-                'Events',
+              title: Text(
+                eventName,
                 style:
                     TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
               ),
               backgroundColor: Colors.blue,
               bottomOpacity: 0.0,
-              elevation: 0.0,
+              elevation: 12.0,
               centerTitle: false,
               automaticallyImplyLeading: false,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                bottomRight: Radius.elliptical(800, 50),
+              )),
             ),
             body: new Container(
               padding: new EdgeInsets.all(20.0),
@@ -330,7 +334,7 @@ class _EventState extends State<Event> {
                       trailing: InkWell(
                         child: Icon(Icons.list),
                         onTap: () {
-                          displayEvent(context);
+                          displayEvent(context, eventItems[index]);
                         },
                       ),
                     ));
