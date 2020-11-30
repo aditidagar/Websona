@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import Express from 'express';
+import { AccessToken } from './interfaces';
 
 export const tokenExpiryTime: number = 3600;
 /**
@@ -28,6 +29,6 @@ export function authenticateToken(req: Express.Request, res: Express.Response, n
  * Once the access token expires, user will need to request a new access token
  * @param uid Unique identifier for a user. This is used in the hashing process when generating the jwt
  */
-export function generateAccessToken(uid: object): string {
+export function generateAccessToken(uid: AccessToken): string {
     return jwt.sign(uid, process.env.JWT_TOKEN_SECRET as string, { expiresIn: tokenExpiryTime });
 }

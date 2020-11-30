@@ -7,13 +7,13 @@ import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
-import { SignUpInfo, LoginInfo, User, Code, PartialUserData } from './interfaces';
-import { MongoError } from 'mongodb';
+import { SignUpInfo, LoginInfo, User, Code, AccessToken, Contact, PartialUserData } from './interfaces';
+import { MongoError, ObjectId } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
-
-import { generateSignedPutUrl, generateSignedGetUrl } from './AWSPresigner'
+import { generateSignedPutUrl, generateSignedGetUrl} from './AWSPresigner'
+import { stringify } from 'querystring';
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -38,7 +38,7 @@ if (process.env.NODE_ENV === "test") {
             return;
         }
 
-        const accessToken: string = generateAccessToken({ email });
+        const accessToken: string = generateAccessToken({ email: email as string, firstName: "" });
         res.status(200).send(accessToken);
     });
 }
@@ -54,9 +54,10 @@ app.post("/signup", (req, res) => {
         email: req.body.email,
         phone: req.body.phone,
         password: bcrypt.hashSync(req.body.password, 10),
+        activationId: createHash('sha1').update(currentDate + random).digest('hex'),
         socials: [],
-        activationId: createHash('sha1').update(currentDate + random).digest('hex')
-    };
+        contacts: []
+	};
 
     insertUser(requestData)
         .then(async (result) => {
@@ -66,7 +67,7 @@ app.post("/signup", (req, res) => {
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
                 email: requestData.email
-            });
+            } as AccessToken);
             res.status(201).send({
                 accessToken,
                 tokenExpiryTime
@@ -97,7 +98,7 @@ app.post("/login", (req, res) => {
                 const accessToken: string = generateAccessToken({
                     firstName: user.firstName,
                     email: user.email
-                });
+                } as AccessToken);
                 res.status(200).send({
                     accessToken,
                     tokenExpiryTime
@@ -142,6 +143,7 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 
+
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authenticateToken);
@@ -157,6 +159,47 @@ app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
 
+app.post("/addContact", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const user1 = (jwt.decode(token) as AccessToken).email;
+    const code_id = req.body.code_id;
+
+    try {
+        const codes = await fetchCodes({ id: code_id }) as Code[];
+        const code = codes[0]
+
+        fetchUsers({ email: user1 }).then(async (users: User[]) => {
+            if (users.length === 0) res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [] as any;
+                for(const x of code.socials){
+                    shared.push({social: x.social, username: x.username})
+                }
+                let contactId: ObjectId | null = null;
+                try {
+                    contactId = (await fetchUsers({ email: code.owner }))[0]._id;
+                } catch (error) {
+                    res.status(500).send("500: Server Error. Failed to add contact").end();
+                }
+                const contact: Contact = {id: contactId as ObjectId, sharedSocials: shared}
+                userContacts.push(contact)
+                updateUser({ contacts: userContacts }, { email: users[0].email })
+                .then((val) => res.status(201).send("Contact added successfully"))
+                .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+
+
+    } catch (error) {
+        return null;
+    }
+
+});
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
     .then(async (users: User[] | MongoError) => {
@@ -208,7 +251,7 @@ app.post("/newCode", async (req, res) => {
         // generate a PUT URL to allow for qr code upload from client
         const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = req.headers.authorization?.split(' ')[1] as string;
-        const decodedToken = jwt.decode(token) as { [key: string]: any };
+        const decodedToken = jwt.decode(token) as AccessToken;
         const socials = req.body.socials;
         // insert code into db
         insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
@@ -259,7 +302,6 @@ app.get("/code/:id", (req, res) => {
         res.status(500).send('500: Internal Server Error during db fetch');
     })
 });
-
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
