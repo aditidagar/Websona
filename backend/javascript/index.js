@@ -142,22 +142,33 @@ app.post('/updateWebhook', (req, res) => {
 });
 app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user1 = req.body.user1;
-    const code = req.body.code;
-    DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => {
-        if (users.length === 0)
-            res.status(404).send("User not found");
-        else {
-            const userContacts = users[0].contacts;
-            const contact = { email: code.owner, sharedSocials: [{ social: code.socials.social, username: code.socials.username }] };
-            userContacts.push(contact);
-            DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
-                .then((val) => res.status(201).send("Contact added successfully"))
-                .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-        }
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send('500: Internal Server Error during db fetch');
-    });
+    const code_id = req.body.code_id;
+    try {
+        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
+        const code = codes[0];
+        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => {
+            if (users.length === 0)
+                res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [];
+                for (const x of code.socials) {
+                    shared.push({ social: x.social, username: x.username });
+                }
+                const contact = { email: code.owner, sharedSocials: shared };
+                userContacts.push(contact);
+                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
+                    .then((val) => res.status(201).send("Contact added successfully"))
+                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    }
+    catch (error) {
+        return null;
+    }
 }));
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
@@ -220,24 +231,6 @@ app.get("/code/:id", (req, res) => {
         res.status(500).send('500: Internal Server Error during db fetch');
     });
 });
-/*
-app.post("/addContact", async (req, res) => {
-    const user1 = req.body.user1;
-    const code = req.body.code;
-
-    fetchUsers({ _id: user1 }).then((users: User[]) => {
-        if (users.length === 0) res.status(404).send("User not found");
-        else {
-            const userContacts = users[0].contacts;
-            userContacts[code.socials.username] = code.socials.social ;
-            updateUser({ contacts: userContacts }, { _id: users[0]._id })
-            .then((val) => res.status(201).send("Contact added successfully"))
-            .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-        }
-
-    });
-
-}); */
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });

@@ -157,8 +157,8 @@ app.post("/addContact", async (req, res) => {
             else {
                 const userContacts = users[0].contacts;
                 const shared = [] as any;
-                for (let i = 0; i < code.socials.length; i++){
-                    shared.push({social: code.socials[i].social, username: code.socials[i].username})
+                for(const x of code.socials){
+                    shared.push({social: x.social, username: x.username})
                 }
                 const contact = {email: code.owner, sharedSocials: shared}
                 userContacts.push(contact)
@@ -166,12 +166,12 @@ app.post("/addContact", async (req, res) => {
                 .then((val) => res.status(201).send("Contact added successfully"))
                 .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
             }
-    
+
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
         });
-    
+
 
     } catch (error) {
         return null;
