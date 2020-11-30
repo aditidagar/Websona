@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'main.dart';
+
+final String API_URL = "https://api.thewebsonaapp.com";
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -14,11 +19,11 @@ class MapScreenState extends State<ProfilePage>
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController _nameController;
-  static List<String> _media_link = [];
+  static List<String> _mediaLink = [];
   static List<String> media = [];
-  String _name = 'Ibrahim Fazili';
-  String _email = 'fazili.ibrahim@gmail.com';
-  String _phone_number = '6479045015';
+  String _name = '';
+  String _email = '';
+  String _phone = '';
 
   static bool _status = true;
   File _image;
@@ -32,22 +37,68 @@ class MapScreenState extends State<ProfilePage>
     'Twitter'
   ];
 
+  void initializeProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    Response response = await get(API_URL + "/user/" + prefs.getString('email'),
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context),
+        });
+    final responseBody = jsonDecode(response.body);
+    List<String> mediaLink_temp = [];
+    List<String> media_temp = [];
+    for (int index = 0; index < responseBody['socials'].length; index++) {
+      setState(() {
+        media_temp.add(responseBody['socials'][index]['social']);
+        mediaLink_temp.add(responseBody['socials'][index]['username']);
+      });
+    }
+
+    setState(() {
+      _email = prefs.getString('email');
+      _name = responseBody['firstName'] + " " + responseBody['lastName'];
+      _phone = responseBody['phone'];
+      media = media_temp;
+      _mediaLink = mediaLink_temp;
+    });
+  }
+
+  Future<void> updateProfile() async {
+    String lastName = _name.split(" ")[_name.split(" ").length - 1];
+    String firstName = _name.substring(0, _name.length - lastName.length - 1);
+
+    var socialProject = [];
+    for (int index = 0; index < media.length; index++) {
+      socialProject
+          .add({'social': media[index], 'username': _mediaLink[index]});
+    }
+    Response response = await post(API_URL + "/updateUser",
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context),
+          'Content-Type': 'application/json'
+        },
+        body: jsonEncode({
+          'firstName': firstName,
+          'lastName': lastName,
+          'email': _email,
+          'phone': _phone,
+          'socials': socialProject
+        }));
+  }
+
   final FocusNode myFocusNode = FocusNode();
 
   @override
-  void initState() {
+  initState() {
     // ignore: todo
     // TODO: implement initState
     super.initState();
     _nameController = TextEditingController();
+    initializeProfile();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Friend list is ");
-    print(_media_link);
-    print("Chat list is ");
-    print(media);
     return new Scaffold(
         body: new Container(
       color: Colors.white,
@@ -101,8 +152,8 @@ class MapScreenState extends State<ProfilePage>
                                   decoration: new BoxDecoration(
                                     shape: BoxShape.circle,
                                     image: new DecorationImage(
-                                      image: new AssetImage(
-                                          'asset/img/unsettled_pikachu.jpg'),
+                                      image: NetworkImage(
+                                          'https://picsum.photos/250?image=9'),
                                       fit: BoxFit.cover,
                                     ),
                                   )),
@@ -195,11 +246,12 @@ class MapScreenState extends State<ProfilePage>
                               children: <Widget>[
                                 new Flexible(
                                   child: new TextFormField(
+                                    controller:
+                                        TextEditingController(text: _name),
                                     keyboardType: TextInputType.text,
                                     textInputAction: TextInputAction.next,
                                     textCapitalization:
                                         TextCapitalization.words,
-                                    initialValue: _name,
                                     decoration: const InputDecoration(
                                       hintText: "Enter Your Name",
                                     ),
@@ -279,7 +331,8 @@ class MapScreenState extends State<ProfilePage>
                               children: <Widget>[
                                 new Flexible(
                                   child: new TextFormField(
-                                    initialValue: _phone_number,
+                                    controller:
+                                        TextEditingController(text: _phone),
                                     keyboardType: TextInputType.emailAddress,
                                     textInputAction: TextInputAction.next,
                                     decoration: const InputDecoration(
@@ -294,7 +347,7 @@ class MapScreenState extends State<ProfilePage>
                                       else
                                         return null;
                                     },
-                                    onSaved: (value) => _phone_number = value,
+                                    onSaved: (value) => _phone = value,
                                   ),
                                 ),
                               ],
@@ -357,7 +410,7 @@ class MapScreenState extends State<ProfilePage>
                                                 if (media.contains(val) ==
                                                     false) {
                                                   media.insert(0, val);
-                                                  _media_link.insert(0, null);
+                                                  _mediaLink.insert(0, null);
                                                 }
                                               },
                                             );
@@ -419,21 +472,31 @@ class MapScreenState extends State<ProfilePage>
   }
 
   _imgFromCamera() async {
-    File image = await ImagePicker.pickImage(
-        source: ImageSource.camera, imageQuality: 50);
+    final _picker = ImagePicker();
+    PickedFile image =
+        await _picker.getImage(source: ImageSource.camera, imageQuality: 50);
 
     setState(() {
-      _image = image;
+      _image = File(image.path);
     });
   }
 
-  _imgFromGallery() async {
-    File image = await ImagePicker.pickImage(
-        source: ImageSource.gallery, imageQuality: 50);
-
+  Future _imgFromGallery() async {
+    print("im here");
+    final _picker = ImagePicker();
+    PickedFile image =
+        await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
     setState(() {
-      _image = image;
+      _image = File(image.path);
     });
+    final prefs = await SharedPreferences.getInstance();
+    var _email = prefs.getString('email');
+    Response response = await get(
+      API_URL + '/updateProfilePicture?email=$_email',
+      headers: <String, String>{
+        'authorization': await getAuthorizationToken(context),
+      },
+    );
   }
 
   Widget _getActionButtons() {
@@ -456,6 +519,8 @@ class MapScreenState extends State<ProfilePage>
                     _formKey.currentState.save();
                     setState(() {
                       _status = true;
+                      updateProfile();
+                      // fix this
                       FocusScope.of(context).requestFocus(new FocusNode());
                     });
                   }
@@ -543,7 +608,7 @@ class MapScreenState extends State<ProfilePage>
 
   List<Widget> _getLinks() {
     List<Widget> linkTextfields = [];
-    for (int i = 0; i < _media_link.length; i++) {
+    for (int i = 0; i < _mediaLink.length; i++) {
       linkTextfields.add(Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Row(
@@ -566,7 +631,7 @@ class MapScreenState extends State<ProfilePage>
     return MapScreenState._status == false
         ? InkWell(
             onTap: () {
-              _media_link.removeAt(index);
+              _mediaLink.removeAt(index);
               media.removeAt(index);
               if (media.length == 0) {
                 media = [''];
@@ -615,7 +680,7 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _nameController.text = MapScreenState._media_link[widget.index] ?? '';
+      _nameController.text = MapScreenState._mediaLink[widget.index] ?? '';
     });
     return Padding(
       padding: EdgeInsets.only(left: 5.0, right: 25.0, top: 2.0),
@@ -628,7 +693,7 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
             enabled: !MapScreenState._status,
             controller: _nameController,
             onSaved: (v) => {
-              MapScreenState._media_link[widget.index] = v,
+              MapScreenState._mediaLink[widget.index] = v,
             },
             decoration:
                 InputDecoration(hintText: 'Enter your social media link'),

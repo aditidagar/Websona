@@ -9,7 +9,7 @@ const Pattern emailRegexPattern =
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$";
 
 RegExp emailValidator = new RegExp(emailRegexPattern);
-const String API_URL = "http://api.thewebsonaapp.com";
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -143,7 +143,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'first': firstName,
           'last': lastName,
           'email': email,
-          'password': password
+          'password': password,
+          'phone': "",
         }));
     if (response.statusCode == 201) {
       // successful signup

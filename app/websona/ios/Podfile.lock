@@ -1,28 +1,88 @@
 PODS:
+  - contacts_service (0.2.2):
+    - Flutter
   - Flutter (1.0.0)
+  - flutter_qr_bar_scanner (0.0.1):
+    - Flutter
+    - GoogleMobileVision/BarcodeDetector
   - flutter_secure_storage (3.2.0):
     - Flutter
+  - GoogleMobileVision/BarcodeDetector (1.6.0):
+    - GoogleMobileVision/Detector (~> 1.6)
+  - GoogleMobileVision/Detector (1.6.0):
+    - GoogleToolboxForMac/Logger (~> 2.1)
+    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
+    - GTMSessionFetcher/Core (~> 1.1)
+    - Protobuf (~> 3.1)
+  - GoogleToolboxForMac/Defines (2.3.0)
+  - GoogleToolboxForMac/Logger (2.3.0):
+    - GoogleToolboxForMac/Defines (= 2.3.0)
+  - "GoogleToolboxForMac/NSData+zlib (2.3.0)":
+    - GoogleToolboxForMac/Defines (= 2.3.0)
+  - GTMSessionFetcher/Core (1.5.0)
+  - image_picker (0.0.1):
+    - Flutter
+  - MTBBarcodeScanner (5.0.11)
+  - native_device_orientation (0.0.1):
+    - Flutter
+  - Protobuf (3.13.0)
+  - qr_code_scanner (0.0.2):
+    - Flutter
+    - MTBBarcodeScanner
   - shared_preferences (0.0.1):
     - Flutter
 
 DEPENDENCIES:
+  - contacts_service (from `.symlinks/plugins/contacts_service/ios`)
   - Flutter (from `Flutter`)
+  - flutter_qr_bar_scanner (from `.symlinks/plugins/flutter_qr_bar_scanner/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - image_picker (from `.symlinks/plugins/image_picker/ios`)
+  - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
+  - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
 
+SPEC REPOS:
+  trunk:
+    - GoogleMobileVision
+    - GoogleToolboxForMac
+    - GTMSessionFetcher
+    - MTBBarcodeScanner
+    - Protobuf
+
 EXTERNAL SOURCES:
+  contacts_service:
+    :path: ".symlinks/plugins/contacts_service/ios"
   Flutter:
     :path: Flutter
+  flutter_qr_bar_scanner:
+    :path: ".symlinks/plugins/flutter_qr_bar_scanner/ios"
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  image_picker:
+    :path: ".symlinks/plugins/image_picker/ios"
+  native_device_orientation:
+    :path: ".symlinks/plugins/native_device_orientation/ios"
+  qr_code_scanner:
+    :path: ".symlinks/plugins/qr_code_scanner/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
 
 SPEC CHECKSUMS:
+  contacts_service: 849e1f84281804c8bfbec1b4c3eedcb23c5d3eca
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  flutter_qr_bar_scanner: 5c0324d036b4db9e5492dc876e6689dc7c38f203
   flutter_secure_storage: 0c5779648ff644110e507909b77a57e620cbbf8b
-  shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
+  GoogleMobileVision: 31cfb4319fd0c03d80105680abd9eae9da5e3b47
+  GoogleToolboxForMac: 1350d40e86a76f7863928d63bcb0b89c84c521c5
+  GTMSessionFetcher: b3503b20a988c4e20cc189aa798fd18220133f52
+  image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
+  MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
+  native_device_orientation: e24d00be281de72996640885d80e706142707660
+  Protobuf: 3dac39b34a08151c6d949560efe3f86134a3f748
+  qr_code_scanner: 16107718bdad7d708cdf6a5eacdca24b56cdf471
+  shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
 
-PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+PODFILE CHECKSUM: 869c8b8a0b540bfc3d9991850cd9939a16c9a94c
 
-COCOAPODS: 1.10.0.beta.2
+COCOAPODS: 1.10.0
