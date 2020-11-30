@@ -7,8 +7,8 @@ import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
-import { SignUpInfo, LoginInfo, User, Code } from './interfaces';
-import { MongoError } from 'mongodb';
+import { SignUpInfo, LoginInfo, User, Code, AccessToken, Contact } from './interfaces';
+import { MongoError, ObjectId } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === "test") {
             return;
         }
 
-        const accessToken: string = generateAccessToken({ email });
+        const accessToken: string = generateAccessToken({ email: email as string, firstName: "" });
         res.status(200).send(accessToken);
     });
 }
@@ -66,7 +66,7 @@ app.post("/signup", (req, res) => {
             const accessToken: string = generateAccessToken({
                 firstName: requestData.firstName,
                 email: requestData.email
-            });
+            } as AccessToken);
             res.status(201).send({
                 accessToken,
                 tokenExpiryTime
@@ -98,7 +98,7 @@ app.post("/login", (req, res) => {
                 const accessToken: string = generateAccessToken({
                     firstName: user.firstName,
                     email: user.email
-                });
+                } as AccessToken);
                 res.status(200).send({
                     accessToken,
                     tokenExpiryTime
@@ -144,15 +144,31 @@ app.post('/updateWebhook', (req, res) => {
 });
 
 
+// routes created after the line below will be reachable only by the clients
+// with a valid access token
+app.use(authenticateToken);
+
+app.get("/updateProfilePicture", async (req, res) => {
+    const email = req.query.email;
+    const profilePicture = bcrypt.hashSync(email, 1);
+    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+    res.status(200).send(url);
+});
+
+app.get("/protectedResource", (req, res) => {
+    res.status(200).send("This is a protected resource");
+});
+
 app.post("/addContact", async (req, res) => {
-    const user1 = req.body.user1;
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const user1 = (jwt.decode(token) as AccessToken).email;
     const code_id = req.body.code_id;
 
     try {
         const codes = await fetchCodes({ id: code_id }) as Code[];
         const code = codes[0]
 
-        fetchUsers({ email: user1 }).then((users: User[]) => {
+        fetchUsers({ email: user1 }).then(async (users: User[]) => {
             if (users.length === 0) res.status(404).send("User not found");
             else {
                 const userContacts = users[0].contacts;
@@ -160,7 +176,13 @@ app.post("/addContact", async (req, res) => {
                 for(const x of code.socials){
                     shared.push({social: x.social, username: x.username})
                 }
-                const contact = {email: code.owner, sharedSocials: shared}
+                let contactId: ObjectId | null = null;
+                try {
+                    contactId = (await fetchUsers({ email: code.owner }))[0]._id;
+                } catch (error) {
+                    res.status(500).send("500: Server Error. Failed to add contact").end();
+                }
+                const contact: Contact = {id: contactId as ObjectId, sharedSocials: shared}
                 userContacts.push(contact)
                 updateUser({ contacts: userContacts }, { email: users[0].email })
                 .then((val) => res.status(201).send("Contact added successfully"))
@@ -179,21 +201,6 @@ app.post("/addContact", async (req, res) => {
 
 });
 
-// routes created after the line below will be reachable only by the clients
-// with a valid access token
-app.use(authenticateToken);
-
-app.get("/updateProfilePicture", async (req, res) => {
-    const email = req.query.email;
-    const profilePicture = bcrypt.hashSync(email, 1);
-    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
-    res.status(200).send(url);
-});
-
-app.get("/protectedResource", (req, res) => {
-    res.status(200).send("This is a protected resource");
-});
-
 app.post("/newCode", async (req, res) => {
     const codeId = await getUniqueCodeId();
     if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
@@ -201,7 +208,7 @@ app.post("/newCode", async (req, res) => {
         // generate a PUT URL to allow for qr code upload from client
         const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
         const token = req.headers.authorization?.split(' ')[1] as string;
-        const decodedToken = jwt.decode(token) as { [key: string]: any };
+        const decodedToken = jwt.decode(token) as AccessToken;
         const socials = req.body.socials;
         // insert code into db
         insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {

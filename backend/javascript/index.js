@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === "test") {
             res.status(400).send('Missing username for access token request');
             return;
         }
-        const accessToken = authentication_1.generateAccessToken({ email });
+        const accessToken = authentication_1.generateAccessToken({ email: email, firstName: "" });
         res.status(200).send(accessToken);
     });
 }
@@ -140,36 +140,6 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
-app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user1 = req.body.user1;
-    const code_id = req.body.code_id;
-    try {
-        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
-        const code = codes[0];
-        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => {
-            if (users.length === 0)
-                res.status(404).send("User not found");
-            else {
-                const userContacts = users[0].contacts;
-                const shared = [];
-                for (const x of code.socials) {
-                    shared.push({ social: x.social, username: x.username });
-                }
-                const contact = { email: code.owner, sharedSocials: shared };
-                userContacts.push(contact);
-                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
-                    .then((val) => res.status(201).send("Contact added successfully"))
-                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-            }
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db fetch');
-        });
-    }
-    catch (error) {
-        return null;
-    }
-}));
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
@@ -182,15 +152,54 @@ app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0,
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
-app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const user1 = jsonwebtoken_1.default.decode(token).email;
+    const code_id = req.body.code_id;
+    try {
+        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
+        const code = codes[0];
+        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
+            if (users.length === 0)
+                res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [];
+                for (const x of code.socials) {
+                    shared.push({ social: x.social, username: x.username });
+                }
+                let contactId = null;
+                try {
+                    contactId = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }))[0]._id;
+                }
+                catch (error) {
+                    res.status(500).send("500: Server Error. Failed to add contact").end();
+                }
+                const contact = { id: contactId, sharedSocials: shared };
+                userContacts.push(contact);
+                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
+                    .then((val) => res.status(201).send("Contact added successfully"))
+                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+        })).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    }
+    catch (error) {
+        return null;
+    }
+}));
+app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     const codeId = yield getUniqueCodeId();
     if (codeId === null)
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
         const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
         // insert code into db

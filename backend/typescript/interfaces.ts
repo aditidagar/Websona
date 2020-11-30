@@ -1,5 +1,9 @@
-import { ObjectID } from "mongodb";
+import { ObjectId } from "mongodb";
 
+export interface AccessToken {
+    firstName: string;
+    email: string;
+}
 
 export interface SignUpInfo {
     firstName: string;
@@ -15,8 +19,16 @@ export interface LoginInfo {
     password: string;
 }
 
+export interface Contact {
+    id: ObjectId;
+    sharedSocials: {
+        social: string;
+        username: string;
+    }[];
+}
+
 export interface User {
-    _id: ObjectID
+    _id: ObjectId
     firstName: string;
     lastName: string;
     email: string;
