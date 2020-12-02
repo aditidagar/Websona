@@ -150,7 +150,7 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 app.get("/getContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.params.email;
+    const user = req.query.email;
     try {
         DatabaseHandler_1.fetchUsers({ email: user }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
             if (users.length === 0)
