@@ -143,6 +143,25 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 
+app.get("/getContact", async (req, res) => {
+    const user = req.query.email;
+    try {
+        fetchUsers({ email: user }).then(async (users: User[]) => {
+            if (users.length === 0) res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                res.status(201).send(userContacts);
+            }
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+
+    } catch (error) {
+        return null;
+    }
+});
+
 
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
