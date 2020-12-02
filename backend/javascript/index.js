@@ -149,6 +149,46 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
+app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user1 = req.body.user1;
+    const code_id = req.body.code_id;
+    try {
+        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
+        const code = codes[0];
+        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
+            if (users.length === 0)
+                res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [];
+                for (const x of code.socials) {
+                    shared.push({ social: x.social, username: x.username });
+                }
+                let contactId = null;
+                let owner = "";
+                try {
+                    const ownerList = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }));
+                    contactId = (ownerList)[0]._id;
+                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
+                }
+                catch (error) {
+                    res.status(500).send("500: Server Error. Failed to add contact").end();
+                }
+                const contact = { id: contactId, user: owner, sharedSocials: shared };
+                userContacts.push(contact);
+                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
+                    .then((val) => res.status(201).send("Contact added successfully"))
+                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+        })).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    }
+    catch (error) {
+        return null;
+    }
+}));
 app.get("/getContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.query.email;
     try {
@@ -180,45 +220,51 @@ app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0,
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
-app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-    const user1 = jsonwebtoken_1.default.decode(token).email;
+/*
+app.post("/addContact", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const user1 = (jwt.decode(token) as AccessToken).email;
     const code_id = req.body.code_id;
+
     try {
-        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
-        const code = codes[0];
-        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
-            if (users.length === 0)
-                res.status(404).send("User not found");
+        const codes = await fetchCodes({ id: code_id }) as Code[];
+        const code = codes[0]
+
+        fetchUsers({ email: user1 }).then(async (users: User[]) => {
+            if (users.length === 0) res.status(404).send("User not found");
             else {
                 const userContacts = users[0].contacts;
-                const shared = [];
-                for (const x of code.socials) {
-                    shared.push({ social: x.social, username: x.username });
+                const shared = [] as any;
+                for(const x of code.socials){
+                    shared.push({social: x.social, username: x.username})
                 }
-                let contactId = null;
+                let contactId: ObjectId | null = null;
+                let owner = "";
                 try {
-                    contactId = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }))[0]._id;
-                }
-                catch (error) {
+                    const ownerList = (await fetchUsers({ email: code.owner }));
+                    contactId = (ownerList)[0]._id;
+                    owner = (ownerList)[0].firstName + (ownerList)[0].lastName;
+                } catch (error) {
                     res.status(500).send("500: Server Error. Failed to add contact").end();
                 }
-                const contact = { id: contactId, sharedSocials: shared };
-                userContacts.push(contact);
-                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
-                    .then((val) => res.status(201).send("Contact added successfully"))
-                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+                const contact: Contact = {id: contactId as ObjectId, user: owner ,sharedSocials: shared}
+                userContacts.push(contact)
+                updateUser({ contacts: userContacts }, { email: users[0].email })
+                .then((val) => res.status(201).send("Contact added successfully"))
+                .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
             }
-        })).catch((err) => {
+
+        }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
         });
-    }
-    catch (error) {
+
+
+    } catch (error) {
         return null;
     }
-}));
+});
+*/
 app.get("/user/:email", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: req.params.email })
         .then((users) => __awaiter(void 0, void 0, void 0, function* () {
@@ -269,14 +315,14 @@ app.post("/updateUser", (req, res) => {
     });
 });
 app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _a;
     const codeId = yield getUniqueCodeId();
     if (codeId === null)
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
         const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/png');
-        const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
         // insert code into db

@@ -144,7 +144,7 @@ app.post('/updateWebhook', (req, res) => {
 });
 
 app.post("/addContact", async (req, res) => {
-    const user1 = req.body.email;
+    const user1 = req.body.user1;
     const code_id = req.body.code_id;
 
     try {
@@ -164,7 +164,7 @@ app.post("/addContact", async (req, res) => {
                 try {
                     const ownerList = (await fetchUsers({ email: code.owner }));
                     contactId = (ownerList)[0]._id;
-                    owner = (ownerList)[0].firstName + (ownerList)[0].lastName;
+                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
                 } catch (error) {
                     res.status(500).send("500: Server Error. Failed to add contact").end();
                 }
@@ -184,7 +184,7 @@ app.post("/addContact", async (req, res) => {
     } catch (error) {
         return null;
     }
-
+});
 
 app.get("/getContact", async (req, res) => {
     const user = req.query.email;
