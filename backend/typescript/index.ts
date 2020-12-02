@@ -196,12 +196,15 @@ app.post("/addContact", async (req, res) => {
                     shared.push({social: x.social, username: x.username})
                 }
                 let contactId: ObjectId | null = null;
+                let owner = "";
                 try {
-                    contactId = (await fetchUsers({ email: code.owner }))[0]._id;
+                    const ownerList = (await fetchUsers({ email: code.owner }));
+                    contactId = (ownerList)[0]._id;
+                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
                 } catch (error) {
                     res.status(500).send("500: Server Error. Failed to add contact").end();
                 }
-                const contact: Contact = {id: contactId as ObjectId, sharedSocials: shared}
+                const contact: Contact = {id: contactId as ObjectId, user: owner ,sharedSocials: shared}
                 userContacts.push(contact)
                 updateUser({ contacts: userContacts }, { email: users[0].email })
                 .then((val) => res.status(201).send("Contact added successfully"))
@@ -217,8 +220,8 @@ app.post("/addContact", async (req, res) => {
     } catch (error) {
         return null;
     }
-
 });
+
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
     .then(async (users: User[] | MongoError) => {

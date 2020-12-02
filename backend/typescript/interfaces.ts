@@ -26,6 +26,7 @@ export interface LoginInfo {
 
 export interface Contact {
     id: ObjectId;
+    user: string;
     sharedSocials: {
         social: string;
         username: string;
