@@ -143,8 +143,44 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 
+app.get("/getContact", async (req, res) => {
+    const user = req.query.email;
+    try {
+        fetchUsers({ email: user }).then(async (users: User[]) => {
+            if (users.length === 0) res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                res.status(201).send(userContacts);
+            }
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+
+    } catch (error) {
+        return null;
+    }
+});
+
+
+// routes created after the line below will be reachable only by the clients
+// with a valid access token
+app.use(authenticateToken);
+
+app.get("/updateProfilePicture", async (req, res) => {
+    const email = req.query.email;
+    const profilePicture = bcrypt.hashSync(email, 1);
+    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+    res.status(200).send(url);
+});
+
+app.get("/protectedResource", (req, res) => {
+    res.status(200).send("This is a protected resource");
+});
+
 app.post("/addContact", async (req, res) => {
-    const user1 = req.body.user1;
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const user1 = (jwt.decode(token) as AccessToken).email;
     const code_id = req.body.code_id;
 
     try {
@@ -186,85 +222,6 @@ app.post("/addContact", async (req, res) => {
     }
 });
 
-app.get("/getContact", async (req, res) => {
-    const user = req.query.email;
-    try {
-        fetchUsers({ email: user }).then(async (users: User[]) => {
-            if (users.length === 0) res.status(404).send("User not found");
-            else {
-                const userContacts = users[0].contacts;
-                res.status(201).send(userContacts);
-            }
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db fetch');
-        });
-
-    } catch (error) {
-        return null;
-    }
-});
-
-
-// routes created after the line below will be reachable only by the clients
-// with a valid access token
-app.use(authenticateToken);
-
-app.get("/updateProfilePicture", async (req, res) => {
-    const email = req.query.email;
-    const profilePicture = bcrypt.hashSync(email, 1);
-    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
-    res.status(200).send(url);
-});
-
-app.get("/protectedResource", (req, res) => {
-    res.status(200).send("This is a protected resource");
-});
-/*
-app.post("/addContact", async (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1] as string;
-    const user1 = (jwt.decode(token) as AccessToken).email;
-    const code_id = req.body.code_id;
-
-    try {
-        const codes = await fetchCodes({ id: code_id }) as Code[];
-        const code = codes[0]
-
-        fetchUsers({ email: user1 }).then(async (users: User[]) => {
-            if (users.length === 0) res.status(404).send("User not found");
-            else {
-                const userContacts = users[0].contacts;
-                const shared = [] as any;
-                for(const x of code.socials){
-                    shared.push({social: x.social, username: x.username})
-                }
-                let contactId: ObjectId | null = null;
-                let owner = "";
-                try {
-                    const ownerList = (await fetchUsers({ email: code.owner }));
-                    contactId = (ownerList)[0]._id;
-                    owner = (ownerList)[0].firstName + (ownerList)[0].lastName;
-                } catch (error) {
-                    res.status(500).send("500: Server Error. Failed to add contact").end();
-                }
-                const contact: Contact = {id: contactId as ObjectId, user: owner ,sharedSocials: shared}
-                userContacts.push(contact)
-                updateUser({ contacts: userContacts }, { email: users[0].email })
-                .then((val) => res.status(201).send("Contact added successfully"))
-                .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-            }
-
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db fetch');
-        });
-
-
-    } catch (error) {
-        return null;
-    }
-});
-*/
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
     .then(async (users: User[] | MongoError) => {
