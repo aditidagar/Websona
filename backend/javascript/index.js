@@ -223,13 +223,16 @@ app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function
                     shared.push({ social: x.social, username: x.username });
                 }
                 let contactId = null;
+                let owner = "";
                 try {
-                    contactId = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }))[0]._id;
+                    const ownerList = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }));
+                    contactId = (ownerList)[0]._id;
+                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
                 }
                 catch (error) {
                     res.status(500).send("500: Server Error. Failed to add contact").end();
                 }
-                const contact = { id: contactId, sharedSocials: shared };
+                const contact = { id: contactId, user: owner, sharedSocials: shared };
                 userContacts.push(contact);
                 DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
                     .then((val) => res.status(201).send("Contact added successfully"))

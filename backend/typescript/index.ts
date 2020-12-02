@@ -153,7 +153,7 @@ app.get("/code/:id", (req, res) => {
         }
 
         if (!(await authenticateTokenReturn(req))) {
-            // send the playstore/appstore link page
+            // send the playstore/appstore link page. This is just a placeholder
             res.status(403).send(`
             <html>
                 <body>
@@ -183,11 +183,22 @@ app.get("/code/:id", (req, res) => {
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
-        });
+        })
+    });
+});
+
+app.get("/getContact", async (req, res) => {
+    const user = req.query.email;
+    fetchUsers({ email: user }).then(async (users: User[]) => {
+        if (users.length === 0) res.status(404).send("User not found");
+        else {
+            const userContacts = users[0].contacts;
+            res.status(201).send(userContacts);
+        }
     }).catch((err) => {
         console.log(err);
         res.status(500).send('500: Internal Server Error during db fetch');
-    })
+    });
 });
 
 
@@ -226,12 +237,15 @@ app.post("/addContact", async (req, res) => {
                     shared.push({ social: x.social, username: x.username })
                 }
                 let contactId: ObjectId | null = null;
+                let owner = "";
                 try {
-                    contactId = (await fetchUsers({ email: code.owner }))[0]._id;
+                    const ownerList = (await fetchUsers({ email: code.owner }));
+                    contactId = (ownerList)[0]._id;
+                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
                 } catch (error) {
                     res.status(500).send("500: Server Error. Failed to add contact").end();
                 }
-                const contact: Contact = { id: contactId as ObjectId, sharedSocials: shared }
+                const contact: Contact = { id: contactId as ObjectId, user: owner, sharedSocials: shared }
                 userContacts.push(contact)
                 updateUser({ contacts: userContacts }, { email: users[0].email })
                     .then((val) => res.status(201).send("Contact added successfully"))
@@ -247,7 +261,6 @@ app.post("/addContact", async (req, res) => {
     } catch (error) {
         return null;
     }
-
 });
 
 app.get("/user/:email", (req, res) => {
