@@ -66,6 +66,7 @@ app.post("/signup", (req, res) => {
         phone: req.body.phone,
         password: bcrypt_1.default.hashSync(req.body.password, 10),
         activationId: crypto_1.createHash('sha1').update(currentDate + random).digest('hex'),
+        socials: [],
         contacts: []
     };
     DatabaseHandler_1.insertUser(requestData)
@@ -148,6 +149,25 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
+app.get("/getContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.params.email;
+    try {
+        DatabaseHandler_1.fetchUsers({ email: user }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
+            if (users.length === 0)
+                res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                res.status(201).send(userContacts);
+            }
+        })).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    }
+    catch (error) {
+        return null;
+    }
+}));
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
@@ -160,6 +180,45 @@ app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0,
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
+app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const user1 = jsonwebtoken_1.default.decode(token).email;
+    const code_id = req.body.code_id;
+    try {
+        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
+        const code = codes[0];
+        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
+            if (users.length === 0)
+                res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [];
+                for (const x of code.socials) {
+                    shared.push({ social: x.social, username: x.username });
+                }
+                let contactId = null;
+                try {
+                    contactId = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }))[0]._id;
+                }
+                catch (error) {
+                    res.status(500).send("500: Server Error. Failed to add contact").end();
+                }
+                const contact = { id: contactId, sharedSocials: shared };
+                userContacts.push(contact);
+                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
+                    .then((val) => res.status(201).send("Contact added successfully"))
+                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+        })).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    }
+    catch (error) {
+        return null;
+    }
+}));
 app.get("/user/:email", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: req.params.email })
         .then((users) => __awaiter(void 0, void 0, void 0, function* () {
@@ -170,7 +229,7 @@ app.get("/user/:email", (req, res) => {
             // generate get urls for all the codes so the app can load the images for the codes
             for (var codes_1 = __asyncValues(codes), codes_1_1; codes_1_1 = yield codes_1.next(), !codes_1_1.done;) {
                 const code = codes_1_1.value;
-                const url = yield AWSPresigner_1.generateSignedGetUrl("codes/" + code.id, 30);
+                const url = yield AWSPresigner_1.generateSignedGetUrl("codes/" + code.id, 120);
                 code.url = url;
             }
         }
@@ -210,52 +269,13 @@ app.post("/updateUser", (req, res) => {
     });
 });
 app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-    const user1 = jsonwebtoken_1.default.decode(token).email;
-    const code_id = req.body.code_id;
-    try {
-        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
-        const code = codes[0];
-        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
-            if (users.length === 0)
-                res.status(404).send("User not found");
-            else {
-                const userContacts = users[0].contacts;
-                const shared = [];
-                for (const x of code.socials) {
-                    shared.push({ social: x.social, username: x.username });
-                }
-                let contactId = null;
-                try {
-                    contactId = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }))[0]._id;
-                }
-                catch (error) {
-                    res.status(500).send("500: Server Error. Failed to add contact").end();
-                }
-                const contact = { id: contactId, sharedSocials: shared };
-                userContacts.push(contact);
-                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
-                    .then((val) => res.status(201).send("Contact added successfully"))
-                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-            }
-        })).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db fetch');
-        });
-    }
-    catch (error) {
-        return null;
-    }
-}));
-app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     const codeId = yield getUniqueCodeId();
     if (codeId === null)
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/jpeg');
+        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
