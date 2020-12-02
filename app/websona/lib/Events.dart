@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:marquee_widget/marquee_widget.dart';
 
 class Event extends StatefulWidget {
   @override
@@ -10,6 +11,7 @@ class _EventState extends State<Event> {
   DateTime selectedDate = DateTime.now();
   List<String> eventItems = [];
   List<String> eventDates = [];
+  List<String> eventLocations = [];
   List<String> eventNames = [
     'Harsh Jhunjhunwala',
     'Aditi Dagar',
@@ -89,6 +91,7 @@ class _EventState extends State<Event> {
                       child: RaisedButton(
                         onPressed: () {
                           eventItems.add(nameController.text);
+                          eventLocations.add(locationController.text);
                           eventDates.add(
                               "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year.toString()}");
                           setState(() {});
@@ -178,35 +181,77 @@ class _EventState extends State<Event> {
     ]);
   }
 
-  displayEvent(BuildContext context, String eventName) {
+  displayEvent(BuildContext context, String eventName, String eventLoc) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return Scaffold(
-            appBar: AppBar(
-              leading: InkWell(
-                  child: new Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.black,
-                    size: 22.0,
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  }),
-              title: Text(
-                eventName,
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
-              ),
-              backgroundColor: Colors.blue,
-              bottomOpacity: 0.0,
-              elevation: 12.0,
-              centerTitle: false,
-              automaticallyImplyLeading: false,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                bottomRight: Radius.elliptical(800, 50),
-              )),
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(150),
+              child: AppBar(
+                  titleSpacing: 1.0,
+                  leading: InkWell(
+                      child: new Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.black,
+                        size: 22.0,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                      }),
+                  title: Container(
+                      width: 250,
+                      child: Marquee(
+                        child: Text(eventName),
+                        animationDuration:
+                            Duration(seconds: eventName.length ~/ 8),
+                        backDuration: Duration(seconds: eventName.length ~/ 8),
+                        pauseDuration: Duration(seconds: 1),
+                      )),
+                  backgroundColor: Colors.blue,
+                  bottomOpacity: 0.0,
+                  elevation: 12.0,
+                  centerTitle: false,
+                  automaticallyImplyLeading: false,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(70),
+                  )),
+                  flexibleSpace: Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 30, top: 20),
+                          child: Text(
+                            eventLoc,
+                            style: TextStyle(fontSize: 24),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 80, top: 55),
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 45, top: 12),
+                                child: Container(
+                                  child: Text(eventNames.length.toString(),
+                                      style: TextStyle(
+                                        fontSize: 55,
+                                      )),
+                                ),
+                              ),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.blue[100]),
+                            ),
+                          )),
+                    ],
+                  )),
             ),
             body: new Container(
               padding: new EdgeInsets.all(20.0),
@@ -313,6 +358,7 @@ class _EventState extends State<Event> {
                       setState(() {
                         eventDates.removeAt(index);
                         eventItems.removeAt(index);
+                        eventLocations.removeAt(index);
                       });
                       Scaffold.of(context).showSnackBar(
                           SnackBar(content: Text("Event deleted ")));
@@ -334,7 +380,8 @@ class _EventState extends State<Event> {
                       trailing: InkWell(
                         child: Icon(Icons.list),
                         onTap: () {
-                          displayEvent(context, eventItems[index]);
+                          displayEvent(context, eventItems[index],
+                              eventLocations[index]);
                         },
                       ),
                     ));
