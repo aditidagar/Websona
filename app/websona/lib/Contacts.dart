@@ -70,8 +70,6 @@ class _ContactsState extends State<Contacts> {
     );
 
     var contacts = jsonDecode(response.body);
-    print("CONTACTS: ");
-    print(contacts);
     List<Person> listContact = [];
     List<Social> listSocial = [];
     for (int i = 0; i < contacts.length; i++) {
@@ -110,6 +108,40 @@ class _ContactsState extends State<Contacts> {
 
   Widget build(BuildContext context) {
     bool isSearching = searchController.text.isNotEmpty;
+    if (this.contactInfo.length == 1) {
+      return MaterialApp(
+          title: 'Contacts',
+          home: Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: AppBar(
+                title: const Text(
+                  '  Contacts',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w700),
+                ),
+                backgroundColor: Colors.transparent,
+                bottomOpacity: 0.0,
+                elevation: 0.0,
+                centerTitle: false,
+                automaticallyImplyLeading: false,
+              ),
+              body: Container(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "You don't have any contacts yet",
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ))));
+    }
     return MaterialApp(
         title: 'Contacts',
         home: Scaffold(
