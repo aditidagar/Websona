@@ -8,13 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -22,12 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
-const https_1 = __importDefault(require("https"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = require("crypto");
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
+const mongodb_1 = require("mongodb");
 const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
 const emailer_1 = require("./emailer");
@@ -152,13 +145,14 @@ app.post('/updateWebhook', (req, res) => {
 app.get("/code/:id", (req, res) => {
     const codeId = req.params.id;
     DatabaseHandler_1.fetchCodes({ id: codeId }).then((codes) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
         codes = codes;
         if (codes.length === 0) {
             res.status(404).send('Code not found');
             return;
         }
         if (!(yield authentication_1.authenticateTokenReturn(req))) {
-            // send the playstore/appstore link page
+            // send the playstore/appstore link page. This is just a placeholder
             res.status(403).send(`
             <html>
                 <body>
@@ -168,6 +162,33 @@ app.get("/code/:id", (req, res) => {
             return;
         }
         const email = codes[0].owner;
+        const id = codes[0].id;
+        // event code
+        if (codes[0].type && codes[0].type === 'event') {
+            const events = yield DatabaseHandler_1.fetchEvents({ codeId: id });
+            if (events.length === 0) {
+                res.status(404).send("event not found").end();
+                return;
+            }
+            const event = events[0];
+            const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+            const scanningUserEmail = jsonwebtoken_1.default.decode(token).email;
+            const scanningUsers = yield DatabaseHandler_1.fetchUsers({ email: scanningUserEmail });
+            if (scanningUsers.length === 0) {
+                res.status(404).send("User trying to scan the code doesn't exist").end();
+                return;
+            }
+            const scanningUser = scanningUsers[0];
+            event.attendees.push({
+                firstName: scanningUser.firstName,
+                lastName: scanningUser.lastName,
+                email: scanningUser.email
+            });
+            DatabaseHandler_1.updateEvent({ attendees: event.attendees }, { _id: event._id });
+            res.status(200).send(`Thanks for participating in ${event.name} at ${event.location}`);
+            return;
+        }
+        // code belongs to a normal user (personal code)
         DatabaseHandler_1.fetchUsers({ email }).then((users) => {
             users = users;
             if (users.length === 0) {
@@ -188,16 +209,30 @@ app.get("/code/:id", (req, res) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
         });
+    }));
+});
+app.get("/getContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.query.email;
+    DatabaseHandler_1.fetchUsers({ email: user }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
+        if (users.length === 0)
+            res.status(404).send("User not found");
+        else {
+            const userContacts = users[0].contacts;
+            res.status(201).send(userContacts);
+        }
     })).catch((err) => {
         console.log(err);
         res.status(500).send('500: Internal Server Error during db fetch');
     });
-});
+}));
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
 app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const email = req.query.email;
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    const email = decodedToken.email;
     const profilePicture = bcrypt_1.default.hashSync(email, 1);
     const url = yield AWSPresigner_1.generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
     res.status(200).send(url);
@@ -206,8 +241,8 @@ app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
 app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    var _b;
+    const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
     const user1 = jsonwebtoken_1.default.decode(token).email;
     const code_id = req.body.code_id;
     try {
@@ -250,24 +285,8 @@ app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function
 app.get("/user/:email", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: req.params.email })
         .then((users) => __awaiter(void 0, void 0, void 0, function* () {
-        var e_1, _a;
         const user = users[0];
         const codes = yield DatabaseHandler_1.fetchCodes({ owner: user.email });
-        try {
-            // generate get urls for all the codes so the app can load the images for the codes
-            for (var codes_1 = __asyncValues(codes), codes_1_1; codes_1_1 = yield codes_1.next(), !codes_1_1.done;) {
-                const code = codes_1_1.value;
-                const url = yield AWSPresigner_1.generateSignedGetUrl("codes/" + code.id, 120);
-                code.url = url;
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (codes_1_1 && !codes_1_1.done && (_a = codes_1.return)) yield _a.call(codes_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
         user.codes = codes;
         delete user.password;
         res.status(200).send(user);
@@ -278,11 +297,14 @@ app.get("/user/:email", (req, res) => {
     });
 });
 app.post("/updateUser", (req, res) => {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
     const singleUser = {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         phone: req.body.phone,
-        email: req.body.email,
+        email: decodedToken.email,
         socials: req.body.socials
     };
     DatabaseHandler_1.fetchUsers({ email: singleUser.email }).
@@ -297,37 +319,87 @@ app.post("/updateUser", (req, res) => {
     });
 });
 app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _c;
     const codeId = yield getUniqueCodeId();
     if (codeId === null)
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/png');
-        const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
+        const token = (_c = req.headers.authorization) === null || _c === void 0 ? void 0 : _c.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
+        const type = req.query.type;
         objectCleanup(socials);
         // insert code into db
-        DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
-            res.status(201).send({ codeId, putUrl });
-            // enqueue a get request for this qr for future to verify
-            // if client uploaded the code or not. On failure, delete this entry
-            // from the database
-            setTimeout(verifyQRupload, 1000 * 10, codeId);
+        DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
+            res.status(201).send({ codeId });
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db insertion');
         });
     }
 }));
+app.get("/events", (req, res) => {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    DatabaseHandler_1.fetchEvents({ owner: decodedToken.email }).then((events) => {
+        res.status(200).send(events);
+    }).catch((err) => res.status(500).send("500: Server Error"));
+});
+app.post("/newEvent", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const token = (_d = req.headers.authorization) === null || _d === void 0 ? void 0 : _d.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    // check all args are there in the body
+    if (!validateObjectProps(req.body, ["codeId", "name", "location", "date"])) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+    const event = {
+        codeId: req.body.codeId,
+        owner: decodedToken.email,
+        name: req.body.name,
+        location: req.body.location,
+        date: Number(req.body.date),
+        attendees: []
+    };
+    try {
+        yield DatabaseHandler_1.insertEvent(event);
+        res.status(201).send("success").end();
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send("500: Server error, try again later");
+    }
+}));
+app.post("/deleteEvent", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e;
+    const token = (_e = req.headers.authorization) === null || _e === void 0 ? void 0 : _e.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    const email = decodedToken.email;
+    if (!req.body.id) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+    const _id = mongodb_1.ObjectId.createFromHexString(req.body.id);
+    const events = (yield DatabaseHandler_1.fetchEvents({ _id }));
+    if (events.length === 0) {
+        res.status(404).send("no such event found");
+        return;
+    }
+    const event = events[0];
+    if (event.owner !== email) {
+        res.status(403).send("User not authorized to delete this event");
+        return;
+    }
+    DatabaseHandler_1.deleteEvent(_id);
+    DatabaseHandler_1.deleteCode(event.codeId);
+    res.status(201).send("success");
+}));
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });
-function getCodeMiddlewareFailCallback(req, res, next) {
-    req.authFailed = true;
-    next();
-}
 /**
  * Generate unique id for a qr code
  */
@@ -348,16 +420,18 @@ function getUniqueCodeId() {
         }
     });
 }
-function verifyQRupload(codeId) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const downloadUrl = yield AWSPresigner_1.generateSignedGetUrl('codes/' + codeId, 3000);
-        https_1.default.get(downloadUrl, ((res) => {
-            if (res.statusCode !== 200) {
-                // client didn't upload the code, delete it's entry from db
-                DatabaseHandler_1.deleteCode(codeId);
-            }
-        }));
-    });
+/**
+ * Check if the given object has all the required keys
+ * @param obj Object to validate
+ * @param requiredKeys the keys that must be present in the object
+ */
+function validateObjectProps(obj, requiredKeys) {
+    const keys = Object.keys(obj);
+    for (const key of requiredKeys) {
+        if (keys.findIndex((val) => val === key) === -1)
+            return false;
+    }
+    return true;
 }
 /**
  * Delete invalid entries from an object

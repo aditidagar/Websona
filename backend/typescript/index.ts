@@ -1,19 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
-import https from 'https';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
-import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
-import { authenticateToken, authenticateTokenReturn, generateAccessToken, tokenExpiryTime } from './authentication';
-import { SignUpInfo, LoginInfo, User, Code, AccessToken, Contact, PartialUserData } from './interfaces';
+import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode, insertEvent, deleteEvent, fetchEvents, updateEvent } from "./utils/DatabaseHandler";
+import { authenticateToken, generateAccessToken, tokenExpiryTime, authenticateTokenReturn } from './authentication';
+import { SignUpInfo, LoginInfo, User, Code, PartialUserData, Event, AccessToken, Contact } from './interfaces';
 import { MongoError, ObjectId } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
 import { generateSignedPutUrl, generateSignedGetUrl } from './AWSPresigner'
-import { stringify } from 'querystring';
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -164,6 +162,37 @@ app.get("/code/:id", (req, res) => {
         }
 
         const email = codes[0].owner;
+        const id = codes[0].id;
+        // event code
+        if (codes[0].type && codes[0].type === 'event') {
+            const events = await fetchEvents({ codeId: id }) as Event[];
+            if (events.length === 0) {
+                res.status(404).send("event not found").end();
+                return;
+            }
+
+            const event = events[0];
+            const token = req.headers.authorization?.split(' ')[1] as string;
+            const scanningUserEmail = (jwt.decode(token) as AccessToken).email;
+            const scanningUsers = await fetchUsers({ email: scanningUserEmail });
+            if (scanningUsers.length === 0) {
+                res.status(404).send("User trying to scan the code doesn't exist").end();
+                return;
+            }
+
+            const scanningUser = scanningUsers[0];
+            event.attendees.push({
+                firstName: scanningUser.firstName,
+                lastName: scanningUser.lastName,
+                email: scanningUser.email
+            });
+
+            updateEvent({ attendees: event.attendees }, { _id: event._id });
+            res.status(200).send(`Thanks for participating in ${event.name} at ${event.location}`);
+            return;
+        }
+
+        // code belongs to a normal user (personal code)
         fetchUsers({ email }).then((users) => {
             users = users as User[];
             if (users.length === 0) {
@@ -265,18 +294,12 @@ app.post("/addContact", async (req, res) => {
 
 app.get("/user/:email", (req, res) => {
     fetchUsers({ email: req.params.email })
-        .then(async (users: User[] | MongoError) => {
-            const user: PartialUserData = users[0];
-            const codes = await fetchCodes({ owner: user.email }) as Code[];
+    .then(async (users: User[] | MongoError) => {
+        const user: PartialUserData = users[0];
+        const codes = await fetchCodes({ owner: user.email }) as Code[];
 
-            // generate get urls for all the codes so the app can load the images for the codes
-            for await (const code of codes) {
-                const url = await generateSignedGetUrl("codes/" + code.id, 120);
-                code.url = url;
-            }
-
-            user.codes = codes;
-            delete user.password;
+        user.codes = codes;
+        delete user.password;
 
             res.status(200).send(user);
         })
@@ -314,24 +337,82 @@ app.post("/newCode", async (req, res) => {
     if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = req.headers.authorization?.split(' ')[1] as string;
         const decodedToken = jwt.decode(token) as AccessToken;
         const socials = req.body.socials;
+        const type = req.query.type as string;
         objectCleanup(socials);
         // insert code into db
-        insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
-            res.status(201).send({ codeId, putUrl });
-            // enqueue a get request for this qr for future to verify
-            // if client uploaded the code or not. On failure, delete this entry
-            // from the database
-            setTimeout(verifyQRupload, 1000 * 10, codeId);
+        insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
+            res.status(201).send({ codeId });
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db insertion');
         });
     }
 });
+
+app.get("/events", (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as { [key: string]: any };
+    fetchEvents({ owner: decodedToken.email }).then((events) => {
+        res.status(200).send(events);
+    }).catch((err) => res.status(500).send("500: Server Error"));
+});
+
+app.post("/newEvent", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as { [key: string]: any };
+    // check all args are there in the body
+    if (!validateObjectProps(req.body, ["codeId", "name", "location", "date"])) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+    const event: Event = {
+        codeId: req.body.codeId,
+        owner: decodedToken.email,
+        name: req.body.name,
+        location: req.body.location,
+        date: Number(req.body.date),
+        attendees: []
+    };
+
+    try {
+        await insertEvent(event);
+        res.status(201).send("success").end();
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("500: Server error, try again later");
+    }
+});
+
+app.post("/deleteEvent", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as { [key: string]: any };
+    const email = decodedToken.email;
+    if (!req.body.id) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+
+    const _id = ObjectId.createFromHexString(req.body.id);
+
+    const events: Event[] = (await fetchEvents({ _id })) as Event[];
+    if (events.length === 0) {
+        res.status(404).send("no such event found");
+        return;
+    }
+
+    const event = events[0];
+    if (event.owner !== email) {
+        res.status(403).send("User not authorized to delete this event");
+        return;
+    }
+
+    deleteEvent(_id);
+    deleteCode(event.codeId);
+    res.status(201).send("success");
+})
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
@@ -356,17 +437,16 @@ async function getUniqueCodeId() {
 }
 
 /**
- * Check if the code's image was uploaded to s3. If not, delete entry from the database
- * @param codeId code id for code whose upload needs to be validated
+ * Check if the given object has all the required keys
+ * @param obj Object to validate
+ * @param requiredKeys the keys that must be present in the object
  */
-async function verifyQRupload(codeId: string): Promise<void> {
-    const downloadUrl = await generateSignedGetUrl('codes/' + codeId, 3000);
-    https.get(downloadUrl as string, ((res) => {
-        if (res.statusCode !== 200) {
-            // client didn't upload the code, delete it's entry from db
-            deleteCode(codeId);
-        }
-    }));
+function validateObjectProps(obj: object, requiredKeys: string[]): boolean {
+    const keys = Object.keys(obj);
+    for (const key of requiredKeys) {
+        if (keys.findIndex((val) => val === key) === -1) return false;
+    }
+    return true;
 }
 
 /**
