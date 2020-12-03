@@ -108,7 +108,7 @@ class _ContactsState extends State<Contacts> {
 
   Widget build(BuildContext context) {
     bool isSearching = searchController.text.isNotEmpty;
-    if (this.contactInfo.length == 1) {
+    if (this.contactInfo.length == 0) {
       return MaterialApp(
           title: 'Contacts',
           home: Scaffold(
