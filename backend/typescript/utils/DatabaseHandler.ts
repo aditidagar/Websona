@@ -1,6 +1,5 @@
-import { Collection, FilterQuery, InsertOneWriteOpResult, MongoClient, MongoError, UpdateQuery } from 'mongodb';
-import { Code } from '../interfaces';
-import { User } from '../interfaces';
+import { Collection, FilterQuery, InsertOneWriteOpResult, MongoClient, MongoError, ObjectId, UpdateQuery } from 'mongodb';
+import { Code, User, Event } from '../interfaces';
 
 const DB_NAME = "test";
 const MONGO_URL =
@@ -9,8 +8,10 @@ const MONGO_URL =
 let client = new MongoClient(MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true });
 const COLLECTION_USERS = "Users";
 const COLLECTION_CODES = "Codes";
+const COLLECTION_EVENTS = "Events";
 let USERS_COLLECTION_LOCAL: Collection<any> | null = null;
 let CODES_COLLECTION_LOCAL: Collection<any> | null = null;
+let EVENTS_COLLECTION_LOCAL: Collection<any> | null = null;
 
 
 /**
@@ -51,6 +52,9 @@ function getCollection(collectionName): Promise<Collection | any> {
             else if (collectionName === COLLECTION_CODES) {
                 resolve(CODES_COLLECTION_LOCAL ? CODES_COLLECTION_LOCAL : client.db(DB_NAME).collection(collectionName));
             }
+            else if (collectionName === COLLECTION_EVENTS) {
+                resolve(EVENTS_COLLECTION_LOCAL ? EVENTS_COLLECTION_LOCAL : client.db(DB_NAME).collection(collectionName));
+            }
             else throw Error("Invalid Collection Name");
         }
         else {
@@ -62,6 +66,10 @@ function getCollection(collectionName): Promise<Collection | any> {
                 else if (collectionName === COLLECTION_CODES) {
                     CODES_COLLECTION_LOCAL = connection.db(DB_NAME).collection(collectionName);
                     resolve(CODES_COLLECTION_LOCAL);
+                }
+                else if (collectionName === COLLECTION_EVENTS) {
+                    EVENTS_COLLECTION_LOCAL = connection.db(DB_NAME).collection(collectionName);
+                    resolve(EVENTS_COLLECTION_LOCAL);
                 }
                 else throw Error("Invalid Collection Name");
             }).catch((reason) => {
@@ -156,6 +164,46 @@ export function deleteCode(codeId: string) {
     return new Promise((resolve, reject) => {
         getCollection(COLLECTION_CODES).then((collection: Collection) => {
             collection.deleteOne({ id: codeId }).catch((err) => reject(err));
+        }).catch((reason) => reject(reason))
+    })
+}
+
+export function insertEvent(event: Event): Promise<InsertOneWriteOpResult<any>> {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_EVENTS).then((collection: Collection) => {
+            collection.insertOne(event).then((result) => {
+                resolve(result);
+            }).catch((err) => {
+                reject(err);
+            })
+
+        }).catch((reason) => {
+            reject(reason);
+        });
+    });
+}
+
+export function fetchEvents(query, options={}): Promise<Event[] | MongoError> {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_EVENTS).then((collection: Collection) => {
+            collection.find(query, options).toArray((err, result) => {
+                if (err) { reject(err); }
+
+                resolve(result);
+            });
+        }).catch((reason) => {
+            reject(reason);
+        });
+    });
+}
+
+export function deleteEvent(_id: ObjectId) {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_EVENTS).then((collection: Collection) => {
+            collection.deleteOne({ _id }).catch((err) => reject(err));
         }).catch((reason) => reject(reason))
     })
 }

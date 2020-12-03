@@ -5,10 +5,10 @@ import https from 'https';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
-import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
+import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode, insertEvent, deleteEvent, fetchEvents } from "./utils/DatabaseHandler";
 import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
-import { SignUpInfo, LoginInfo, User, Code, PartialUserData } from './interfaces';
-import { MongoError } from 'mongodb';
+import { SignUpInfo, LoginInfo, User, Code, PartialUserData, Event } from './interfaces';
+import { MongoError, ObjectId } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
@@ -210,8 +210,9 @@ app.post("/newCode", async (req, res) => {
         const token = req.headers.authorization?.split(' ')[1] as string;
         const decodedToken = jwt.decode(token) as { [key: string]: any };
         const socials = req.body.socials;
+        const type = req.query.type as string;
         // insert code into db
-        insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
+        insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
             res.status(201).send({ codeId, putUrl });
             // enqueue a get request for this qr for future to verify
             // if client uploaded the code or not. On failure, delete this entry
@@ -260,6 +261,57 @@ app.get("/code/:id", (req, res) => {
     })
 });
 
+app.post("/newEvent", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as { [key: string]: any };
+    // check all args are there in the body
+    if (!validateObjectProps(req.body, ["codeId", "name", "location", "date"])) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+    const event: Event = {
+        codeId: req.body.codeId,
+        owner: decodedToken.email,
+        name: req.body.name,
+        location: req.body.location,
+        date: Number(req.body.date),
+        attendees: []
+    };
+
+    try {
+        await insertEvent(event);
+        res.status(201).send("success").end();
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("500: Server error, try again later");
+    }
+});
+
+app.post("/deleteEvent", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as { [key: string]: any };
+    const email = decodedToken.email;
+    if (!req.body.id) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+
+    const events: Event[] = (await fetchEvents({ _id: req.body.id })) as Event[];
+    if (events.length === 0) {
+        res.status(404).send("no such event found");
+        return;
+    }
+
+    const event = events[0];
+    if (event.owner != email) {
+        res.status(403).send("User not authorized to delete this event");
+        return;
+    }
+
+    deleteEvent(req.body.id as ObjectId);
+    deleteCode(event.codeId);
+    res.status(201).send("success");
+})
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
@@ -291,6 +343,19 @@ async function verifyQRupload(codeId: string): Promise<void> {
             deleteCode(codeId);
         }
     }));
+}
+
+/**
+ * Check if the given object has all the required keys
+ * @param obj Object to validate
+ * @param requiredKeys the keys that must be present in the object
+ */
+function validateObjectProps(obj: object, requiredKeys: string[]): boolean {
+    const keys = Object.keys(obj);
+    for (const key of requiredKeys) {
+        if (keys.findIndex((val) => val == key) == -1) return false;
+    }
+    return true;
 }
 
 export default app;

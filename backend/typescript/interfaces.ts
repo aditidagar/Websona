@@ -55,4 +55,18 @@ export interface Code {
         username: string;
     }[];
     url?: string;
+    type: string;
+}
+
+export interface Event {
+    codeId: string;
+    owner: ObjectID;
+    name: string;
+    location: string;
+    date: number; // Unix timestamp
+    attendees: {
+        firstName: string;
+        lastName: string;
+        email: string;
+    }[];
 }

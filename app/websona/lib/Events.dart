@@ -1,6 +1,16 @@
+import 'dart:convert';
+import 'package:http/http.dart';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:marquee_widget/marquee_widget.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:ui' as UI;
+
+import 'main.dart';
+
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class Event extends StatefulWidget {
   @override
@@ -19,23 +29,14 @@ class _EventState extends State<Event> {
     'Saakshi Shah',
     'Gautam Gireesh'
   ];
-  List<String> eventEmails = [
-    'harsh.jhunjhunwala@mail.utoronto.ca',
-    'aditi.dagar@mail.utoronto.ca',
-    'ibrahim.fazili@mail.utoronto.ca',
-    'saakshi.shah@mail.utoronto.ca',
-    'gautam.gireesh@mail.utoronto.ca'
-  ];
   List<Map<String, String>> peopleInfo = [
-    {'email': 'harsh.jhunjhunwa@mail.utoronto.ca', 'snapchat': 'harsh_j'},
-    {'email': 'aditi.dagar@mail.utoronto.ca', 'facebook': 'adits'},
+    {'email': 'harsh.jhunjhunwa@mail.utoronto.ca'},
+    {'email': 'aditi.dagar@mail.utoronto.ca'},
     {
-      'email': 'ibrahim.fazili@mail.utoronto.ca',
-      'twitter': 'ibra_',
-      'snapchat': 'king3n3rgy'
+      'email': 'ibrahim.fazili@mail.utoronto.ca'
     },
-    {'email': 'saakshi.shah@mail.utoronto.ca', 'instagram': 'saakshi_shah_69'},
-    {'email': 'gautam.gireesh@mail.utoronto.ca', 'wechat': 'ga0tamling33'}
+    {'email': 'saakshi.shah@mail.utoronto.ca'},
+    {'email': 'gautam.gireesh@mail.utoronto.ca'}
   ];
   List<String> eventPictures = [
     'https://picsum.photos/250?image=9',
@@ -96,6 +97,7 @@ class _EventState extends State<Event> {
                               "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year.toString()}");
                           setState(() {});
                           Navigator.of(context).pop();
+                          createCodeDialog(context);
                         },
                         child: Text(
                           "Create",
@@ -137,46 +139,6 @@ class _EventState extends State<Event> {
               peopleInfo[index]['email'],
               overflow: TextOverflow.ellipsis,
             )
-          ])
-        else if (i == 'snapchat')
-          Row(children: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.snapchat),
-              iconSize: 15,
-            ),
-            Text(peopleInfo[index]['snapchat'])
-          ])
-        else if (i == 'twitter')
-          Row(children: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.twitter),
-              iconSize: 15,
-            ),
-            Text(peopleInfo[index]['twitter'])
-          ])
-        else if (i == 'instagram')
-          Row(children: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.instagram),
-              iconSize: 15,
-            ),
-            Text(peopleInfo[index]['instagram'])
-          ])
-        else if (i == 'facebook')
-          Row(children: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.facebook),
-              iconSize: 15,
-            ),
-            Text(peopleInfo[index]['facebook'])
-          ])
-        else if (i == 'wechat')
-          Row(children: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.textHeight),
-              iconSize: 15,
-            ),
-            Text(peopleInfo[index]['wechat'])
           ])
     ]);
   }
@@ -297,6 +259,103 @@ class _EventState extends State<Event> {
             ),
           );
         });
+  }
+
+  createCodeDialog(BuildContext context) async{
+    var qrKey = GlobalKey();
+    String codeUrl = "";
+    
+    Response response = await post(API_URL + "/newCode?type=event",
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          'authorization': await getAuthorizationToken(context),
+        },
+      );
+    
+    if (response.statusCode == 201) {
+      Map<dynamic, dynamic> data = jsonDecode(response.body);
+      String codeId = data['codeId'];
+      codeUrl = API_URL + '/code/' + codeId;
+      uploadCode(data['putUrl'], qrKey);
+    }
+
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0)),
+              child: Container(
+                  height: 500.0,
+                  margin: EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(10.0),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        width: 200.0,
+                        height: 200.0,
+                        margin: EdgeInsets.only(top: 20, bottom: 20),
+                        child: RepaintBoundary(
+                                key: qrKey,
+                                child: QrImage(
+                                  data: codeUrl,
+                                  size: 200,
+                                ),
+                              ),
+                      ),
+                      Center(
+                        child: Text('Code',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 40.0,
+                                fontFamily: 'sans-serif-light',
+                                color: Colors.black)),
+                      ),
+                      RaisedButton(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(80.0),
+                            side: BorderSide(color: Colors.blue, width: 2)),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Dismiss',
+                            style: TextStyle(fontSize: 20, color: Colors.blue)),
+                      ),
+                    ],
+                  )));
+        });
+  }
+
+  uploadCode(String url, dynamic key) {
+    Future.delayed(const Duration(milliseconds: 2000), () {
+          _getWidgetImage(key).then((value) async {
+            var bytes = base64Decode(value);
+            var client = Client();
+            var request = Request('PUT', Uri.parse(url));
+            request.headers.addAll({"Content-Type": "image/png"});
+            request.bodyBytes = bytes;
+            var streamedResponse = await client.send(request).then((res) {
+              print(res.statusCode);
+            });
+            client.close();
+          });
+        });
+  }
+
+  Future<String> _getWidgetImage(dynamic qrKey) async {
+    try {
+      RenderRepaintBoundary boundary = qrKey.currentContext.findRenderObject();
+
+      UI.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData byteData =
+          await image.toByteData(format: UI.ImageByteFormat.png);
+      var pngBytes = byteData.buffer.asUint8List();
+      var bs64 = base64Encode(pngBytes);
+      return bs64;
+    } catch (exception) {
+      return null;
+    }
   }
 
   @override
