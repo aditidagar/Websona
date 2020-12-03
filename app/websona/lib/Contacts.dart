@@ -6,20 +6,27 @@ class Contacts extends StatefulWidget {
   _ContactsState createState() => _ContactsState();
 }
 
+//Social Class
+class Social {
+  String socialMedia;
+  String handle;
+  Social(this.socialMedia, this.handle);
+}
+
 //Person class
 class Person {
   String name;
-  List<String> socialLinks;
+  List<Social> socialLinks;
   Person(this.name, this.socialLinks);
 }
 
 class _ContactsState extends State<Contacts> {
   Person person1 =
-      new Person('John', ['john@gmail.com', 'john123', 'john_stamos']);
-  Person person2 = new Person('Julie', ['julie@yahoo.com', 'julie_s']);
-  Person person3 = new Person('Adam', []);
-  Person person4 = new Person(
-      'Rachel', ['rachel@gmail.com', 'RachelGreen', 'r_green', '@rachel']);
+      new Person('John', [new Social('Instagram','john123'), new Social('Email','john@gmail.com'), new Social('Twitter','johnStamos')]);
+  //Person person2 = new Person('Julie', ['julie@yahoo.com', 'julie_s']);
+  //Person person3 = new Person('Adam', []);
+  //Person person4 = new Person(
+      //'Rachel', ['rachel@gmail.com', 'RachelGreen', 'r_green', '@rachel']);
   List<Person> contactInfo = [];
   List<Person> contactsFiltered = [];
   TextEditingController searchController = new TextEditingController();
@@ -32,9 +39,9 @@ class _ContactsState extends State<Contacts> {
     // });
     //adds two people
     contactInfo.add(person1);
-    contactInfo.add(person2);
-    contactInfo.add(person3);
-    contactInfo.add(person4);
+    //contactInfo.add(person2);
+    //contactInfo.add(person3);
+    //contactInfo.add(person4);
 
     contactInfo.sort((a, b) => a.name.compareTo(b.name));
   }

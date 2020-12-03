@@ -94,13 +94,19 @@ class MapScreenState extends State<Contact> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.horizontal()),
                 title: Text(
-                  widget.person.socialLinks[index],
+                  widget.person.socialLinks[index].handle,
                   style: TextStyle(
                       fontSize: 18,
                       color: Colors.black,
                       fontWeight: FontWeight.w600),
                 ),
-                //subtitle: Text(eventDates[index]),
+                subtitle: Text(
+                  widget.person.socialLinks[index].socialMedia,
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600),
+                ),
                 leading: Icon(Icons.keyboard_arrow_right_rounded),
                 onTap: () {
                   //code to see each event here
