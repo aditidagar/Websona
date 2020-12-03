@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateAccessToken = exports.authenticateToken = exports.tokenExpiryTime = void 0;
+exports.generateAccessToken = exports.authenticateTokenReturn = exports.authenticateToken = exports.tokenExpiryTime = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 exports.tokenExpiryTime = 3600;
 /**
@@ -28,6 +28,27 @@ function authenticateToken(req, res, next) {
     });
 }
 exports.authenticateToken = authenticateToken;
+/**
+ * Authenticate this request. Returns a promise which resolve to true if
+ * auth successful, else false
+ * @param req Express Request object
+ * @returns promise which resolves to true if auth successful, else false
+ */
+function authenticateTokenReturn(req) {
+    return new Promise((resolve, reject) => {
+        const authHeader = req.headers.authorization;
+        if (!authHeader)
+            resolve(false);
+        const token = authHeader.split(' ')[1];
+        jsonwebtoken_1.default.verify(token, process.env.JWT_TOKEN_SECRET, (err, user) => {
+            if (err)
+                resolve(false);
+            else
+                resolve(true); // user is authorized, let them access the requested resource
+        });
+    });
+}
+exports.authenticateTokenReturn = authenticateTokenReturn;
 /**
  * Generate access token for an authenticated user. The generated access token will be valid for 3600 seconds, i.e., an hour.
  * Once the access token expires, user will need to request a new access token

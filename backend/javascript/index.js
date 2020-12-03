@@ -149,25 +149,50 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
-app.get("/getContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.query.email;
-    try {
-        DatabaseHandler_1.fetchUsers({ email: user }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
-            if (users.length === 0)
-                res.status(404).send("User not found");
-            else {
-                const userContacts = users[0].contacts;
-                res.status(201).send(userContacts);
+app.get("/code/:id", (req, res) => {
+    const codeId = req.params.id;
+    DatabaseHandler_1.fetchCodes({ id: codeId }).then((codes) => __awaiter(void 0, void 0, void 0, function* () {
+        codes = codes;
+        if (codes.length === 0) {
+            res.status(404).send('Code not found');
+            return;
+        }
+        if (!(yield authentication_1.authenticateTokenReturn(req))) {
+            // send the playstore/appstore link page
+            res.status(403).send(`
+            <html>
+                <body>
+                    <span>Please download the app to continue</span>
+                </body>
+            </html>`).end();
+            return;
+        }
+        const email = codes[0].owner;
+        DatabaseHandler_1.fetchUsers({ email }).then((users) => {
+            users = users;
+            if (users.length === 0) {
+                res.status(404).send('User not found');
+                return;
             }
-        })).catch((err) => {
+            const user = users[0];
+            // delete unneccessary fields
+            delete user.password;
+            delete user.phone;
+            delete user.activationId;
+            delete user.email;
+            delete user.codes;
+            // only provide socials associated with the code
+            user.socials = codes[0].socials;
+            res.status(200).send(user);
+        }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
         });
-    }
-    catch (error) {
-        return null;
-    }
-}));
+    })).catch((err) => {
+        console.log(err);
+        res.status(500).send('500: Internal Server Error during db fetch');
+    });
+});
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
@@ -282,6 +307,7 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
+        objectCleanup(socials);
         // insert code into db
         DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
             res.status(201).send({ codeId, putUrl });
@@ -295,43 +321,13 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
 }));
-app.get("/code/:id", (req, res) => {
-    const codeId = req.params.id;
-    DatabaseHandler_1.fetchCodes({ id: codeId }).then((codes) => {
-        codes = codes;
-        if (codes.length === 0) {
-            res.status(404).send('Code not found');
-            return;
-        }
-        const email = codes[0].owner;
-        DatabaseHandler_1.fetchUsers({ email }).then((users) => {
-            users = users;
-            if (users.length === 0) {
-                res.status(404).send('User not found');
-                return;
-            }
-            const user = users[0];
-            // delete unneccessary fields
-            delete user.password;
-            delete user.phone;
-            delete user.activationId;
-            delete user.email;
-            delete user.codes;
-            // only provide socials associated with the code
-            user.socials = codes[0].socials;
-            res.status(200).send(user);
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db fetch');
-        });
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send('500: Internal Server Error during db fetch');
-    });
-});
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });
+function getCodeMiddlewareFailCallback(req, res, next) {
+    req.authFailed = true;
+    next();
+}
 /**
  * Generate unique id for a qr code
  */
@@ -362,5 +358,23 @@ function verifyQRupload(codeId) {
             }
         }));
     });
+}
+/**
+ * Delete invalid entries from an object
+ * @param obj object to clean up
+ */
+function objectCleanup(obj) {
+    const keys = Object.keys(obj);
+    const keysToRemove = [];
+    for (const key of keys) {
+        if (key.trim().length === 0)
+            keysToRemove.push(key);
+        else if (key === "null" || key === "undefined")
+            keysToRemove.push(key);
+    }
+    while (keysToRemove.length > 0) {
+        delete obj[keysToRemove[0]];
+        keysToRemove.shift();
+    }
 }
 exports.default = app;

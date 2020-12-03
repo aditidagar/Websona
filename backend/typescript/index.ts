@@ -6,13 +6,13 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { insertUser, fetchUsers, updateUser, fetchCodes, insertCode, deleteCode } from "./utils/DatabaseHandler";
-import { authenticateToken, generateAccessToken, tokenExpiryTime } from './authentication';
+import { authenticateToken, authenticateTokenReturn, generateAccessToken, tokenExpiryTime } from './authentication';
 import { SignUpInfo, LoginInfo, User, Code, AccessToken, Contact, PartialUserData } from './interfaces';
 import { MongoError, ObjectId } from 'mongodb';
 import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
-import { generateSignedPutUrl, generateSignedGetUrl} from './AWSPresigner'
+import { generateSignedPutUrl, generateSignedGetUrl } from './AWSPresigner'
 import { stringify } from 'querystring';
 
 const PORT = process.env.PORT;
@@ -57,7 +57,7 @@ app.post("/signup", (req, res) => {
         activationId: createHash('sha1').update(currentDate + random).digest('hex'),
         socials: [],
         contacts: []
-	};
+    };
 
     insertUser(requestData)
         .then(async (result) => {
@@ -143,158 +143,23 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 
-app.get("/getContact", async (req, res) => {
-    const user = req.query.email;
-    try {
-        fetchUsers({ email: user }).then(async (users: User[]) => {
-            if (users.length === 0) res.status(404).send("User not found");
-            else {
-                const userContacts = users[0].contacts;
-                res.status(201).send(userContacts);
-            }
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db fetch');
-        });
-
-    } catch (error) {
-        return null;
-    }
-});
-
-
-// routes created after the line below will be reachable only by the clients
-// with a valid access token
-app.use(authenticateToken);
-
-app.get("/updateProfilePicture", async (req, res) => {
-    const email = req.query.email;
-    const profilePicture = bcrypt.hashSync(email, 1);
-    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
-    res.status(200).send(url);
-});
-
-app.get("/protectedResource", (req, res) => {
-    res.status(200).send("This is a protected resource");
-});
-
-app.post("/addContact", async (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1] as string;
-    const user1 = (jwt.decode(token) as AccessToken).email;
-    const code_id = req.body.code_id;
-
-    try {
-        const codes = await fetchCodes({ id: code_id }) as Code[];
-        const code = codes[0]
-
-        fetchUsers({ email: user1 }).then(async (users: User[]) => {
-            if (users.length === 0) res.status(404).send("User not found");
-            else {
-                const userContacts = users[0].contacts;
-                const shared = [] as any;
-                for(const x of code.socials){
-                    shared.push({social: x.social, username: x.username})
-                }
-                let contactId: ObjectId | null = null;
-                let owner = "";
-                try {
-                    const ownerList = (await fetchUsers({ email: code.owner }));
-                    contactId = (ownerList)[0]._id;
-                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
-                } catch (error) {
-                    res.status(500).send("500: Server Error. Failed to add contact").end();
-                }
-                const contact: Contact = {id: contactId as ObjectId, user: owner ,sharedSocials: shared}
-                userContacts.push(contact)
-                updateUser({ contacts: userContacts }, { email: users[0].email })
-                .then((val) => res.status(201).send("Contact added successfully"))
-                .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
-            }
-
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db fetch');
-        });
-
-
-    } catch (error) {
-        return null;
-    }
-});
-
-app.get("/user/:email", (req, res) => {
-    fetchUsers({ email: req.params.email })
-    .then(async (users: User[] | MongoError) => {
-        const user: PartialUserData = users[0];
-        const codes = await fetchCodes({ owner: user.email }) as Code[];
-
-        // generate get urls for all the codes so the app can load the images for the codes
-        for await (const code of codes) {
-            const url = await generateSignedGetUrl("codes/" + code.id, 120);
-            code.url = url;
-        }
-
-        user.codes = codes;
-        delete user.password;
-
-        res.status(200).send(user);
-    })
-    .catch((err) => {
-        console.log(err);
-        res.status(500).send("Server error");
-    });
-})
-
-app.post("/updateUser", (req, res) => {
-    const singleUser: PartialUserData = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        phone: req.body.phone,
-        email: req.body.email,
-        socials: req.body.socials
-    };
-    fetchUsers({ email: singleUser.email }).
-        then((users: User[] | MongoError) => {
-            const user: User = users[0];
-            const emailT = singleUser.email;
-            delete singleUser.email;
-            updateUser(singleUser, { email: emailT })
-            res.status(200).send("update successful")
-        }
-        ).catch((err) => {
-            res.status(500).send("Error with server")
-        })
-})
-
-app.post("/newCode", async (req, res) => {
-    const codeId = await getUniqueCodeId();
-    if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
-    else {
-        // generate a PUT URL to allow for qr code upload from client
-        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
-        const token = req.headers.authorization?.split(' ')[1] as string;
-        const decodedToken = jwt.decode(token) as AccessToken;
-        const socials = req.body.socials;
-        // insert code into db
-        insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
-            res.status(201).send({ codeId, putUrl });
-            // enqueue a get request for this qr for future to verify
-            // if client uploaded the code or not. On failure, delete this entry
-            // from the database
-            setTimeout(verifyQRupload, 1000 * 10, codeId);
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('500: Internal Server Error during db insertion');
-        });
-    }
-});
-
 app.get("/code/:id", (req, res) => {
     const codeId = req.params.id;
-    fetchCodes({ id: codeId }).then((codes) => {
+    fetchCodes({ id: codeId }).then(async (codes) => {
         codes = codes as Code[];
         if (codes.length === 0) {
             res.status(404).send('Code not found');
+            return;
+        }
+
+        if (!(await authenticateTokenReturn(req))) {
+            // send the playstore/appstore link page. This is just a placeholder
+            res.status(403).send(`
+            <html>
+                <body>
+                    <span>Please download the app to continue</span>
+                </body>
+            </html>`).end();
             return;
         }
 
@@ -319,10 +184,153 @@ app.get("/code/:id", (req, res) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db fetch');
         })
+    });
+});
+
+app.get("/getContact", async (req, res) => {
+    const user = req.query.email;
+    fetchUsers({ email: user }).then(async (users: User[]) => {
+        if (users.length === 0) res.status(404).send("User not found");
+        else {
+            const userContacts = users[0].contacts;
+            res.status(201).send(userContacts);
+        }
     }).catch((err) => {
         console.log(err);
         res.status(500).send('500: Internal Server Error during db fetch');
-    })
+    });
+});
+
+
+// routes created after the line below will be reachable only by the clients
+// with a valid access token
+app.use(authenticateToken);
+
+app.get("/updateProfilePicture", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as AccessToken;
+    const email = decodedToken.email;
+    const profilePicture = bcrypt.hashSync(email, 1);
+    const url = await generateSignedPutUrl("profile-pictures/" + profilePicture, req.query.type);
+    res.status(200).send(url);
+});
+
+app.get("/protectedResource", (req, res) => {
+    res.status(200).send("This is a protected resource");
+});
+
+app.post("/addContact", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const user1 = (jwt.decode(token) as AccessToken).email;
+    const code_id = req.body.code_id;
+
+    try {
+        const codes = await fetchCodes({ id: code_id }) as Code[];
+        const code = codes[0]
+
+        fetchUsers({ email: user1 }).then(async (users: User[]) => {
+            if (users.length === 0) res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [] as any;
+                for (const x of code.socials) {
+                    shared.push({ social: x.social, username: x.username })
+                }
+                let contactId: ObjectId | null = null;
+                let owner = "";
+                try {
+                    const ownerList = (await fetchUsers({ email: code.owner }));
+                    contactId = (ownerList)[0]._id;
+                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
+                } catch (error) {
+                    res.status(500).send("500: Server Error. Failed to add contact").end();
+                }
+                const contact: Contact = { id: contactId as ObjectId, user: owner, sharedSocials: shared }
+                userContacts.push(contact)
+                updateUser({ contacts: userContacts }, { email: users[0].email })
+                    .then((val) => res.status(201).send("Contact added successfully"))
+                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+
+
+    } catch (error) {
+        return null;
+    }
+});
+
+app.get("/user/:email", (req, res) => {
+    fetchUsers({ email: req.params.email })
+        .then(async (users: User[] | MongoError) => {
+            const user: PartialUserData = users[0];
+            const codes = await fetchCodes({ owner: user.email }) as Code[];
+
+            // generate get urls for all the codes so the app can load the images for the codes
+            for await (const code of codes) {
+                const url = await generateSignedGetUrl("codes/" + code.id, 120);
+                code.url = url;
+            }
+
+            user.codes = codes;
+            delete user.password;
+
+            res.status(200).send(user);
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).send("Server error");
+        });
+})
+
+app.post("/updateUser", (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as AccessToken;
+    const singleUser: PartialUserData = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone,
+        email: decodedToken.email,
+        socials: req.body.socials
+    };
+    fetchUsers({ email: singleUser.email }).
+        then((users: User[] | MongoError) => {
+            const user: User = users[0];
+            const emailT = singleUser.email;
+            delete singleUser.email;
+            updateUser(singleUser, { email: emailT })
+            res.status(200).send("update successful")
+        }
+        ).catch((err) => {
+            res.status(500).send("Error with server")
+        })
+})
+
+app.post("/newCode", async (req, res) => {
+    const codeId = await getUniqueCodeId();
+    if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
+    else {
+        // generate a PUT URL to allow for qr code upload from client
+        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
+        const token = req.headers.authorization?.split(' ')[1] as string;
+        const decodedToken = jwt.decode(token) as AccessToken;
+        const socials = req.body.socials;
+        objectCleanup(socials);
+        // insert code into db
+        insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
+            res.status(201).send({ codeId, putUrl });
+            // enqueue a get request for this qr for future to verify
+            // if client uploaded the code or not. On failure, delete this entry
+            // from the database
+            setTimeout(verifyQRupload, 1000 * 10, codeId);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db insertion');
+        });
+    }
 });
 
 app.listen(process.env.PORT || PORT, () => {
@@ -347,6 +355,10 @@ async function getUniqueCodeId() {
     }
 }
 
+/**
+ * Check if the code's image was uploaded to s3. If not, delete entry from the database
+ * @param codeId code id for code whose upload needs to be validated
+ */
 async function verifyQRupload(codeId: string): Promise<void> {
     const downloadUrl = await generateSignedGetUrl('codes/' + codeId, 3000);
     https.get(downloadUrl as string, ((res) => {
@@ -355,6 +367,24 @@ async function verifyQRupload(codeId: string): Promise<void> {
             deleteCode(codeId);
         }
     }));
+}
+
+/**
+ * Delete invalid entries from an object
+ * @param obj object to clean up
+ */
+function objectCleanup(obj: object) {
+    const keys = Object.keys(obj);
+    const keysToRemove: any[] = [];
+    for (const key of keys) {
+        if (key.trim().length === 0) keysToRemove.push(key);
+        else if (key === "null" || key === "undefined") keysToRemove.push(key);
+    }
+
+    while (keysToRemove.length > 0) {
+        delete obj[keysToRemove[0]];
+        keysToRemove.shift();
+    }
 }
 
 export default app;
