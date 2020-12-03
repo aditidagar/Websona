@@ -187,7 +187,7 @@ app.get("/code/:id", (req, res) => {
                 email: scanningUser.email
             });
 
-            updateEvent({ attendees: event.attendees }, { _id: event['_id'] });
+            updateEvent({ attendees: event.attendees }, { _id: event._id });
             res.status(200).send(`Thanks for participating in ${event.name} at ${event.location}`);
             return;
         }

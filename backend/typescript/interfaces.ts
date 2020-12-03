@@ -75,8 +75,9 @@ export interface Code {
 }
 
 export interface Event {
+    _id?: ObjectId;
     codeId: string;
-    owner: ObjectID;
+    owner: string;
     name: string;
     location: string;
     date: number; // Unix timestamp

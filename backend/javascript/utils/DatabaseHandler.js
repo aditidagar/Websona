@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteEvent = exports.fetchEvents = exports.insertEvent = exports.deleteCode = exports.fetchCodes = exports.insertCode = exports.updateUser = exports.fetchUsers = exports.insertUser = void 0;
+exports.deleteEvent = exports.updateEvent = exports.fetchEvents = exports.insertEvent = exports.deleteCode = exports.fetchCodes = exports.insertCode = exports.updateUser = exports.fetchUsers = exports.insertUser = void 0;
 const mongodb_1 = require("mongodb");
 const DB_NAME = "test";
 const MONGO_URL = `mongodb+srv://websona_backend:${process.env.DATABASE_PASS}@cluster0.if06i.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
@@ -185,6 +185,21 @@ function fetchEvents(query, options = {}) {
     });
 }
 exports.fetchEvents = fetchEvents;
+function updateEvent(updatedUserObject, queryObject) {
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_EVENTS).then((collection) => {
+            const updateDoc = { $set: updatedUserObject };
+            collection.updateOne(queryObject, updateDoc, (err, updateResult) => {
+                if (err)
+                    reject(err);
+                resolve(updateResult);
+            });
+        }).catch((reason) => {
+            reject(reason);
+        });
+    });
+}
+exports.updateEvent = updateEvent;
 function deleteEvent(_id) {
     return new Promise((resolve, reject) => {
         getCollection(COLLECTION_EVENTS).then((collection) => {
