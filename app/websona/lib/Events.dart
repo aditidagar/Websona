@@ -1,13 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:marquee_widget/marquee_widget.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'dart:ui' as UI;
-
 import 'main.dart';
 
 const String API_URL = "https://api.thewebsonaapp.com";
@@ -18,7 +15,6 @@ class Event extends StatefulWidget {
 }
 
 class _EventState extends State<Event> {
-  DateTime selectedDate = DateTime.now();
   /*
   _id: ObjectId;
   codeId: string;
@@ -32,38 +28,13 @@ class _EventState extends State<Event> {
         email: string;
     }[];
    */
-  List<dynamic> events = [
-    // leaving this dummy data here for reference
-    // {
-    //   "codeId": "testId",
-    //   "name": "Test Event",
-    //   "location": "Toronto, ON",
-    //   "date": DateTime.now().millisecondsSinceEpoch,
-    //   "attendees": [
-    //     {
-    //       "firstName": "Harsh",
-    //       "lastName": "Jhunjhunwala",
-    //       "email": "harsh.jhunjhunwa@mail.utoronto.ca"
-    //     },
-    //     {
-    //       "firstName": "Harsh",
-    //       "lastName": "Jhunjhunwala",
-    //       "email": "harsh.jhunjhunwa@mail.utoronto.ca"
-    //     },
-    //     {
-    //       "firstName": "Harsh",
-    //       "lastName": "Jhunjhunwala",
-    //       "email": "harsh.jhunjhunwa@mail.utoronto.ca"
-    //     }
-    //   ]
-    // }
-  ];
-
+  List<dynamic> events = [];
   String eventPictures = 'https://picsum.photos/250?image=9';
+  DateTime selectedDate = DateTime.now();
 
   loadEvents() async {
     Response response = await get(
-      "http://localhost:3000" + "/events",
+      API_URL + "/events",
       headers: <String, String>{
         'authorization': await getAuthorizationToken(context)
       },
@@ -71,6 +42,7 @@ class _EventState extends State<Event> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      events = [];
       for (var ev in data) {
         events.add(ev);
       }
@@ -138,7 +110,7 @@ class _EventState extends State<Event> {
                           events.add(event);
                           setState(() {});
                           Navigator.of(context).pop();
-                          createCodeDialog(context, event);
+                          createCodeDialog(context, event, createEvent: true);
                         },
                         child: Text(
                           "Create",
@@ -298,26 +270,31 @@ class _EventState extends State<Event> {
         });
   }
 
-  createCodeDialog(BuildContext context, Map<String, dynamic> event) async {
+  createCodeDialog(BuildContext context, Map<String, dynamic> event,
+      {bool createEvent = false}) async {
     var qrKey = GlobalKey();
     String codeUrl = "";
 
-    Response response = await post(
-      "http://localhost:3000" + "/newCode?type=event",
-      headers: <String, String>{
-        "Content-Type": "application/json",
-        'authorization': await getAuthorizationToken(context),
-      },
-    );
+    if (createEvent) {
+      Response response = await post(
+        API_URL + "/newCode?type=event",
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          'authorization': await getAuthorizationToken(context),
+        },
+      );
 
-    if (response.statusCode == 201) {
-      Map<dynamic, dynamic> data = jsonDecode(response.body);
-      String codeId = data['codeId'];
-      codeUrl = API_URL + '/code/' + codeId;
-      Future.delayed(const Duration(milliseconds: 8000), () {
-        uploadCode(data['putUrl'], qrKey);
-        submitCreateEvent(codeId, event);
-      });
+      if (response.statusCode == 201) {
+        Map<dynamic, dynamic> data = jsonDecode(response.body);
+        String codeId = data['codeId'];
+        codeUrl = API_URL + '/code/' + codeId;
+        if (await submitCreateEvent(codeId, event)) {
+          loadEvents();
+        }
+      }
+    }
+    else {
+      codeUrl = API_URL + "/code/" + event['codeId'];
     }
 
     return showDialog(
@@ -368,61 +345,27 @@ class _EventState extends State<Event> {
         });
   }
 
-  uploadCode(String url, dynamic key) {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _getWidgetImage(key).then((value) async {
-        var bytes = base64Decode(value);
-        var client = Client();
-        var request = Request('PUT', Uri.parse(url));
-        request.headers.addAll({"Content-Type": "image/png"});
-        request.bodyBytes = bytes;
-        var streamedResponse = await client.send(request).then((res) {
-          print(res.statusCode);
-        });
-        client.close();
-      });
-    });
-  }
-
-  submitCreateEvent(String codeId, Map<String, dynamic> event) async {
+  Future<bool> submitCreateEvent(
+      String codeId, Map<String, dynamic> event) async {
     event["codeId"] = codeId;
-    Response response = await post("http://localhost:3000" + "/newEvent",
+    Response response = await post(API_URL + "/newEvent",
         headers: <String, String>{
           "Content-Type": "application/json",
           'authorization': await getAuthorizationToken(context)
         },
         body: jsonEncode(event));
 
-    print("New event response: " + response.statusCode.toString());
-  }
-
-  Future<String> _getWidgetImage(dynamic qrKey) async {
-    try {
-      RenderRepaintBoundary boundary = qrKey.currentContext.findRenderObject();
-
-      UI.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData byteData =
-          await image.toByteData(format: UI.ImageByteFormat.png);
-      var pngBytes = byteData.buffer.asUint8List();
-      var bs64 = base64Encode(pngBytes);
-      return bs64;
-    } catch (exception) {
-      return null;
-    }
+    return response.statusCode == 201;
   }
 
   deleteEvent(dynamic id) async {
     print(id);
-    Response response = await post(
-      "http://localhost:3000" + "/deleteEvent",
-      headers: <String, String>{
-        "Content-Type": "application/json",
-        'authorization': await getAuthorizationToken(context)
-      },
-      body: jsonEncode({
-        "id": id
-      })
-    );
+    Response response = await post(API_URL + "/deleteEvent",
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          'authorization': await getAuthorizationToken(context)
+        },
+        body: jsonEncode({"id": id}));
 
     print("delete response: " + response.statusCode.toString());
   }
@@ -491,26 +434,36 @@ class _EventState extends State<Event> {
                     },
                     background: stackBehindDismiss(),
                     child: ListTile(
-                      tileColor: Colors.blue[50],
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.horizontal()),
-                      title: Text(
-                        events[index]['name'],
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(DateTime.fromMillisecondsSinceEpoch(
-                              events[index]['date'])
-                          .toString()),
-                      trailing: InkWell(
-                        child: Icon(Icons.list),
-                        onTap: () {
-                          displayEvent(context, events[index]);
-                        },
-                      ),
-                    ));
+                        tileColor: Colors.blue[50],
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.horizontal()),
+                        title: Text(
+                          events[index]['name'],
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(DateTime.fromMillisecondsSinceEpoch(
+                                events[index]['date'])
+                            .toString()),
+                        trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              InkWell(
+                                child: Icon(Icons.qr_code),
+                                onTap: () {
+                                  createCodeDialog(context, events[index]);
+                                },
+                              ),
+                              SizedBox(width: 20,),
+                              InkWell(
+                                child: Icon(Icons.list),
+                                onTap: () {
+                                  displayEvent(context, events[index]);
+                                },
+                              ),
+                            ])));
               },
             ))
           ],

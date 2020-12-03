@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'main.dart';
@@ -38,10 +39,15 @@ class _MyCodesState extends State<MyCodes> {
 
     var data = jsonDecode(response.body);
     var codes = data['codes'];
-    setState(() {
-      info.litems = codes;
-      info.counter = codes.length;
-    });
+    info.litems = [];
+    for (var code in codes) {
+      if (!code.containsKey('type') || code['type'] == 'personal') {
+        info.litems.add(code);
+      }
+    }
+
+    info.counter = info.litems.length;
+    setState(() {});
   }
 
   @override
@@ -68,12 +74,10 @@ class _MyCodesState extends State<MyCodes> {
                         width: 200.0,
                         height: 200.0,
                         margin: EdgeInsets.only(top: 20, bottom: 20),
-                        decoration: new BoxDecoration(
-                          image: new DecorationImage(
-                            image: new NetworkImage(code['url']),
-                            fit: BoxFit.cover,
+                        child: QrImage(
+                            data: API_URL + "/code/" + code["id"],
+                            size: 200,
                           ),
-                        ),
                       ),
                       Center(
                         child: Text('Code',

@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
-import https from 'https';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
@@ -13,7 +12,7 @@ import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
 
-import { generateSignedPutUrl, generateSignedGetUrl, deleteObject } from './AWSPresigner'
+import { generateSignedPutUrl, generateSignedGetUrl } from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -163,12 +162,6 @@ app.get("/user/:email", (req, res) => {
         const user: PartialUserData = users[0];
         const codes = await fetchCodes({ owner: user.email }) as Code[];
 
-        // generate get urls for all the codes so the app can load the images for the codes
-        for await (const code of codes) {
-            const url = await generateSignedGetUrl("codes/" + code.id, 120);
-            code.url = url;
-        }
-
         user.codes = codes;
         delete user.password;
 
@@ -206,18 +199,13 @@ app.post("/newCode", async (req, res) => {
     if (codeId === null) res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const putUrl = await generateSignedPutUrl('codes/' + codeId, 'image/png');
         const token = req.headers.authorization?.split(' ')[1] as string;
         const decodedToken = jwt.decode(token) as { [key: string]: any };
         const socials = req.body.socials;
         const type = req.query.type as string;
         // insert code into db
         insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
-            res.status(201).send({ codeId, putUrl });
-            // enqueue a get request for this qr for future to verify
-            // if client uploaded the code or not. On failure, delete this entry
-            // from the database
-            setTimeout(verifyQRupload, 1000 * 10, codeId);
+            res.status(201).send({ codeId });
         }).catch((err) => {
             console.log(err);
             res.status(500).send('500: Internal Server Error during db insertion');
@@ -320,7 +308,6 @@ app.post("/deleteEvent", async (req, res) => {
 
     deleteEvent(_id);
     deleteCode(event.codeId);
-    deleteObject(`codes/${event.codeId}`);
     res.status(201).send("success");
 })
 
@@ -344,16 +331,6 @@ async function getUniqueCodeId() {
             return null;
         }
     }
-}
-
-async function verifyQRupload(codeId: string): Promise<void> {
-    const downloadUrl = await generateSignedGetUrl('codes/' + codeId, 3000);
-    https.get(downloadUrl as string, ((res) => {
-        if (res.statusCode !== 200) {
-            // client didn't upload the code, delete it's entry from db
-            deleteCode(codeId);
-        }
-    }));
 }
 
 /**

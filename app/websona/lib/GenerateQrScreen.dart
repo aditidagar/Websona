@@ -91,22 +91,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       Map<dynamic, dynamic> data = jsonDecode(response.body);
       String codeId = data['codeId'];
       qrData = API_URL + '/code/' + codeId;
-      setState(() {
-        Future.delayed(const Duration(milliseconds: 2000), () {
-          _getWidgetImage().then((value) async {
-            bytes = base64Decode(value);
-            String putUrl = data['putUrl'];
-            var client = Client();
-            var request = Request('PUT', Uri.parse(putUrl));
-            request.headers.addAll({"Content-Type": "image/png"});
-            request.bodyBytes = bytes;
-            var streamedResponse = await client.send(request).then((res) {
-              print(res.statusCode);
-            });
-            client.close();
-          });
-        });
-      });
+      setState(() { });
     }
   }
 
@@ -120,7 +105,9 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       var pngBytes = byteData.buffer.asUint8List();
       var bs64 = base64Encode(pngBytes);
       return bs64;
-    } catch (exception) {}
+    } catch (exception) {
+      return null;
+    }
   }
 
   @override
@@ -335,10 +322,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                   splashColor: Colors.blueAccent,
                   onPressed: () {
                     handleSubmit();
-                    // widget.info.litems.add(qrController.text);
-                    // widget.info.counter = widget.info.counter + 1;
-                    // widget?._callback();
-                    // Navigator.pop(context);
+                    Navigator.pop(context);
                   },
                   child: Text(
                     "Create",
