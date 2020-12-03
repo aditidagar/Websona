@@ -351,7 +351,7 @@ app.post("/newCode", async (req, res) => {
         });
     }
 });
-
+//TEST
 app.get("/events", (req, res) => {
     const token = req.headers.authorization?.split(' ')[1] as string;
     const decodedToken = jwt.decode(token) as { [key: string]: any };
