@@ -73,15 +73,18 @@ class _ContactsState extends State<Contacts> {
     print("CONTACTS: ");
     print(contacts);
     List<Person> listContact = [];
+    List<Social> listSocial = [];
     for (int i = 0; i < contacts.length; i++) {
-      List<String> contactSocials = [];
       var name = contacts[i]['user'];
       var socialList = contacts[i]['sharedSocials'];
       for (int j = 0; j < socialList.length; j++) {
-        contactSocials.add(socialList[i]['social']);
+        String handle = socialList[i]['social'];
+        String media = socialList[i]['username'];
+        Social s = new Social(media, handle);
+        listSocial.add(s);
       }
-      // Person p = new Person(name, contactSocials);
-      // listContact.add(p);
+      Person p = new Person(name, listSocial);
+      listContact.add(p);
     }
 
     setState(() {
