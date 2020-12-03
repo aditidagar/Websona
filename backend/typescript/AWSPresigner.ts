@@ -1,4 +1,5 @@
 import AWS from 'aws-sdk';
+import { resolve } from 'path';
 
 AWS.config = new AWS.Config({
 	accessKeyId: process.env.ACCESS_KEY,
@@ -10,7 +11,7 @@ const Bucket = process.env.BUCKET_NAME;
 const S3 = new AWS.S3();
 
 export function generateSignedGetUrl(Key, timeout=10): Promise<string> {
-	return new Promise((resolve, reject) => {
+	return new Promise((res, reject) => {
 		const params = {
 			Bucket,
 			Key,
@@ -19,7 +20,7 @@ export function generateSignedGetUrl(Key, timeout=10): Promise<string> {
 
 		S3.getSignedUrl("getObject", params, (err, url) => {
 			if (err) reject(err);
-			else resolve(url);
+			else res(url);
 		});
 	});
 }
@@ -27,7 +28,7 @@ export function generateSignedGetUrl(Key, timeout=10): Promise<string> {
 
 
 export function generateSignedPutUrl(Key: string, filetype): Promise<string> {
-	return new Promise((resolve, reject) => {
+	return new Promise((res, reject) => {
 		const params = {
 			Bucket,
 			Key,
@@ -37,9 +38,20 @@ export function generateSignedPutUrl(Key: string, filetype): Promise<string> {
 
 		S3.getSignedUrl("putObject", params, (err, url) => {
 			if (err) reject(err);
-			else resolve(url);
+			else res(url);
 		});
 	});
 }
 
+export function deleteObject(Key: string): Promise<boolean> {
+	return new Promise((res, reject) => {
+		const params = {
+			Bucket: Bucket as string,
+			Key
+		};
 
+		S3.deleteObject(params, (err, data) => {
+			res(true);
+		})
+	});
+}

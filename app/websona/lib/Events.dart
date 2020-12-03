@@ -19,32 +19,70 @@ class Event extends StatefulWidget {
 
 class _EventState extends State<Event> {
   DateTime selectedDate = DateTime.now();
-  List<String> eventItems = [];
-  List<String> eventDates = [];
-  List<String> eventLocations = [];
-  List<String> eventNames = [
-    'Harsh Jhunjhunwala',
-    'Aditi Dagar',
-    'Ibrahim Fazili',
-    'Saakshi Shah',
-    'Gautam Gireesh'
+  /*
+  _id: ObjectId;
+  codeId: string;
+    owner: string;
+    name: string;
+    location: string;
+    date: number; // Unix timestamp
+    attendees: {
+        firstName: string;
+        lastName: string;
+        email: string;
+    }[];
+   */
+  List<dynamic> events = [
+    // leaving this dummy data here for reference
+    // {
+    //   "codeId": "testId",
+    //   "name": "Test Event",
+    //   "location": "Toronto, ON",
+    //   "date": DateTime.now().millisecondsSinceEpoch,
+    //   "attendees": [
+    //     {
+    //       "firstName": "Harsh",
+    //       "lastName": "Jhunjhunwala",
+    //       "email": "harsh.jhunjhunwa@mail.utoronto.ca"
+    //     },
+    //     {
+    //       "firstName": "Harsh",
+    //       "lastName": "Jhunjhunwala",
+    //       "email": "harsh.jhunjhunwa@mail.utoronto.ca"
+    //     },
+    //     {
+    //       "firstName": "Harsh",
+    //       "lastName": "Jhunjhunwala",
+    //       "email": "harsh.jhunjhunwa@mail.utoronto.ca"
+    //     }
+    //   ]
+    // }
   ];
-  List<Map<String, String>> peopleInfo = [
-    {'email': 'harsh.jhunjhunwa@mail.utoronto.ca'},
-    {'email': 'aditi.dagar@mail.utoronto.ca'},
-    {
-      'email': 'ibrahim.fazili@mail.utoronto.ca'
-    },
-    {'email': 'saakshi.shah@mail.utoronto.ca'},
-    {'email': 'gautam.gireesh@mail.utoronto.ca'}
-  ];
-  List<String> eventPictures = [
-    'https://picsum.photos/250?image=9',
-    'https://picsum.photos/250?image=10',
-    'https://picsum.photos/250?image=11',
-    'https://picsum.photos/250?image=12',
-    'https://picsum.photos/250?image=13'
-  ];
+
+  String eventPictures = 'https://picsum.photos/250?image=9';
+
+  loadEvents() async {
+    Response response = await get(
+      "http://localhost:3000" + "/events",
+      headers: <String, String>{
+        'authorization': await getAuthorizationToken(context)
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      for (var ev in data) {
+        events.add(ev);
+      }
+      setState(() {});
+    }
+  }
+
+  @override
+  initState() {
+    super.initState();
+    loadEvents();
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -91,13 +129,16 @@ class _EventState extends State<Event> {
                       width: 150.0,
                       child: RaisedButton(
                         onPressed: () {
-                          eventItems.add(nameController.text);
-                          eventLocations.add(locationController.text);
-                          eventDates.add(
-                              "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year.toString()}");
+                          Map<String, dynamic> event = {
+                            "name": nameController.text,
+                            "location": locationController.text,
+                            "date": selectedDate.millisecondsSinceEpoch
+                          };
+
+                          events.add(event);
                           setState(() {});
                           Navigator.of(context).pop();
-                          createCodeDialog(context);
+                          createCodeDialog(context, event);
                         },
                         child: Text(
                           "Create",
@@ -126,24 +167,7 @@ class _EventState extends State<Event> {
     );
   }
 
-  displayLinks(int index) {
-    return Column(children: [
-      for (var i in peopleInfo[index].keys)
-        if (i == 'email')
-          Row(children: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.mailBulk),
-              iconSize: 15,
-            ),
-            Text(
-              peopleInfo[index]['email'],
-              overflow: TextOverflow.ellipsis,
-            )
-          ])
-    ]);
-  }
-
-  displayEvent(BuildContext context, String eventName, String eventLoc) {
+  displayEvent(BuildContext context, Map<String, dynamic> event) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -164,10 +188,11 @@ class _EventState extends State<Event> {
                   title: Container(
                       width: 250,
                       child: Marquee(
-                        child: Text(eventName),
+                        child: Text(event['name']),
                         animationDuration:
-                            Duration(seconds: eventName.length ~/ 8),
-                        backDuration: Duration(seconds: eventName.length ~/ 8),
+                            Duration(seconds: event['name'].length ~/ 8),
+                        backDuration:
+                            Duration(seconds: event['name'].length ~/ 8),
                         pauseDuration: Duration(seconds: 1),
                       )),
                   backgroundColor: Colors.blue,
@@ -186,7 +211,7 @@ class _EventState extends State<Event> {
                         child: Padding(
                           padding: EdgeInsets.only(left: 30, top: 20),
                           child: Text(
-                            eventLoc,
+                            event['location'],
                             style: TextStyle(fontSize: 24),
                           ),
                         ),
@@ -201,10 +226,11 @@ class _EventState extends State<Event> {
                               child: Padding(
                                 padding: EdgeInsets.only(left: 45, top: 12),
                                 child: Container(
-                                  child: Text(eventNames.length.toString(),
-                                      style: TextStyle(
-                                        fontSize: 55,
-                                      )),
+                                  child:
+                                      Text(event['attendees'].length.toString(),
+                                          style: TextStyle(
+                                            fontSize: 55,
+                                          )),
                                 ),
                               ),
                               decoration: BoxDecoration(
@@ -230,7 +256,7 @@ class _EventState extends State<Event> {
                   new Expanded(
                       child: ListView.separated(
                     padding: EdgeInsets.only(top: 15),
-                    itemCount: eventNames.length,
+                    itemCount: event['attendees'].length,
                     separatorBuilder: (BuildContext context, int index) =>
                         Divider(
                       color: Colors.white,
@@ -238,20 +264,31 @@ class _EventState extends State<Event> {
                     itemBuilder: (BuildContext ctxt, int index) {
                       return new ListTile(
                           leading: CircleAvatar(
-                            backgroundImage: NetworkImage(eventPictures[
-                                index]), // no matter how big it is, it won't overflow
+                            backgroundImage: NetworkImage(
+                                eventPictures), // no matter how big it is, it won't overflow
                           ),
                           tileColor: Colors.blue[50],
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30)),
                           title: Text(
-                            eventNames[index],
+                            event['attendees'][index]['firstName'] +
+                                " " +
+                                event['attendees'][index]['lastName'],
                             style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w600),
                           ),
-                          subtitle: displayLinks(index));
+                          subtitle: Row(children: [
+                            IconButton(
+                              icon: FaIcon(FontAwesomeIcons.mailBulk),
+                              iconSize: 15,
+                            ),
+                            Text(
+                              event['attendees'][index]['email'],
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          ]));
                     },
                   ))
                 ],
@@ -261,22 +298,26 @@ class _EventState extends State<Event> {
         });
   }
 
-  createCodeDialog(BuildContext context) async{
+  createCodeDialog(BuildContext context, Map<String, dynamic> event) async {
     var qrKey = GlobalKey();
     String codeUrl = "";
-    
-    Response response = await post(API_URL + "/newCode?type=event",
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          'authorization': await getAuthorizationToken(context),
-        },
-      );
-    
+
+    Response response = await post(
+      "http://localhost:3000" + "/newCode?type=event",
+      headers: <String, String>{
+        "Content-Type": "application/json",
+        'authorization': await getAuthorizationToken(context),
+      },
+    );
+
     if (response.statusCode == 201) {
       Map<dynamic, dynamic> data = jsonDecode(response.body);
       String codeId = data['codeId'];
       codeUrl = API_URL + '/code/' + codeId;
-      uploadCode(data['putUrl'], qrKey);
+      Future.delayed(const Duration(milliseconds: 8000), () {
+        uploadCode(data['putUrl'], qrKey);
+        submitCreateEvent(codeId, event);
+      });
     }
 
     return showDialog(
@@ -296,12 +337,12 @@ class _EventState extends State<Event> {
                         height: 200.0,
                         margin: EdgeInsets.only(top: 20, bottom: 20),
                         child: RepaintBoundary(
-                                key: qrKey,
-                                child: QrImage(
-                                  data: codeUrl,
-                                  size: 200,
-                                ),
-                              ),
+                          key: qrKey,
+                          child: QrImage(
+                            data: codeUrl,
+                            size: 200,
+                          ),
+                        ),
                       ),
                       Center(
                         child: Text('Code',
@@ -328,19 +369,31 @@ class _EventState extends State<Event> {
   }
 
   uploadCode(String url, dynamic key) {
-    Future.delayed(const Duration(milliseconds: 2000), () {
-          _getWidgetImage(key).then((value) async {
-            var bytes = base64Decode(value);
-            var client = Client();
-            var request = Request('PUT', Uri.parse(url));
-            request.headers.addAll({"Content-Type": "image/png"});
-            request.bodyBytes = bytes;
-            var streamedResponse = await client.send(request).then((res) {
-              print(res.statusCode);
-            });
-            client.close();
-          });
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _getWidgetImage(key).then((value) async {
+        var bytes = base64Decode(value);
+        var client = Client();
+        var request = Request('PUT', Uri.parse(url));
+        request.headers.addAll({"Content-Type": "image/png"});
+        request.bodyBytes = bytes;
+        var streamedResponse = await client.send(request).then((res) {
+          print(res.statusCode);
         });
+        client.close();
+      });
+    });
+  }
+
+  submitCreateEvent(String codeId, Map<String, dynamic> event) async {
+    event["codeId"] = codeId;
+    Response response = await post("http://localhost:3000" + "/newEvent",
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          'authorization': await getAuthorizationToken(context)
+        },
+        body: jsonEncode(event));
+
+    print("New event response: " + response.statusCode.toString());
   }
 
   Future<String> _getWidgetImage(dynamic qrKey) async {
@@ -356,6 +409,22 @@ class _EventState extends State<Event> {
     } catch (exception) {
       return null;
     }
+  }
+
+  deleteEvent(dynamic id) async {
+    print(id);
+    Response response = await post(
+      "http://localhost:3000" + "/deleteEvent",
+      headers: <String, String>{
+        "Content-Type": "application/json",
+        'authorization': await getAuthorizationToken(context)
+      },
+      body: jsonEncode({
+        "id": id
+      })
+    );
+
+    print("delete response: " + response.statusCode.toString());
   }
 
   @override
@@ -403,25 +472,22 @@ class _EventState extends State<Event> {
             new Expanded(
                 child: ListView.separated(
               padding: EdgeInsets.only(top: 15),
-              itemCount: eventItems.length,
+              itemCount: events.length,
               separatorBuilder: (BuildContext context, int index) => Divider(
                 color: Colors.white,
               ),
               itemBuilder: (BuildContext ctxt, int index) {
-                final item = eventItems[index];
+                final item = events[index];
                 return new Dismissible(
-                    key: Key(item),
+                    key: Key(item['codeId']),
                     direction: DismissDirection.endToStart,
                     onDismissed: (direction) {
-                      // if (direction == DismissDirection.endToStart) {
+                      deleteEvent(item['_id']);
                       setState(() {
-                        eventDates.removeAt(index);
-                        eventItems.removeAt(index);
-                        eventLocations.removeAt(index);
+                        events.removeAt(index);
                       });
                       Scaffold.of(context).showSnackBar(
                           SnackBar(content: Text("Event deleted ")));
-                      // }
                     },
                     background: stackBehindDismiss(),
                     child: ListTile(
@@ -429,18 +495,19 @@ class _EventState extends State<Event> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.horizontal()),
                       title: Text(
-                        eventItems[index],
+                        events[index]['name'],
                         style: TextStyle(
                             fontSize: 18,
                             color: Colors.black,
                             fontWeight: FontWeight.w600),
                       ),
-                      subtitle: Text(eventDates[index]),
+                      subtitle: Text(DateTime.fromMillisecondsSinceEpoch(
+                              events[index]['date'])
+                          .toString()),
                       trailing: InkWell(
                         child: Icon(Icons.list),
                         onTap: () {
-                          displayEvent(context, eventItems[index],
-                              eventLocations[index]);
+                          displayEvent(context, events[index]);
                         },
                       ),
                     ));

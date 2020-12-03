@@ -13,7 +13,7 @@ import { json as _bodyParser } from 'body-parser';
 import { verifyGithubPayload } from './webhook';
 import { sendVerificationEmail } from './emailer';
 
-import { generateSignedPutUrl, generateSignedGetUrl } from './AWSPresigner'
+import { generateSignedPutUrl, generateSignedGetUrl, deleteObject } from './AWSPresigner'
 
 const PORT = process.env.PORT;
 const app: express.Express = express();
@@ -261,6 +261,14 @@ app.get("/code/:id", (req, res) => {
     })
 });
 
+app.get("/events", (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as { [key: string]: any };
+    fetchEvents({ owner: decodedToken.email }).then((events) => {
+        res.status(200).send(events);
+    }).catch((err) => res.status(500).send("500: Server Error"));
+});
+
 app.post("/newEvent", async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1] as string;
     const decodedToken = jwt.decode(token) as { [key: string]: any };
@@ -296,20 +304,23 @@ app.post("/deleteEvent", async (req, res) => {
         return;
     }
 
-    const events: Event[] = (await fetchEvents({ _id: req.body.id })) as Event[];
+    const _id = ObjectId.createFromHexString(req.body.id);
+
+    const events: Event[] = (await fetchEvents({ _id })) as Event[];
     if (events.length === 0) {
         res.status(404).send("no such event found");
         return;
     }
 
     const event = events[0];
-    if (event.owner != email) {
+    if (event.owner !== email) {
         res.status(403).send("User not authorized to delete this event");
         return;
     }
 
-    deleteEvent(req.body.id as ObjectId);
+    deleteEvent(_id);
     deleteCode(event.codeId);
+    deleteObject(`codes/${event.codeId}`);
     res.status(201).send("success");
 })
 
@@ -353,7 +364,7 @@ async function verifyQRupload(codeId: string): Promise<void> {
 function validateObjectProps(obj: object, requiredKeys: string[]): boolean {
     const keys = Object.keys(obj);
     for (const key of requiredKeys) {
-        if (keys.findIndex((val) => val == key) == -1) return false;
+        if (keys.findIndex((val) => val === key) === -1) return false;
     }
     return true;
 }

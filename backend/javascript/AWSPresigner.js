@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateSignedPutUrl = exports.generateSignedGetUrl = void 0;
+exports.deleteObject = exports.generateSignedPutUrl = exports.generateSignedGetUrl = void 0;
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 aws_sdk_1.default.config = new aws_sdk_1.default.Config({
     accessKeyId: process.env.ACCESS_KEY,
@@ -13,7 +13,7 @@ aws_sdk_1.default.config = new aws_sdk_1.default.Config({
 const Bucket = process.env.BUCKET_NAME;
 const S3 = new aws_sdk_1.default.S3();
 function generateSignedGetUrl(Key, timeout = 10) {
-    return new Promise((resolve, reject) => {
+    return new Promise((res, reject) => {
         const params = {
             Bucket,
             Key,
@@ -23,13 +23,13 @@ function generateSignedGetUrl(Key, timeout = 10) {
             if (err)
                 reject(err);
             else
-                resolve(url);
+                res(url);
         });
     });
 }
 exports.generateSignedGetUrl = generateSignedGetUrl;
 function generateSignedPutUrl(Key, filetype) {
-    return new Promise((resolve, reject) => {
+    return new Promise((res, reject) => {
         const params = {
             Bucket,
             Key,
@@ -40,8 +40,20 @@ function generateSignedPutUrl(Key, filetype) {
             if (err)
                 reject(err);
             else
-                resolve(url);
+                res(url);
         });
     });
 }
 exports.generateSignedPutUrl = generateSignedPutUrl;
+function deleteObject(Key) {
+    return new Promise((res, reject) => {
+        const params = {
+            Bucket: Bucket,
+            Key
+        };
+        S3.deleteObject(params, (err, data) => {
+            res(true);
+        });
+    });
+}
+exports.deleteObject = deleteObject;

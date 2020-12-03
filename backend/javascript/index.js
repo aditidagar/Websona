@@ -28,6 +28,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = require("crypto");
 const DatabaseHandler_1 = require("./utils/DatabaseHandler");
 const authentication_1 = require("./authentication");
+const mongodb_1 = require("mongodb");
 const body_parser_1 = require("body-parser");
 const webhook_1 = require("./webhook");
 const emailer_1 = require("./emailer");
@@ -170,7 +171,7 @@ app.get("/user/:email", (req, res) => {
             // generate get urls for all the codes so the app can load the images for the codes
             for (var codes_1 = __asyncValues(codes), codes_1_1; codes_1_1 = yield codes_1.next(), !codes_1_1.done;) {
                 const code = codes_1_1.value;
-                const url = yield AWSPresigner_1.generateSignedGetUrl("codes/" + code.id, 30);
+                const url = yield AWSPresigner_1.generateSignedGetUrl("codes/" + code.id, 120);
                 code.url = url;
             }
         }
@@ -220,8 +221,9 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
+        const type = req.query.type;
         // insert code into db
-        DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email }).then((writeResult) => {
+        DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
             res.status(201).send({ codeId, putUrl });
             // enqueue a get request for this qr for future to verify
             // if client uploaded the code or not. On failure, delete this entry
@@ -267,6 +269,65 @@ app.get("/code/:id", (req, res) => {
         res.status(500).send('500: Internal Server Error during db fetch');
     });
 });
+app.get("/events", (req, res) => {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    DatabaseHandler_1.fetchEvents({ owner: decodedToken.email }).then((events) => {
+        res.status(200).send(events);
+    }).catch((err) => res.status(500).send("500: Server Error"));
+});
+app.post("/newEvent", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    // check all args are there in the body
+    if (!validateObjectProps(req.body, ["codeId", "name", "location", "date"])) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+    const event = {
+        codeId: req.body.codeId,
+        owner: decodedToken.email,
+        name: req.body.name,
+        location: req.body.location,
+        date: Number(req.body.date),
+        attendees: []
+    };
+    try {
+        yield DatabaseHandler_1.insertEvent(event);
+        res.status(201).send("success").end();
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send("500: Server error, try again later");
+    }
+}));
+app.post("/deleteEvent", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    const token = (_c = req.headers.authorization) === null || _c === void 0 ? void 0 : _c.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    const email = decodedToken.email;
+    if (!req.body.id) {
+        res.status(400).send("missing parameters in the request");
+        return;
+    }
+    const _id = mongodb_1.ObjectId.createFromHexString(req.body.id);
+    const events = (yield DatabaseHandler_1.fetchEvents({ _id }));
+    if (events.length === 0) {
+        res.status(404).send("no such event found");
+        return;
+    }
+    const event = events[0];
+    if (event.owner !== email) {
+        res.status(403).send("User not authorized to delete this event");
+        return;
+    }
+    DatabaseHandler_1.deleteEvent(req.body.id);
+    DatabaseHandler_1.deleteCode(event.codeId);
+    AWSPresigner_1.deleteObject(`codes/${event.codeId}`);
+    res.status(201).send("success");
+}));
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });
@@ -300,5 +361,18 @@ function verifyQRupload(codeId) {
             }
         }));
     });
+}
+/**
+ * Check if the given object has all the required keys
+ * @param obj Object to validate
+ * @param requiredKeys the keys that must be present in the object
+ */
+function validateObjectProps(obj, requiredKeys) {
+    const keys = Object.keys(obj);
+    for (const key of requiredKeys) {
+        if (keys.findIndex((val) => val === key) === -1)
+            return false;
+    }
+    return true;
 }
 exports.default = app;
