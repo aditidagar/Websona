@@ -41,6 +41,7 @@ class _QRScannerState extends State<QRScanner> {
       print(scanData);
       setState(() {
         _camState = false;
+        qrText = scanData;
         fetchQRData(scanData);
       });
     });
@@ -57,6 +58,17 @@ class _QRScannerState extends State<QRScanner> {
     setState(() {
       _name = responseBody['firstName'] + " " + responseBody['lastName'];
     });
+  }
+
+  void addContact(code) async {
+    Response response = await post(API_URL + "/addContact",
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context),
+          'Content-Type': 'application/json'
+        },
+        body: jsonEncode({
+          'code_id': code,
+        }));
   }
 
   @override
@@ -133,7 +145,7 @@ class _QRScannerState extends State<QRScanner> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(80.0)),
               onPressed: () {
-                //CODE HERE FOR 'ADD CONTACT'
+                this.addContact(this.qrText);
               },
               child: const Text('Add Contact',
                   style: TextStyle(fontSize: 20, color: Colors.white)),

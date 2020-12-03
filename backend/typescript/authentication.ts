@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import Express from 'express';
+import { AccessToken } from './interfaces';
 
 export const tokenExpiryTime: number = 3600;
 /**
@@ -24,10 +25,29 @@ export function authenticateToken(req: Express.Request, res: Express.Response, n
 }
 
 /**
+ * Authenticate this request. Returns a promise which resolve to true if
+ * auth successful, else false
+ * @param req Express Request object
+ * @returns promise which resolves to true if auth successful, else false
+ */
+export function authenticateTokenReturn(req): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) resolve(false);
+
+        const token = authHeader.split(' ')[1];
+        jwt.verify(token, process.env.JWT_TOKEN_SECRET as string, (err, user) => {
+            if (err) resolve(false);
+            else resolve(true); // user is authorized, let them access the requested resource
+        });
+    });
+}
+
+/**
  * Generate access token for an authenticated user. The generated access token will be valid for 3600 seconds, i.e., an hour.
  * Once the access token expires, user will need to request a new access token
  * @param uid Unique identifier for a user. This is used in the hashing process when generating the jwt
  */
-export function generateAccessToken(uid: object): string {
+export function generateAccessToken(uid: AccessToken): string {
     return jwt.sign(uid, process.env.JWT_TOKEN_SECRET as string, { expiresIn: tokenExpiryTime });
 }

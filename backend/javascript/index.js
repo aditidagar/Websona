@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === "test") {
             res.status(400).send('Missing username for access token request');
             return;
         }
-        const accessToken = authentication_1.generateAccessToken({ email });
+        const accessToken = authentication_1.generateAccessToken({ email: email, firstName: "" });
         res.status(200).send(accessToken);
     });
 }
@@ -58,8 +58,9 @@ app.post("/signup", (req, res) => {
         email: req.body.email,
         phone: req.body.phone,
         password: bcrypt_1.default.hashSync(req.body.password, 10),
+        activationId: crypto_1.createHash('sha1').update(currentDate + random).digest('hex'),
         socials: [],
-        activationId: crypto_1.createHash('sha1').update(currentDate + random).digest('hex')
+        contacts: []
     };
     DatabaseHandler_1.insertUser(requestData)
         .then((result) => __awaiter(void 0, void 0, void 0, function* () {
@@ -141,6 +142,50 @@ app.post('/updateWebhook', (req, res) => {
     res.status(200);
     res.end();
 });
+app.get("/code/:id", (req, res) => {
+    const codeId = req.params.id;
+    DatabaseHandler_1.fetchCodes({ id: codeId }).then((codes) => __awaiter(void 0, void 0, void 0, function* () {
+        codes = codes;
+        if (codes.length === 0) {
+            res.status(404).send('Code not found');
+            return;
+        }
+        if (!(yield authentication_1.authenticateTokenReturn(req))) {
+            // send the playstore/appstore link page
+            res.status(403).send(`
+            <html>
+                <body>
+                    <span>Please download the app to continue</span>
+                </body>
+            </html>`).end();
+            return;
+        }
+        const email = codes[0].owner;
+        DatabaseHandler_1.fetchUsers({ email }).then((users) => {
+            users = users;
+            if (users.length === 0) {
+                res.status(404).send('User not found');
+                return;
+            }
+            const user = users[0];
+            // delete unneccessary fields
+            delete user.password;
+            delete user.phone;
+            delete user.activationId;
+            delete user.email;
+            delete user.codes;
+            // only provide socials associated with the code
+            user.socials = codes[0].socials;
+            res.status(200).send(user);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    })).catch((err) => {
+        console.log(err);
+        res.status(500).send('500: Internal Server Error during db fetch');
+    });
+});
 // routes created after the line below will be reachable only by the clients
 // with a valid access token
 app.use(authentication_1.authenticateToken);
@@ -153,11 +198,68 @@ app.get("/updateProfilePicture", (req, res) => __awaiter(void 0, void 0, void 0,
 app.get("/protectedResource", (req, res) => {
     res.status(200).send("This is a protected resource");
 });
+app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const user1 = jsonwebtoken_1.default.decode(token).email;
+    const code_id = req.body.code_id;
+    try {
+        const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
+        const code = codes[0];
+        DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
+            if (users.length === 0)
+                res.status(404).send("User not found");
+            else {
+                const userContacts = users[0].contacts;
+                const shared = [];
+                for (const x of code.socials) {
+                    shared.push({ social: x.social, username: x.username });
+                }
+                let contactId = null;
+                let owner = "";
+                try {
+                    const ownerList = (yield DatabaseHandler_1.fetchUsers({ email: code.owner }));
+                    contactId = (ownerList)[0]._id;
+                    owner = (ownerList)[0].firstName + " " + (ownerList)[0].lastName;
+                }
+                catch (error) {
+                    res.status(500).send("500: Server Error. Failed to add contact").end();
+                }
+                const contact = { id: contactId, user: owner, sharedSocials: shared };
+                userContacts.push(contact);
+                DatabaseHandler_1.updateUser({ contacts: userContacts }, { email: users[0].email })
+                    .then((val) => res.status(201).send("Contact added successfully"))
+                    .catch((err) => res.status(500).send("500: Server Error. Failed to add contact"));
+            }
+        })).catch((err) => {
+            console.log(err);
+            res.status(500).send('500: Internal Server Error during db fetch');
+        });
+    }
+    catch (error) {
+        return null;
+    }
+}));
 app.get("/user/:email", (req, res) => {
     DatabaseHandler_1.fetchUsers({ email: req.params.email })
         .then((users) => __awaiter(void 0, void 0, void 0, function* () {
         const user = users[0];
         const codes = yield DatabaseHandler_1.fetchCodes({ owner: user.email });
+        try {
+            // generate get urls for all the codes so the app can load the images for the codes
+            for (var codes_1 = __asyncValues(codes), codes_1_1; codes_1_1 = yield codes_1.next(), !codes_1_1.done;) {
+                const code = codes_1_1.value;
+                const url = yield AWSPresigner_1.generateSignedGetUrl("codes/" + code.id, 120);
+                code.url = url;
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (codes_1_1 && !codes_1_1.done && (_a = codes_1.return)) yield _a.call(codes_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         user.codes = codes;
         delete user.password;
         res.status(200).send(user);
@@ -187,16 +289,17 @@ app.post("/updateUser", (req, res) => {
     });
 });
 app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     const codeId = yield getUniqueCodeId();
     if (codeId === null)
         res.status(500).send('500: Internal Server Error during db lookup').end();
     else {
         // generate a PUT URL to allow for qr code upload from client
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        const putUrl = yield AWSPresigner_1.generateSignedPutUrl('codes/' + codeId, 'image/png');
+        const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ')[1];
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
-        const type = req.query.type;
+        objectCleanup(socials);
         // insert code into db
         DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
             res.status(201).send({ codeId });
@@ -301,6 +404,10 @@ app.post("/deleteEvent", (req, res) => __awaiter(void 0, void 0, void 0, functio
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 });
+function getCodeMiddlewareFailCallback(req, res, next) {
+    req.authFailed = true;
+    next();
+}
 /**
  * Generate unique id for a qr code
  */
@@ -333,5 +440,23 @@ function validateObjectProps(obj, requiredKeys) {
             return false;
     }
     return true;
+}
+/**
+ * Delete invalid entries from an object
+ * @param obj object to clean up
+ */
+function objectCleanup(obj) {
+    const keys = Object.keys(obj);
+    const keysToRemove = [];
+    for (const key of keys) {
+        if (key.trim().length === 0)
+            keysToRemove.push(key);
+        else if (key === "null" || key === "undefined")
+            keysToRemove.push(key);
+    }
+    while (keysToRemove.length > 0) {
+        delete obj[keysToRemove[0]];
+        keysToRemove.shift();
+    }
 }
 exports.default = app;

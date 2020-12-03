@@ -199,6 +199,24 @@ export function fetchEvents(query, options={}): Promise<Event[] | MongoError> {
     });
 }
 
+export function updateEvent(updatedUserObject: UpdateQuery<any> | Partial<any>, queryObject: FilterQuery<any>) {
+
+    return new Promise((resolve, reject) => {
+        getCollection(COLLECTION_EVENTS).then((collection: Collection) => {
+            const updateDoc = { $set: updatedUserObject }
+            collection.updateOne(queryObject, updateDoc, (err, updateResult) => {
+                if (err) reject(err);
+
+                resolve(updateResult);
+            });
+
+        }).catch((reason) => {
+            reject(reason);
+        });
+
+    });
+}
+
 export function deleteEvent(_id: ObjectId) {
 
     return new Promise((resolve, reject) => {
