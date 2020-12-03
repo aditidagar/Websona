@@ -69,7 +69,7 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 2) {
       setState(() {
         passwordError = true;
         passwordNode.requestFocus();

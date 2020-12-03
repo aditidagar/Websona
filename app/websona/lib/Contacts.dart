@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'Contact.dart';
+import 'dart:convert';
+import 'main.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart';
+
+const String API_URL = "https://api.thewebsonaapp.com";
 
 class Contacts extends StatefulWidget {
   @override
@@ -23,6 +30,7 @@ class _ContactsState extends State<Contacts> {
   List<Person> contactInfo = [];
   List<Person> contactsFiltered = [];
   TextEditingController searchController = new TextEditingController();
+  String _email = '';
 
   @override
   void initState() {
@@ -31,12 +39,44 @@ class _ContactsState extends State<Contacts> {
     //   filterContacts();
     // });
     //adds two people
-    contactInfo.add(person1);
-    contactInfo.add(person2);
-    contactInfo.add(person3);
-    contactInfo.add(person4);
 
-    contactInfo.sort((a, b) => a.name.compareTo(b.name));
+    // contactInfo.add(person1);
+    // contactInfo.add(person2);
+    // contactInfo.add(person3);
+    // contactInfo.add(person4);
+    loadContacts(context);
+  }
+
+  void loadContacts(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _email = prefs.getString('email');
+    });
+    Response response = await get(
+      API_URL + "/getContact?email=" + this._email,
+      headers: <String, String>{
+        'authorization': await getAuthorizationToken(context),
+      },
+    );
+
+    var contacts = jsonDecode(response.body);
+    print("CONTACTS: ");
+    print(contacts);
+    List<Person> listContact = [];
+    for (int i = 0; i < contacts.length; i++) {
+      List<String> contactSocials = [];
+      var name = contacts[i]['user'];
+      var socialList = contacts[i]['sharedSocials'];
+      for (int j = 0; j < socialList.length; j++) {
+        contactSocials.add(socialList[i]['social']);
+      }
+      Person p = new Person(name, contactSocials);
+      listContact.add(p);
+    }
+
+    setState(() {
+      contactInfo = listContact;
+    });
   }
 
   // filterContacts() {
