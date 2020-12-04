@@ -72,12 +72,15 @@ class _ContactsState extends State<Contacts> {
     var contacts = jsonDecode(response.body);
     List<Person> listContact = [];
     List<Social> listSocial = [];
-    for (int i = 0; i < contacts.length; i++) {
+    for (var i = 0; i < contacts.length; i++) {
       var name = contacts[i]['user'];
       var socialList = contacts[i]['sharedSocials'];
-      for (int j = 0; j < socialList.length; j++) {
-        String handle = socialList[i]['social'];
-        String media = socialList[i]['username'];
+      print(socialList);
+      for (var j = 0; j < socialList.length; j++) {
+        var handle = socialList[j]['social'];
+        var media = socialList[j]['username'];
+        print(handle);
+        print(media);
         Social s = new Social(media, handle);
         listSocial.add(s);
       }
