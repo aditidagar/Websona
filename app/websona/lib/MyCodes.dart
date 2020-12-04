@@ -100,13 +100,14 @@ class _MyCodesState extends State<MyCodes> {
                         color: Colors.white60,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(80.0)),
-                            //side: BorderSide(color: Colors.blue, width: 2)),
+                        //side: BorderSide(color: Colors.blue, width: 2)),
                         onPressed: () {
                           //implement to delete instead
                           Navigator.pop(context);
                         },
                         child: const Text('Delete',
-                            style: TextStyle(fontSize: 14, color: Colors.black)),
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black)),
                       ),
                     ],
                   )));
@@ -190,26 +191,36 @@ class _MyCodesState extends State<MyCodes> {
                             color: Colors.white.withOpacity(0.0),
                             child: InkWell(
                               splashColor: Colors.white,
-                              child: Container(
-                                height: 50.0,
-                                width: 50.0,
-                                color: Colors.transparent,
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: AssetImage(
-                                                'asset/img/background.png')),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(25.0))),
-                                    child: new Center(
-                                      child: new Text(
-                                        "Code " + index.toString(),
-                                        style: TextStyle(
-                                            fontSize: 22, color: Colors.white),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    )),
+                              child: Stack(
+                                children: <Widget>[
+                                  Container(
+                                      decoration: new BoxDecoration(
+                                          color: Colors.white),
+                                      alignment: Alignment.center,
+                                      height: 240,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              (Radius.circular(25.0))),
+                                          color: Colors.blue[300],
+                                        ),
+                                      )),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Icon(Icons.qr_code_scanner,
+                                        color: Colors.white10, size: 140),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "Code " + index.toString(),
+                                      style: TextStyle(
+                                          fontSize: 28,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  )
+                                ],
                               ),
                               onTap: () {
                                 createDialog(context, info.litems[index]);
