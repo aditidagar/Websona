@@ -65,11 +65,17 @@ class _MyCodesState extends State<MyCodes> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0)),
               child: Container(
-                  height: 500.0,
+                  height: 410.0,
                   margin: EdgeInsets.all(20.0),
                   padding: EdgeInsets.all(10.0),
                   child: Column(
                     children: <Widget>[
+                      Text('Code',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 40.0,
+                              fontFamily: 'sans-serif-light',
+                              color: Colors.black)),
                       Container(
                         width: 200.0,
                         height: 200.0,
@@ -78,14 +84,6 @@ class _MyCodesState extends State<MyCodes> {
                           data: API_URL + "/code/" + code["id"],
                           size: 200,
                         ),
-                      ),
-                      Center(
-                        child: Text('Code',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 40.0,
-                                fontFamily: 'sans-serif-light',
-                                color: Colors.black)),
                       ),
                       RaisedButton(
                         color: Colors.white,
@@ -97,6 +95,18 @@ class _MyCodesState extends State<MyCodes> {
                         },
                         child: const Text('Dismiss',
                             style: TextStyle(fontSize: 20, color: Colors.blue)),
+                      ),
+                      RaisedButton(
+                        color: Colors.white60,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(80.0)),
+                            //side: BorderSide(color: Colors.blue, width: 2)),
+                        onPressed: () {
+                          //implement to delete instead
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Delete',
+                            style: TextStyle(fontSize: 14, color: Colors.black)),
                       ),
                     ],
                   )));
