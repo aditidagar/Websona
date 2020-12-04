@@ -181,14 +181,18 @@ app.get("/code/:id", (req, res) => {
             }
 
             const scanningUser = scanningUsers[0];
-            event.attendees.push({
-                firstName: scanningUser.firstName,
-                lastName: scanningUser.lastName,
-                email: scanningUser.email
-            });
+            let userExists = false;
+            userExists = event.attendees.findIndex((attendee) => attendee.email === scanningUser.email) !== -1;
+            if (!userExists) {
+                event.attendees.push({
+                    firstName: scanningUser.firstName,
+                    lastName: scanningUser.lastName,
+                    email: scanningUser.email
+                });
+            }
 
             updateEvent({ attendees: event.attendees }, { _id: event._id });
-            res.status(200).send(`Thanks for participating in ${event.name} at ${event.location}`);
+            res.status(200).send(`Thanks for attending ${event.name} at ${event.location}`);
             return;
         }
 
@@ -351,7 +355,7 @@ app.post("/newCode", async (req, res) => {
         });
     }
 });
-//TEST
+
 app.get("/events", (req, res) => {
     const token = req.headers.authorization?.split(' ')[1] as string;
     const decodedToken = jwt.decode(token) as { [key: string]: any };
