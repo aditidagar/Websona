@@ -482,7 +482,6 @@ class MapScreenState extends State<ProfilePage>
   }
 
   Future _imgFromGallery() async {
-    print("im here");
     final _picker = ImagePicker();
     PickedFile image =
         await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);

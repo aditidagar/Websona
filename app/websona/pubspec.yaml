@@ -31,7 +31,7 @@ dependencies:
   contacts_service: ^0.4.6
   marquee_widget: ^1.0.0
   qr_flutter: ^3.0.1
-
+  intl : ^0.16.1 
   qr_code_scanner: ^0.0.13
   
   http: ^0.12.2

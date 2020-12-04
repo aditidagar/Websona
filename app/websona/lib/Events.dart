@@ -3,6 +3,7 @@ import 'package:http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:marquee_widget/marquee_widget.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'main.dart';
@@ -71,59 +72,79 @@ class _EventState extends State<Event> {
   createDialog(BuildContext context) {
     TextEditingController nameController = TextEditingController();
     TextEditingController locationController = TextEditingController();
+    final _formKey = GlobalKey<FormState>();
+
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0)),
-            child: Container(
-              height: 250,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(hintText: 'Name'),
-                    ),
-                    TextField(
-                      controller: locationController,
-                      decoration: InputDecoration(hintText: 'Location'),
-                    ),
-                    new RaisedButton(
-                      onPressed: () => _selectDate(context),
-                      child: Text("Select date"),
-                    ),
-                    SizedBox(
-                      width: 150.0,
-                      child: RaisedButton(
-                        onPressed: () {
-                          Map<String, dynamic> event = {
-                            "name": nameController.text,
-                            "location": locationController.text,
-                            "date": selectedDate.millisecondsSinceEpoch
-                          };
-
-                          events.add(event);
-                          setState(() {});
-                          Navigator.of(context).pop();
-                          createCodeDialog(context, event, createEvent: true);
-                        },
-                        child: Text(
-                          "Create",
-                          style: TextStyle(color: Colors.white),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0)),
+              child: Form(
+                key: _formKey,
+                child: Container(
+                  height: 280,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: nameController,
+                          decoration: InputDecoration(hintText: 'Name'),
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return 'Please enter an event name';
+                            }
+                            return null;
+                          },
                         ),
-                        color: const Color(0xFF1BC0C5),
-                      ),
-                    )
-                  ],
+                        TextFormField(
+                          controller: locationController,
+                          decoration: InputDecoration(hintText: 'Location'),
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return 'Please enter a location';
+                            }
+                            return null;
+                          },
+                        ),
+                        new RaisedButton(
+                          onPressed: () => _selectDate(context),
+                          child: Text(
+                              DateFormat("dd/MM/yyyy").format(selectedDate)),
+                        ),
+                        SizedBox(
+                          width: 150.0,
+                          child: RaisedButton(
+                            onPressed: () {
+                              if (_formKey.currentState.validate()) {
+                                Map<String, dynamic> event = {
+                                  "name": nameController.text,
+                                  "location": locationController.text,
+                                  "date": selectedDate.millisecondsSinceEpoch
+                                };
+
+                                events.add(event);
+                                setState(() {});
+                                Navigator.of(context).pop();
+                                createCodeDialog(context, event,
+                                    createEvent: true);
+                              }
+                            },
+                            child: Text(
+                              "Create",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            color: const Color(0xFF2196F3),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          );
+              ));
         });
   }
 
@@ -198,8 +219,13 @@ class _EventState extends State<Event> {
                               child: Padding(
                                 padding: EdgeInsets.only(left: 45, top: 12),
                                 child: Container(
-                                  child:
-                                      Text(event['attendees'].length.toString(),
+                                  child: event['attendees'].length == null
+                                      ? Text("0",
+                                          style: TextStyle(
+                                            fontSize: 55,
+                                          ))
+                                      : Text(
+                                          event['attendees'].length.toString(),
                                           style: TextStyle(
                                             fontSize: 55,
                                           )),
@@ -292,8 +318,7 @@ class _EventState extends State<Event> {
           loadEvents();
         }
       }
-    }
-    else {
+    } else {
       codeUrl = API_URL + "/code/" + event['codeId'];
     }
 
@@ -456,7 +481,9 @@ class _EventState extends State<Event> {
                                   createCodeDialog(context, events[index]);
                                 },
                               ),
-                              SizedBox(width: 20,),
+                              SizedBox(
+                                width: 20,
+                              ),
                               InkWell(
                                 child: Icon(Icons.list),
                                 onTap: () {
