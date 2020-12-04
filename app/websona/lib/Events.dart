@@ -274,16 +274,17 @@ class _EventState extends State<Event> {
       {bool createEvent = false}) async {
     var qrKey = GlobalKey();
     String codeUrl = "";
-
+    print(createEvent);
     if (createEvent) {
+      print("inside if of create dialog");
       Response response = await post(
-        API_URL + "/newCode?type=event",
+        "http://192.168.8.5:3000" + "/newCode?type=event",
         headers: <String, String>{
           "Content-Type": "application/json",
           'authorization': await getAuthorizationToken(context),
         },
       );
-
+      print(response.statusCode);
       if (response.statusCode == 201) {
         Map<dynamic, dynamic> data = jsonDecode(response.body);
         String codeId = data['codeId'];
@@ -345,8 +346,8 @@ class _EventState extends State<Event> {
         });
   }
 
-  Future<bool> submitCreateEvent(
-      String codeId, Map<String, dynamic> event) async {
+  Future<bool> submitCreateEvent(String codeId, Map<String, dynamic> event) async {
+    print("SUbmit create event triggered");
     event["codeId"] = codeId;
     Response response = await post(API_URL + "/newEvent",
         headers: <String, String>{
@@ -354,7 +355,8 @@ class _EventState extends State<Event> {
           'authorization': await getAuthorizationToken(context)
         },
         body: jsonEncode(event));
-
+    print(event);
+    print(response.statusCode);
     return response.statusCode == 201;
   }
 

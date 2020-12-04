@@ -143,6 +143,7 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 app.get("/code/:id", (req, res) => {
+    console.log("code id called");
     const codeId = req.params.id;
     DatabaseHandler_1.fetchCodes({ id: codeId }).then((codes) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
@@ -171,6 +172,7 @@ app.get("/code/:id", (req, res) => {
                 return;
             }
             const event = events[0];
+            console.log(event);
             const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
             const scanningUserEmail = jsonwebtoken_1.default.decode(token).email;
             const scanningUsers = yield DatabaseHandler_1.fetchUsers({ email: scanningUserEmail });
@@ -179,6 +181,7 @@ app.get("/code/:id", (req, res) => {
                 return;
             }
             const scanningUser = scanningUsers[0];
+            console.log(scanningUser);
             event.attendees.push({
                 firstName: scanningUser.firstName,
                 lastName: scanningUser.lastName,
@@ -248,6 +251,7 @@ app.post("/addContact", (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const codes = yield DatabaseHandler_1.fetchCodes({ id: code_id });
         const code = codes[0];
+        console.log(code);
         DatabaseHandler_1.fetchUsers({ email: user1 }).then((users) => __awaiter(void 0, void 0, void 0, function* () {
             if (users.length === 0)
                 res.status(404).send("User not found");
@@ -329,7 +333,9 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
         const type = req.query.type;
-        objectCleanup(socials);
+        if (type === "personal") {
+            objectCleanup(socials);
+        }
         // insert code into db
         DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
             res.status(201).send({ codeId });

@@ -39,17 +39,17 @@ class _QRScannerState extends State<QRScanner> {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
       print(scanData);
+      fetchQRData(scanData);
       setState(() {
         _camState = false;
         qrText = scanData;
-        fetchQRData(scanData);
       });
     });
   }
 
   void fetchQRData(code) async {
-    print(code);
-    Response response = await get(code, headers: <String, String>{
+    Response response = await get(code, 
+    headers: <String, String>{
       'authorization': await getAuthorizationToken(context),
     });
 
@@ -61,14 +61,17 @@ class _QRScannerState extends State<QRScanner> {
   }
 
   void addContact(code) async {
+    var l = code.split('/');
+    var qr = l.last;
     Response response = await post(API_URL + "/addContact",
         headers: <String, String>{
           'authorization': await getAuthorizationToken(context),
           'Content-Type': 'application/json'
         },
         body: jsonEncode({
-          'code_id': code,
+          'code_id': qr,
         }));
+    print(response.statusCode);
   }
 
   @override

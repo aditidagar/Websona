@@ -256,7 +256,7 @@ app.post("/addContact", async (req, res) => {
     try {
         const codes = await fetchCodes({ id: code_id }) as Code[];
         const code = codes[0]
-
+        console.log(code);
         fetchUsers({ email: user1 }).then(async (users: User[]) => {
             if (users.length === 0) res.status(404).send("User not found");
             else {
@@ -341,7 +341,7 @@ app.post("/newCode", async (req, res) => {
         const decodedToken = jwt.decode(token) as AccessToken;
         const socials = req.body.socials;
         const type = req.query.type as string;
-        objectCleanup(socials);
+        if(type === "personal"){objectCleanup(socials);}
         // insert code into db
         insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
             res.status(201).send({ codeId });
