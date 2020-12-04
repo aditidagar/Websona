@@ -75,9 +75,9 @@ class _MyCodesState extends State<MyCodes> {
                         height: 200.0,
                         margin: EdgeInsets.only(top: 20, bottom: 20),
                         child: QrImage(
-                            data: API_URL + "/code/" + code["id"],
-                            size: 200,
-                          ),
+                          data: API_URL + "/code/" + code["id"],
+                          size: 200,
+                        ),
                       ),
                       Center(
                         child: Text('Code',
@@ -136,6 +136,24 @@ class _MyCodesState extends State<MyCodes> {
                               changeStateCallBack: changeState,
                             ),
                           ),
+                        );
+                      } else if (info.counter >= 5) {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text('Codes Limit Reached'),
+                            content: Text(
+                                'To add a new code, remove one or more of the existing codes.'),
+                            actions: [
+                              FlatButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("Ok"))
+                            ],
+                            elevation: 24.0,
+                          ),
+                          barrierDismissible: true,
                         );
                       }
                     },
