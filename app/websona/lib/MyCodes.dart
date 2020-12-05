@@ -62,6 +62,7 @@ class _MyCodesState extends State<MyCodes> {
         context: context,
         builder: (BuildContext context) {
           return Dialog(
+              //backgroundColor: Colors.blue[50],
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0)),
               child: Container(
@@ -97,7 +98,7 @@ class _MyCodesState extends State<MyCodes> {
                             style: TextStyle(fontSize: 20, color: Colors.blue)),
                       ),
                       RaisedButton(
-                        color: Colors.white60,
+                        color: Colors.white70,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(80.0)),
                         //side: BorderSide(color: Colors.blue, width: 2)),
