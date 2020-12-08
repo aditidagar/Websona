@@ -24,8 +24,9 @@ class Info {
 class _MyCodesState extends State<MyCodes> {
   Info info;
 
-  void changeState() {
-    setState(() {});
+  void changeState(BuildContext context) {
+    loadCodes(context);
+    // setState(() {});
   }
 
   void loadCodes(BuildContext context) async {
@@ -55,6 +56,35 @@ class _MyCodesState extends State<MyCodes> {
     super.initState();
     info = new Info([], 0);
     loadCodes(context);
+  }
+
+  void deleteCode(String codeId) async {
+    Response response = await post(
+      API_URL + "/deleteCode?id=" + codeId,
+      headers: <String, String>{
+        'authorization': await getAuthorizationToken(context)
+      },
+    );
+
+    if (response.statusCode != 201) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('Error'),
+          content: Text(
+             response.statusCode.toString() + ': Failed to delete code, try again later'),
+          actions: [
+            FlatButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("Ok"))
+          ],
+          elevation: 24.0,
+        ),
+        barrierDismissible: true,
+      );
+    }
   }
 
   createDialog(BuildContext context, dynamic code) {
@@ -104,7 +134,9 @@ class _MyCodesState extends State<MyCodes> {
                         //side: BorderSide(color: Colors.blue, width: 2)),
                         onPressed: () {
                           //implement to delete instead
+                          deleteCode(code["id"]);
                           Navigator.pop(context);
+                          loadCodes(context);
                         },
                         child: const Text('Delete',
                             style:
@@ -145,7 +177,7 @@ class _MyCodesState extends State<MyCodes> {
                           MaterialPageRoute(
                             builder: (context) => GenerateQrScreen(
                               info: info,
-                              changeStateCallBack: changeState,
+                              changeStateCallBack: (context) => changeState(context),
                             ),
                           ),
                         );

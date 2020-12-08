@@ -356,6 +356,29 @@ app.post("/newCode", async (req, res) => {
     }
 });
 
+app.post("/deleteCode", async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1] as string;
+    const decodedToken = jwt.decode(token) as AccessToken;
+    const codeId = req.query.id as string;
+
+    const codes: Code[] = await fetchCodes({ id: codeId }) as Code[];
+    if (codes.length === 0) {
+        res.status(404).send("code not found");
+        return;
+    }
+
+    if (codes[0].owner !== decodedToken.email) {
+        res.status(403).send(`${decodedToken.email} not authorized to deleted code with id: ${codes[0].id}`);
+        return;
+    }
+
+    deleteCode(codeId).then((delStatus) => {
+        res.status(201).end();
+    }).catch((err) => {
+        res.status(500).send("Error deleting code, try again later");
+    })
+});
+
 app.get("/events", (req, res) => {
     const token = req.headers.authorization?.split(' ')[1] as string;
     const decodedToken = jwt.decode(token) as { [key: string]: any };

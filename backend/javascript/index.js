@@ -143,7 +143,6 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 app.get("/code/:id", (req, res) => {
-    console.log("code id called");
     const codeId = req.params.id;
     DatabaseHandler_1.fetchCodes({ id: codeId }).then((codes) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
@@ -172,7 +171,6 @@ app.get("/code/:id", (req, res) => {
                 return;
             }
             const event = events[0];
-            console.log(event);
             const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
             const scanningUserEmail = jsonwebtoken_1.default.decode(token).email;
             const scanningUsers = yield DatabaseHandler_1.fetchUsers({ email: scanningUserEmail });
@@ -181,14 +179,17 @@ app.get("/code/:id", (req, res) => {
                 return;
             }
             const scanningUser = scanningUsers[0];
-            console.log(scanningUser);
-            event.attendees.push({
-                firstName: scanningUser.firstName,
-                lastName: scanningUser.lastName,
-                email: scanningUser.email
-            });
+            let userExists = false;
+            userExists = event.attendees.findIndex((attendee) => attendee.email === scanningUser.email) !== -1;
+            if (!userExists) {
+                event.attendees.push({
+                    firstName: scanningUser.firstName,
+                    lastName: scanningUser.lastName,
+                    email: scanningUser.email
+                });
+            }
             DatabaseHandler_1.updateEvent({ attendees: event.attendees }, { _id: event._id });
-            res.status(200).send(`Thanks for participating in ${event.name} at ${event.location}`);
+            res.status(200).send(`Thanks for attending ${event.name} at ${event.location}`);
             return;
         }
         // code belongs to a normal user (personal code)
@@ -345,6 +346,26 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
 }));
+app.post("/deleteCode", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const token = (_d = req.headers.authorization) === null || _d === void 0 ? void 0 : _d.split(' ')[1];
+    const decodedToken = jsonwebtoken_1.default.decode(token);
+    const codeId = req.query.id;
+    const codes = yield DatabaseHandler_1.fetchCodes({ id: codeId });
+    if (codes.length === 0) {
+        res.status(404).send("code not found");
+        return;
+    }
+    if (codes[0].owner !== decodedToken.email) {
+        res.status(403).send(`${decodedToken.email} not authorized to deleted code with id: ${codes[0].id}`);
+        return;
+    }
+    DatabaseHandler_1.deleteCode(codeId).then((delStatus) => {
+        res.status(201).end();
+    }).catch((err) => {
+        res.status(500).send("Error deleting code, try again later");
+    });
+}));
 app.get("/events", (req, res) => {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
@@ -354,8 +375,8 @@ app.get("/events", (req, res) => {
     }).catch((err) => res.status(500).send("500: Server Error"));
 });
 app.post("/newEvent", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
-    const token = (_d = req.headers.authorization) === null || _d === void 0 ? void 0 : _d.split(' ')[1];
+    var _e;
+    const token = (_e = req.headers.authorization) === null || _e === void 0 ? void 0 : _e.split(' ')[1];
     const decodedToken = jsonwebtoken_1.default.decode(token);
     // check all args are there in the body
     if (!validateObjectProps(req.body, ["codeId", "name", "location", "date"])) {
@@ -380,8 +401,8 @@ app.post("/newEvent", (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 }));
 app.post("/deleteEvent", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
-    const token = (_e = req.headers.authorization) === null || _e === void 0 ? void 0 : _e.split(' ')[1];
+    var _f;
+    const token = (_f = req.headers.authorization) === null || _f === void 0 ? void 0 : _f.split(' ')[1];
     const decodedToken = jsonwebtoken_1.default.decode(token);
     const email = decodedToken.email;
     if (!req.body.id) {
