@@ -91,7 +91,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       Map<dynamic, dynamic> data = jsonDecode(response.body);
       String codeId = data['codeId'];
       qrData = API_URL + '/code/' + codeId;
-      setState(() { });
+      setState(() {});
     }
   }
 

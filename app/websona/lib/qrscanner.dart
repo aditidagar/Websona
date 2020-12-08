@@ -22,7 +22,7 @@ class QRScanner extends StatefulWidget {
 }
 
 class _QRScannerState extends State<QRScanner> {
-  bool _camState = true;
+  int _camState = 0;
   String _name = '';
   var qrText = '';
   var flashState = flashOn;
@@ -35,21 +35,41 @@ class _QRScannerState extends State<QRScanner> {
     super.initState();
   }
 
-  void _onQRViewCreated(QRViewController controller) {
+  Future<int> checkQrType(code) async {
+    var l = code.split('/');
+    var qr = l.last;
+    Response response = await post(API_URL + "/code/" + qr,
+        headers: <String, String>{
+          'authorization': await getAuthorizationToken(context),
+          'Content-Type': 'application/json'
+        },
+        body: jsonEncode({
+          'code_id': qr,
+        }));
+    var jsonbody = jsonDecode(response.body);
+    if (jsonbody is String) {
+      print("yay");
+      //Event is scanned
+      return 1;
+    }
+    print("user");
+    //User scanned
+    return 2;
+  }
+
+  void _onQRViewCreated(QRViewController controller) async {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      print(scanData);
       fetchQRData(scanData);
       setState(() {
-        _camState = false;
+        _camState = checkQrType(scanData);
         qrText = scanData;
       });
     });
   }
 
   void fetchQRData(code) async {
-    Response response = await get(code, 
-    headers: <String, String>{
+    Response response = await get(code, headers: <String, String>{
       'authorization': await getAuthorizationToken(context),
     });
 
@@ -76,7 +96,7 @@ class _QRScannerState extends State<QRScanner> {
 
   @override
   Widget build(BuildContext context) {
-    if (this._camState == true) {
+    if (this._camState == 0) {
       return Container(
           height: MediaQuery.of(context).size.width * 2,
           margin: EdgeInsets.all(20.0),
@@ -85,9 +105,7 @@ class _QRScannerState extends State<QRScanner> {
             children: <Widget>[
               Text(
                 'Scan the QR code',
-                style: this._camState == true
-                    ? TextStyle(fontSize: 26, fontWeight: FontWeight.bold)
-                    : TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               SizedBox(
