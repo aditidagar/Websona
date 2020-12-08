@@ -33,8 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: 'Terms of Service',
               leading: Icon(Icons.article),
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => editsurvey()));
                 print("Terms of Service");
               },
             ),

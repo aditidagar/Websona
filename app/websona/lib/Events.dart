@@ -83,16 +83,36 @@ class _EventState extends State<Event> {
               child: Form(
                 key: _formKey,
                 child: Container(
-                  height: 280,
+                  height: 370,
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Padding(
+                            padding: EdgeInsets.only(top: 20.0),
+                            child: new Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                new Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    new Text(
+                                      'Event Name',
+                                      style: TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )),
                         TextFormField(
                           controller: nameController,
-                          decoration: InputDecoration(hintText: 'Name'),
+                          decoration:
+                              InputDecoration(hintText: 'Enter event name'),
                           validator: (value) {
                             if (value.isEmpty) {
                               return 'Please enter an event name';
@@ -100,9 +120,29 @@ class _EventState extends State<Event> {
                             return null;
                           },
                         ),
+                        Padding(
+                            padding: EdgeInsets.only(top: 20.0),
+                            child: new Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                new Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    new Text(
+                                      'Event Location',
+                                      style: TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )),
                         TextFormField(
                           controller: locationController,
-                          decoration: InputDecoration(hintText: 'Location'),
+                          decoration:
+                              InputDecoration(hintText: 'Enter event location'),
                           validator: (value) {
                             if (value.isEmpty) {
                               return 'Please enter a location';
@@ -110,34 +150,56 @@ class _EventState extends State<Event> {
                             return null;
                           },
                         ),
+                        Padding(
+                            padding: EdgeInsets.only(top: 20.0),
+                            child: new Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                new Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    new Text(
+                                      'Event Date',
+                                      style: TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )),
                         new RaisedButton(
                           onPressed: () => _selectDate(context),
                           child: Text(
                               DateFormat("dd/MM/yyyy").format(selectedDate)),
                         ),
-                        SizedBox(
-                          width: 150.0,
-                          child: RaisedButton(
-                            onPressed: () {
-                              if (_formKey.currentState.validate()) {
-                                Map<String, dynamic> event = {
-                                  "name": nameController.text,
-                                  "location": locationController.text,
-                                  "date": selectedDate.millisecondsSinceEpoch
-                                };
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 12),
+                          child: SizedBox(
+                            width: 150.0,
+                            child: RaisedButton(
+                              onPressed: () {
+                                if (_formKey.currentState.validate()) {
+                                  Map<String, dynamic> event = {
+                                    "name": nameController.text,
+                                    "location": locationController.text,
+                                    "date": selectedDate.millisecondsSinceEpoch
+                                  };
 
-                                events.add(event);
-                                setState(() {});
-                                Navigator.of(context).pop();
-                                createCodeDialog(context, event,
-                                    createEvent: true);
-                              }
-                            },
-                            child: Text(
-                              "Create",
-                              style: TextStyle(color: Colors.white),
+                                  events.add(event);
+                                  setState(() {});
+                                  Navigator.of(context).pop();
+                                  createCodeDialog(context, event,
+                                      createEvent: true);
+                                }
+                              },
+                              child: Text(
+                                "Create",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              color: const Color(0xFF2196F3),
                             ),
-                            color: const Color(0xFF2196F3),
                           ),
                         )
                       ],

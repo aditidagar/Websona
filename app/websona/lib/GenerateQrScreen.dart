@@ -151,7 +151,8 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding:
+                          const EdgeInsets.only(top: 20, left: 20, right: 20),
                       child: Row(
                         children: <Widget>[
                           Expanded(
@@ -194,8 +195,9 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                   iconSize: 24,
                                   elevation: 16,
                                   style: TextStyle(color: Colors.blue),
+                                  hint: Text("Select a social"),
                                   validator: (value) {
-                                    if (value.isEmpty) {
+                                    if (value == null) {
                                       return 'Pick at least one link';
                                     }
                                     return null;
@@ -231,6 +233,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                   icon: Icon(Icons.arrow_downward),
                                   iconSize: 24,
                                   elevation: 16,
+                                  hint: Text("Select a social"),
                                   style: TextStyle(color: Colors.blue),
                                   onChanged: (String newValue) {
                                     setState(() {
@@ -263,6 +266,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                   icon: Icon(Icons.arrow_downward),
                                   iconSize: 24,
                                   elevation: 16,
+                                  hint: Text("Select a social"),
                                   style: TextStyle(color: Colors.blue),
                                   onChanged: (String newValue) {
                                     setState(() {
@@ -295,6 +299,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
                                   icon: Icon(Icons.arrow_downward),
                                   iconSize: 24,
                                   elevation: 16,
+                                  hint: Text("Select a social"),
                                   style: TextStyle(color: Colors.blue),
                                   onChanged: (String newValue) {
                                     setState(() {
@@ -339,4 +344,3 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
         ));
   }
 }
-

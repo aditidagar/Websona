@@ -88,7 +88,7 @@ class _QRScannerState extends State<QRScanner> {
                 textAlign: TextAlign.center,
               ),
               SizedBox(
-                height: 350,
+                height: 325,
                 width: 300,
                 child: QRView(
                   key: qrKey,
