@@ -334,11 +334,12 @@ app.post("/newCode", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const decodedToken = jsonwebtoken_1.default.decode(token);
         const socials = req.body.socials;
         const type = req.query.type;
+        const name = req.query.name;
         if (type === "personal") {
             objectCleanup(socials);
         }
         // insert code into db
-        DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
+        DatabaseHandler_1.insertCode({ id: codeId, socials, owner: decodedToken.email, type, name }).then((writeResult) => {
             res.status(201).send({ codeId });
         }).catch((err) => {
             console.log(err);

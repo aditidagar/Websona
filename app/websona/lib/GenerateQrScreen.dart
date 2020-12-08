@@ -73,7 +73,8 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   }
 
   void handleSubmit() async {
-    Response response = await post(API_URL + "/newCode?type=personal",
+    Response response = await post(
+        API_URL + "/newCode?type=personal&name=" + qrController.value.text,
         headers: <String, String>{
           "Content-Type": "application/json",
           'authorization': await getAuthorizationToken(context),
@@ -91,7 +92,7 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
       Map<dynamic, dynamic> data = jsonDecode(response.body);
       String codeId = data['codeId'];
       qrData = API_URL + '/code/' + codeId;
-      setState(() { });
+      setState(() {});
     }
   }
 

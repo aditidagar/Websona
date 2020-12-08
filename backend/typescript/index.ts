@@ -345,9 +345,10 @@ app.post("/newCode", async (req, res) => {
         const decodedToken = jwt.decode(token) as AccessToken;
         const socials = req.body.socials;
         const type = req.query.type as string;
+        const name = req.query.name as string;
         if(type === "personal"){objectCleanup(socials);}
         // insert code into db
-        insertCode({ id: codeId, socials, owner: decodedToken.email, type }).then((writeResult) => {
+        insertCode({ id: codeId, socials, owner: decodedToken.email, type, name }).then((writeResult) => {
             res.status(201).send({ codeId });
         }).catch((err) => {
             console.log(err);
