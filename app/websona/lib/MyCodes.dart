@@ -62,30 +62,29 @@ class _MyCodesState extends State<MyCodes> {
         context: context,
         builder: (BuildContext context) {
           return Dialog(
+              //backgroundColor: Colors.blue[50],
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0)),
               child: Container(
-                  height: 500.0,
+                  height: 410.0,
                   margin: EdgeInsets.all(20.0),
                   padding: EdgeInsets.all(10.0),
                   child: Column(
                     children: <Widget>[
+                      Text('Code',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 40.0,
+                              fontFamily: 'sans-serif-light',
+                              color: Colors.black)),
                       Container(
                         width: 200.0,
                         height: 200.0,
                         margin: EdgeInsets.only(top: 20, bottom: 20),
                         child: QrImage(
-                            data: API_URL + "/code/" + code["id"],
-                            size: 200,
-                          ),
-                      ),
-                      Center(
-                        child: Text('Code',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 40.0,
-                                fontFamily: 'sans-serif-light',
-                                color: Colors.black)),
+                          data: API_URL + "/code/" + code["id"],
+                          size: 200,
+                        ),
                       ),
                       RaisedButton(
                         color: Colors.white,
@@ -97,6 +96,19 @@ class _MyCodesState extends State<MyCodes> {
                         },
                         child: const Text('Dismiss',
                             style: TextStyle(fontSize: 20, color: Colors.blue)),
+                      ),
+                      RaisedButton(
+                        color: Colors.white70,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(80.0)),
+                        //side: BorderSide(color: Colors.blue, width: 2)),
+                        onPressed: () {
+                          //implement to delete instead
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Delete',
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black)),
                       ),
                     ],
                   )));
@@ -137,6 +149,24 @@ class _MyCodesState extends State<MyCodes> {
                             ),
                           ),
                         );
+                      } else if (info.counter >= 5) {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text('Codes Limit Reached'),
+                            content: Text(
+                                'To add a new code, remove one or more of the existing codes.'),
+                            actions: [
+                              FlatButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("Ok"))
+                            ],
+                            elevation: 24.0,
+                          ),
+                          barrierDismissible: true,
+                        );
                       }
                     },
                     child: Icon(
@@ -162,26 +192,36 @@ class _MyCodesState extends State<MyCodes> {
                             color: Colors.white.withOpacity(0.0),
                             child: InkWell(
                               splashColor: Colors.white,
-                              child: Container(
-                                height: 50.0,
-                                width: 50.0,
-                                color: Colors.transparent,
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: AssetImage(
-                                                'asset/img/background.png')),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(25.0))),
-                                    child: new Center(
-                                      child: new Text(
-                                        "Code " + index.toString(),
-                                        style: TextStyle(
-                                            fontSize: 22, color: Colors.white),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    )),
+                              child: Stack(
+                                children: <Widget>[
+                                  Container(
+                                      decoration: new BoxDecoration(
+                                          color: Colors.white),
+                                      alignment: Alignment.center,
+                                      height: 240,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              (Radius.circular(25.0))),
+                                          color: Colors.blue[300],
+                                        ),
+                                      )),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Icon(Icons.qr_code_scanner,
+                                        color: Colors.white10, size: 140),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "Code " + index.toString(),
+                                      style: TextStyle(
+                                          fontSize: 28,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  )
+                                ],
                               ),
                               onTap: () {
                                 createDialog(context, info.litems[index]);
