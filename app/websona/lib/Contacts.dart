@@ -75,12 +75,9 @@ class _ContactsState extends State<Contacts> {
     for (var i = 0; i < contacts.length; i++) {
       var name = contacts[i]['user'];
       var socialList = contacts[i]['sharedSocials'];
-      print(socialList);
       for (var j = 0; j < socialList.length; j++) {
         var handle = socialList[j]['social'];
         var media = socialList[j]['username'];
-        print(handle);
-        print(media);
         Social s = new Social(media, handle);
         listSocial.add(s);
       }
