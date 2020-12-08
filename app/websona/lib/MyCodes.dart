@@ -71,8 +71,8 @@ class _MyCodesState extends State<MyCodes> {
         context: context,
         builder: (_) => AlertDialog(
           title: Text('Error'),
-          content: Text(
-             response.statusCode.toString() + ': Failed to delete code, try again later'),
+          content: Text(response.statusCode.toString() +
+              ': Failed to delete code, try again later'),
           actions: [
             FlatButton(
                 onPressed: () {
@@ -177,7 +177,8 @@ class _MyCodesState extends State<MyCodes> {
                           MaterialPageRoute(
                             builder: (context) => GenerateQrScreen(
                               info: info,
-                              changeStateCallBack: (context) => changeState(context),
+                              changeStateCallBack: (context) =>
+                                  changeState(context),
                             ),
                           ),
                         );
@@ -246,7 +247,9 @@ class _MyCodesState extends State<MyCodes> {
                                   Align(
                                     alignment: Alignment.center,
                                     child: Text(
-                                      "Code " + index.toString(),
+                                      info.litems[index].containsKey("name")
+                                          ? info.litems[index]["name"]
+                                          : "Code " + index.toString(),
                                       style: TextStyle(
                                           fontSize: 28,
                                           color: Colors.white,

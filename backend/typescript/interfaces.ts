@@ -66,6 +66,7 @@ export interface PartialUserData {
 export interface Code {
     id: string;
     owner: string;
+    name: string;
     socials: {
         social: string;
         username: string;
