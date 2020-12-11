@@ -22,8 +22,10 @@ class QRScanner extends StatefulWidget {
 }
 
 class _QRScannerState extends State<QRScanner> {
-  bool _camState = true;
+  int _camState = 0;
   String _name = '';
+  String _eventName = '';
+  String _eventLocation = '';
   var qrText = '';
   var flashState = flashOn;
   var cameraState = frontCamera;
@@ -36,28 +38,42 @@ class _QRScannerState extends State<QRScanner> {
   }
 
   void _onQRViewCreated(QRViewController controller) {
+    print("QR scanned");
     this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      print(scanData);
-      fetchQRData(scanData);
+    controller.scannedDataStream.listen((scanData) async {
+      int eventType = await fetchQRData(scanData);
       setState(() {
-        _camState = false;
+        _camState = eventType;
         qrText = scanData;
       });
     });
   }
 
-  void fetchQRData(code) async {
-    Response response = await get(code, 
-    headers: <String, String>{
+  Future<int> fetchQRData(code) async {
+    var l = code.split('/');
+    var qr = l.last;
+    Response response =
+        await get(API_URL + '/code/' + qr, headers: <String, String>{
       'authorization': await getAuthorizationToken(context),
     });
 
     final responseBody = jsonDecode(response.body);
     print(responseBody);
+    if (responseBody.containsKey('contacts')) {
+      print("user");
+      //User scanned
+      setState(() {
+        _name = responseBody['firstName'] + " " + responseBody['lastName'];
+      });
+      return 2;
+    }
+    print("event");
+    //Event is scanned
     setState(() {
-      _name = responseBody['firstName'] + " " + responseBody['lastName'];
+      _eventName = responseBody['name'];
+      _eventLocation = responseBody['location'];
     });
+    return 1;
   }
 
   void addContact(code) async {
@@ -76,7 +92,7 @@ class _QRScannerState extends State<QRScanner> {
 
   @override
   Widget build(BuildContext context) {
-    if (this._camState == true) {
+    if (this._camState == 0) {
       return Container(
           height: MediaQuery.of(context).size.width * 2,
           margin: EdgeInsets.all(20.0),
@@ -85,9 +101,7 @@ class _QRScannerState extends State<QRScanner> {
             children: <Widget>[
               Text(
                 'Scan the QR code',
-                style: this._camState == true
-                    ? TextStyle(fontSize: 26, fontWeight: FontWeight.bold)
-                    : TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               SizedBox(
@@ -104,6 +118,55 @@ class _QRScannerState extends State<QRScanner> {
                     cutOutSize: 300,
                   ),
                 ),
+              ),
+            ],
+          ));
+    } else if (this._camState == 1) {
+      return Container(
+          height: MediaQuery.of(context).size.width * 2,
+          margin: EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(10.0),
+          child: Column(
+            children: <Widget>[
+              Container(
+                width: 100.0,
+                height: 100.0,
+                margin: EdgeInsets.only(top: 10, bottom: 10),
+                child: Center(
+                  child: Text(this._eventName.length > 0 ? this._eventName : "",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30.0,
+                          fontFamily: 'sans-serif-light',
+                          color: Colors.blue)),
+                ),
+              ),
+              Center(
+                child: Text("Location: " + this._eventLocation,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25.0,
+                        fontFamily: 'sans-serif-light',
+                        color: Colors.black45)),
+              ),
+              Center(
+                child: Text("Event successfully added!",
+                    style: TextStyle(
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 20.0,
+                        fontFamily: 'sans-serif-light',
+                        color: Colors.black)),
+              ),
+              const SizedBox(height: 30),
+              RaisedButton(
+                color: Colors.blue,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(80.0)),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Dismiss',
+                    style: TextStyle(fontSize: 20, color: Colors.white)),
               ),
             ],
           ));
@@ -149,6 +212,7 @@ class _QRScannerState extends State<QRScanner> {
                   borderRadius: BorderRadius.circular(80.0)),
               onPressed: () {
                 this.addContact(this.qrText);
+                Navigator.pop(context);
               },
               child: const Text('Add Contact',
                   style: TextStyle(fontSize: 20, color: Colors.white)),

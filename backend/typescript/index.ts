@@ -190,9 +190,12 @@ app.get("/code/:id", (req, res) => {
                     email: scanningUser.email
                 });
             }
+            const newEvent: any = event;
+            delete newEvent.attendees;
+            delete newEvent._id;
 
             updateEvent({ attendees: event.attendees }, { _id: event._id });
-            res.status(200).send(`Thanks for attending ${event.name} at ${event.location}`);
+            res.status(200).send(newEvent);
             return;
         }
 
