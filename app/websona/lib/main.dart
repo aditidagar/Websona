@@ -88,6 +88,7 @@ class MyStatefulWidget extends StatefulWidget {
 /// This is the private State class that goes with MyStatefulWidget.
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
+  BuildContext global;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
@@ -148,8 +149,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         onPressed: () {
           opencamera(context);
         },
-        child: Icon(Icons.add),
+        child: Icon(Icons.camera),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

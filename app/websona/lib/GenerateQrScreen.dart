@@ -73,7 +73,8 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
   }
 
   void handleSubmit() async {
-    Response response = await post(API_URL + "/newCode?type=personal",
+    Response response = await post(
+        API_URL + "/newCode?type=personal&name=" + qrController.value.text,
         headers: <String, String>{
           "Content-Type": "application/json",
           'authorization': await getAuthorizationToken(context),
@@ -120,218 +121,227 @@ class _GenerateQrScreenState extends State<GenerateQrScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'QR Code',
-      home: Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: AppBar(
-            title: const Text(
-              '  QR Code',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
-            ),
-            backgroundColor: Colors.transparent,
-            bottomOpacity: 0.0,
-            elevation: 0.0,
-            centerTitle: false,
-            automaticallyImplyLeading: false,
-          ),
-          body: Center(
-            child: Column(
-              children: <Widget>[
-                RepaintBoundary(
-                  key: qrKey,
-                  child: QrImage(
-                    data: qrData,
-                    size: 200,
-                  ),
+    final _formKey = GlobalKey<FormState>();
+
+    return Form(
+        key: _formKey,
+        child: MaterialApp(
+          title: 'QR Code',
+          home: Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: AppBar(
+                title: const Text(
+                  '  QR Code',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w700),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                          child: Container(
-                              margin: EdgeInsets.only(right: 20, left: 10),
-                              child: new Theme(
-                                data: new ThemeData(primaryColor: Colors.blue),
-                                child: TextField(
-                                  controller: qrController,
-                                  // obscureText: true,
-                                  enableSuggestions: false,
-                                  autocorrect: false,
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter QR Name',
-                                    suffixStyle: TextStyle(color: Colors.red),
-                                  ),
+                backgroundColor: Colors.transparent,
+                bottomOpacity: 0.0,
+                elevation: 0.0,
+                centerTitle: false,
+                automaticallyImplyLeading: false,
+              ),
+              body: Center(
+                child: Column(
+                  children: <Widget>[
+                    RepaintBoundary(
+                      key: qrKey,
+                      child: QrImage(
+                        data: qrData,
+                        size: 200,
+                      ),
+                    ),
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(top: 20, left: 20, right: 20),
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                              child: Container(
+                                  margin: EdgeInsets.only(right: 20, left: 10),
+                                  child: new Theme(
+                                    data: new ThemeData(
+                                        primaryColor: Colors.blue),
+                                    child: TextFormField(
+                                      controller: qrController,
+                                      // obscureText: true,
+                                      enableSuggestions: false,
+                                      autocorrect: false,
+                                      decoration: InputDecoration(
+                                        hintText: 'Enter QR Name',
+                                        suffixStyle:
+                                            TextStyle(color: Colors.red),
+                                      ),
+                                      validator: (value) {
+                                        if (value.isEmpty) {
+                                          return 'Please enter a name for the QR code';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  )))
+                        ],
+                      ),
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.only(right: 10, left: 10),
+                                child: DropdownButtonFormField<String>(
+                                  value: dropdownValue,
+                                  icon: Icon(Icons.arrow_downward),
+                                  iconSize: 24,
+                                  elevation: 16,
+                                  style: TextStyle(color: Colors.blue),
+                                  hint: Text("Select a social"),
+                                  validator: (value) {
+                                    if (value == null) {
+                                      return 'Pick at least one link';
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (String newValue) {
+                                    setState(() {
+                                      dropdownValue = newValue;
+                                      int index = media.indexOf(newValue);
+                                      media1 = _mediaLink.elementAt(index);
+                                    });
+                                  },
+                                  items: media.map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
                                 ),
-                              )))
-                    ],
-                  ),
+                              ),
+                            )
+                          ],
+                        )),
+                    Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.only(right: 10, left: 10),
+                                child: DropdownButtonFormField<String>(
+                                  value: dropdownValue2,
+                                  icon: Icon(Icons.arrow_downward),
+                                  iconSize: 24,
+                                  elevation: 16,
+                                  hint: Text("Select a social"),
+                                  style: TextStyle(color: Colors.blue),
+                                  onChanged: (String newValue) {
+                                    setState(() {
+                                      dropdownValue2 = newValue;
+                                      int index = media.indexOf(newValue);
+                                      media2 = _mediaLink.elementAt(index);
+                                    });
+                                  },
+                                  items: media.map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            )
+                          ],
+                        )),
+                    Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.only(right: 10, left: 10),
+                                child: DropdownButtonFormField<String>(
+                                  value: dropdownValue3,
+                                  icon: Icon(Icons.arrow_downward),
+                                  iconSize: 24,
+                                  elevation: 16,
+                                  hint: Text("Select a social"),
+                                  style: TextStyle(color: Colors.blue),
+                                  onChanged: (String newValue) {
+                                    setState(() {
+                                      dropdownValue3 = newValue;
+                                      int index = media.indexOf(newValue);
+                                      media3 = _mediaLink.elementAt(index);
+                                    });
+                                  },
+                                  items: media.map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            )
+                          ],
+                        )),
+                    Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.only(right: 10, left: 10),
+                                child: DropdownButtonFormField<String>(
+                                  value: dropdownValue4,
+                                  icon: Icon(Icons.arrow_downward),
+                                  iconSize: 24,
+                                  elevation: 16,
+                                  hint: Text("Select a social"),
+                                  style: TextStyle(color: Colors.blue),
+                                  onChanged: (String newValue) {
+                                    setState(() {
+                                      dropdownValue4 = newValue;
+                                      int index = media.indexOf(newValue);
+                                      media4 = _mediaLink.elementAt(index);
+                                    });
+                                  },
+                                  items: media.map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            )
+                          ],
+                        )),
+                    FlatButton(
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      disabledColor: Colors.grey,
+                      disabledTextColor: Colors.black,
+                      padding: EdgeInsets.all(8.0),
+                      splashColor: Colors.blueAccent,
+                      onPressed: () {
+                        if (_formKey.currentState.validate()) {
+                          handleSubmit();
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Text(
+                        "Create",
+                        style: TextStyle(fontSize: 20.0),
+                      ),
+                    ),
+                  ],
                 ),
-                Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            margin: EdgeInsets.only(right: 10, left: 10),
-                            child: DropdownButton<String>(
-                              value: dropdownValue,
-                              // icon: Icon(Icons.arrow_downward),
-                              iconSize: 24,
-                              elevation: 16,
-                              style: TextStyle(color: Colors.deepPurple),
-                              underline: Container(
-                                height: 2,
-                                color: Colors.deepPurpleAccent,
-                              ),
-                              onChanged: (String newValue) {
-                                setState(() {
-                                  dropdownValue = newValue;
-                                  int index = media.indexOf(newValue);
-                                  media1 = _mediaLink.elementAt(index);
-                                });
-                              },
-                              items: media.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        )
-                      ],
-                    )),
-                Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            margin: EdgeInsets.only(right: 10, left: 10),
-                            child: DropdownButton<String>(
-                              value: dropdownValue2,
-                              icon: Icon(Icons.arrow_downward),
-                              iconSize: 24,
-                              elevation: 16,
-                              style: TextStyle(color: Colors.deepPurple),
-                              underline: Container(
-                                height: 2,
-                                color: Colors.deepPurpleAccent,
-                              ),
-                              onChanged: (String newValue) {
-                                setState(() {
-                                  dropdownValue2 = newValue;
-                                  int index = media.indexOf(newValue);
-                                  media2 = _mediaLink.elementAt(index);
-                                });
-                              },
-                              items: media.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        )
-                      ],
-                    )),
-                Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            margin: EdgeInsets.only(right: 10, left: 10),
-                            child: DropdownButton<String>(
-                              value: dropdownValue3,
-                              icon: Icon(Icons.arrow_downward),
-                              iconSize: 24,
-                              elevation: 16,
-                              style: TextStyle(color: Colors.deepPurple),
-                              underline: Container(
-                                height: 2,
-                                color: Colors.deepPurpleAccent,
-                              ),
-                              onChanged: (String newValue) {
-                                setState(() {
-                                  dropdownValue3 = newValue;
-                                  int index = media.indexOf(newValue);
-                                  media3 = _mediaLink.elementAt(index);
-                                });
-                              },
-                              items: media.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        )
-                      ],
-                    )),
-                Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            margin: EdgeInsets.only(right: 10, left: 10),
-                            child: DropdownButton<String>(
-                              value: dropdownValue4,
-                              icon: Icon(Icons.arrow_downward),
-                              iconSize: 24,
-                              elevation: 16,
-                              style: TextStyle(color: Colors.deepPurple),
-                              underline: Container(
-                                height: 2,
-                                color: Colors.deepPurpleAccent,
-                              ),
-                              onChanged: (String newValue) {
-                                setState(() {
-                                  dropdownValue4 = newValue;
-                                  int index = media.indexOf(newValue);
-                                  media4 = _mediaLink.elementAt(index);
-                                });
-                              },
-                              items: media.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        )
-                      ],
-                    )),
-                FlatButton(
-                  color: Colors.blue,
-                  textColor: Colors.white,
-                  disabledColor: Colors.grey,
-                  disabledTextColor: Colors.black,
-                  padding: EdgeInsets.all(8.0),
-                  splashColor: Colors.blueAccent,
-                  onPressed: () {
-                    handleSubmit();
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    "Create",
-                    style: TextStyle(fontSize: 20.0),
-                  ),
-                ),
-              ],
-            ),
-          )),
-    );
+              )),
+        ));
   }
 }

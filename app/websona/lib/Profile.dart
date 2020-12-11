@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
+import 'package:mime/mime.dart';
 
 final String API_URL = "https://api.thewebsonaapp.com";
 
@@ -24,6 +26,7 @@ class MapScreenState extends State<ProfilePage>
   String _name = '';
   String _email = '';
   String _phone = '';
+  String _profilepic = '';
 
   static bool _status = true;
   File _image;
@@ -166,7 +169,7 @@ class MapScreenState extends State<ProfilePage>
                                 children: <Widget>[
                                   new GestureDetector(
                                     child: new CircleAvatar(
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: Colors.blue,
                                       radius: 25.0,
                                       child: new Icon(
                                         Icons.camera_alt,
@@ -283,6 +286,26 @@ class MapScreenState extends State<ProfilePage>
                                   mainAxisSize: MainAxisSize.min,
                                   children: <Widget>[
                                     new Text(
+                                      'Contact',
+                                      style: TextStyle(
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )),
+                        Padding(
+                            padding: EdgeInsets.only(
+                                left: 35.0, right: 25.0, top: 25.0),
+                            child: new Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                new Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    new Text(
                                       'Email ID',
                                       style: TextStyle(
                                           fontSize: 16.0,
@@ -294,7 +317,7 @@ class MapScreenState extends State<ProfilePage>
                             )),
                         Padding(
                             padding: EdgeInsets.only(
-                                left: 25.0, right: 25.0, top: 2.0),
+                                left: 35.0, right: 25.0, top: 2.0),
                             child: new Row(
                               mainAxisSize: MainAxisSize.max,
                               children: <Widget>[
@@ -305,7 +328,7 @@ class MapScreenState extends State<ProfilePage>
                             )),
                         Padding(
                             padding: EdgeInsets.only(
-                                left: 25.0, right: 25.0, top: 25.0),
+                                left: 35.0, right: 25.0, top: 25.0),
                             child: new Row(
                               mainAxisSize: MainAxisSize.max,
                               children: <Widget>[
@@ -325,7 +348,7 @@ class MapScreenState extends State<ProfilePage>
                             )),
                         Padding(
                             padding: EdgeInsets.only(
-                                left: 25.0, right: 25.0, top: 2.0),
+                                left: 35.0, right: 25.0, top: 2.0),
                             child: new Row(
                               mainAxisSize: MainAxisSize.max,
                               children: <Widget>[
@@ -437,15 +460,15 @@ class MapScreenState extends State<ProfilePage>
                                   height: 20,
                                 ),
                                 Text(
-                                  'Social Links',
+                                  'Shared',
                                   style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 16),
                                 ),
-                                ..._getLinks(),
                                 SizedBox(
-                                  height: 40,
+                                  height: 10,
                                 ),
+                                ..._getLinks(),
                               ],
                             ),
                           ),
@@ -479,24 +502,51 @@ class MapScreenState extends State<ProfilePage>
     setState(() {
       _image = File(image.path);
     });
+    final mimeType = lookupMimeType(image.path);
+    ByteData bytes = await rootBundle.load(image.path);
+
+    Response response = await get(
+      API_URL + '/updateProfilePicture?type=' + mimeType,
+      headers: <String, String>{
+        'authorization': await getAuthorizationToken(context),
+      },
+    );
+    String url = jsonDecode(response.body);
+    var client = Client();
+    var request = Request('PUT', Uri.parse(url));
+    request.headers.addAll({"Content-Type": "image/png"});
+    request.bodyBytes = bytes.buffer.asUint8List();
+    var streamedResponse = await client.send(request).then((res) {});
+    client.close();
+    print(streamedResponse);
   }
 
   Future _imgFromGallery() async {
-    print("im here");
     final _picker = ImagePicker();
     PickedFile image =
         await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
     setState(() {
       _image = File(image.path);
     });
-    final prefs = await SharedPreferences.getInstance();
-    var _email = prefs.getString('email');
+    print("Image is ");
+    print(image.path);
+    final mimeType = lookupMimeType(image.path);
+    ByteData bytes = await rootBundle.load(image.path);
+
     Response response = await get(
-      API_URL + '/updateProfilePicture?email=$_email',
+      API_URL + '/updateProfilePicture?type=' + mimeType,
       headers: <String, String>{
         'authorization': await getAuthorizationToken(context),
       },
     );
+    String url = jsonDecode(response.body);
+    var client = Client();
+    var request = Request('PUT', Uri.parse(url));
+    request.headers.addAll({"Content-Type": "image/png"});
+    request.bodyBytes = bytes.buffer.asUint8List();
+    var streamedResponse = await client.send(request).then((res) {});
+    client.close();
+    print(streamedResponse);
   }
 
   Widget _getActionButtons() {
@@ -590,7 +640,7 @@ class MapScreenState extends State<ProfilePage>
   Widget _getEditIcon() {
     return new GestureDetector(
       child: new CircleAvatar(
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.blue,
         radius: 14.0,
         child: new Icon(
           Icons.edit,
@@ -610,7 +660,7 @@ class MapScreenState extends State<ProfilePage>
     List<Widget> linkTextfields = [];
     for (int i = 0; i < _mediaLink.length; i++) {
       linkTextfields.add(Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 5.0),
         child: Row(
           children: [
             Expanded(child: FriendTextFields(i)),

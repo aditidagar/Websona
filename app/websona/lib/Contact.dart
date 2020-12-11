@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Contact extends StatefulWidget {
   final person;
@@ -9,6 +10,16 @@ class Contact extends StatefulWidget {
   @override
   MapScreenState createState() => MapScreenState();
 }
+
+//mapping for Icons
+Map<String, IconData> iconMapping = {
+  'Instagram' : FontAwesomeIcons.instagram,
+  'Twitter': FontAwesomeIcons.twitter,
+  'SnapChat': FontAwesomeIcons.snapchat,
+  'LinkedIn': FontAwesomeIcons.linkedin,
+  'Facebook': FontAwesomeIcons.facebook,
+  'WeChat': FontAwesomeIcons.weixin,
+};
 
 class MapScreenState extends State<Contact> {
   @override
@@ -72,13 +83,14 @@ class MapScreenState extends State<Contact> {
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.9,
             child: ListTile(
-              title: Text(
+              title: Center(
+                  child: Text(
                 widget.person.name,
                 style: TextStyle(
                     fontSize: 28,
                     color: Colors.black,
                     fontWeight: FontWeight.w600),
-              ),
+              )),
               onTap: () {},
             ),
           ),
@@ -90,28 +102,44 @@ class MapScreenState extends State<Contact> {
               color: Colors.white,
             ),
             itemBuilder: (BuildContext ctxt, int index) {
-              return new ListTile(
+              IconData iconSocial = FontAwesomeIcons.link;
+              if (iconMapping[
+                      '${widget.person.socialLinks[index].socialMedia}'] !=
+                  null) {
+                iconSocial = iconMapping[
+                    '${widget.person.socialLinks[index].socialMedia}'];
+              }
+              return new Material(
+                  //color: Colors.blue[50],
+                  child: ListTile(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.horizontal()),
                 title: Text(
                   widget.person.socialLinks[index].handle,
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 19,
                       color: Colors.black,
                       fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
                   widget.person.socialLinks[index].socialMedia,
                   style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
+                      fontSize: 11,
+                      color: Colors.grey,
                       fontWeight: FontWeight.w600),
                 ),
-                leading: Icon(Icons.keyboard_arrow_right_rounded),
+                // ignore: missing_required_param
+                leading: IconButton(
+                  iconSize: 35.0,
+                  icon: FaIcon(iconSocial,
+                    color: Colors.black,
+                  ),
+                ),
+                //Icon(Icons.keyboard_arrow_right_rounded),
                 onTap: () {
                   //code to see each event here
                 },
-              );
+              ));
             },
           ))
         ],
