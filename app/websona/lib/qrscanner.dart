@@ -37,64 +37,44 @@ class _QRScannerState extends State<QRScanner> {
     super.initState();
   }
 
-  // Future<int> checkQrType(code) async {
-  //   var l = code.split('/');
-  //   var qr = l.last;
-  //   Response response = await post(API_URL + "/code/" + qr,
-  //       headers: <String, String>{
-  //         'authorization': await getAuthorizationToken(context),
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: jsonEncode({
-  //         'code_id': qr,
-  //       }));
-  //   var jsonbody = jsonDecode(response.body);
-  //   print(jsonbody);
-  //   if (jsonbody.hasOwnProperty('type')) {
-  //     print("event");
-  //     //Event is scanned
-  //     return 1;
-  //   }
-  //   print("user");
-  //   //User scanned
-  //   return 2;
-  // }
-
   void _onQRViewCreated(QRViewController controller) {
     print("QR scanned");
     this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      // var eventType = int.parse(fetchQRData(scanData).toString());
+    controller.scannedDataStream.listen((scanData) async {
+      int eventType = await fetchQRData(scanData);
       setState(() {
-        _camState = 1;
+        _camState = eventType;
         qrText = scanData;
       });
     });
   }
 
-  // Future<int> fetchQRData(code) async {
-  //   Response response = await get(code, headers: <String, String>{
-  //     'authorization': await getAuthorizationToken(context),
-  //   });
+  Future<int> fetchQRData(code) async {
+    var l = code.split('/');
+    var qr = l.last;
+    Response response =
+        await get(API_URL + '/code/' + qr, headers: <String, String>{
+      'authorization': await getAuthorizationToken(context),
+    });
 
-  //   final responseBody = jsonDecode(response.body);
-  //   print(responseBody);
-  //   if (responseBody.hasOwnProperty('type')) {
-  //     print("event");
-  //     //Event is scanned
-  //     setState(() {
-  //       _eventName = responseBody['name'];
-  //       _eventLocation = responseBody['location'];
-  //     });
-  //     return 1;
-  //   }
-  //   print("user");
-  //   //User scanned
-  //   setState(() {
-  //     _name = responseBody['firstName'] + " " + responseBody['lastName'];
-  //   });
-  //   return 2;
-  // }
+    final responseBody = jsonDecode(response.body);
+    print(responseBody);
+    if (responseBody.containsKey('contacts')) {
+      print("user");
+      //User scanned
+      setState(() {
+        _name = responseBody['firstName'] + " " + responseBody['lastName'];
+      });
+      return 2;
+    }
+    print("event");
+    //Event is scanned
+    setState(() {
+      _eventName = responseBody['name'];
+      _eventLocation = responseBody['location'];
+    });
+    return 1;
+  }
 
   void addContact(code) async {
     var l = code.split('/');
@@ -149,32 +129,31 @@ class _QRScannerState extends State<QRScanner> {
           child: Column(
             children: <Widget>[
               Container(
-                width: 180.0,
-                height: 180.0,
-                margin: EdgeInsets.only(top: 20, bottom: 20),
+                width: 100.0,
+                height: 100.0,
+                margin: EdgeInsets.only(top: 10, bottom: 10),
                 child: Center(
-                  child: Text(
-                      this._eventName.length > 0 ? this._eventName[0] : "",
+                  child: Text(this._eventName.length > 0 ? this._eventName : "",
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 60.0,
+                          fontSize: 30.0,
                           fontFamily: 'sans-serif-light',
-                          color: Colors.white)),
+                          color: Colors.blue)),
                 ),
               ),
               Center(
-                child: Text(this._eventLocation,
+                child: Text("Location: " + this._eventLocation,
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 40.0,
+                        fontSize: 25.0,
                         fontFamily: 'sans-serif-light',
-                        color: Colors.black)),
+                        color: Colors.black45)),
               ),
               Center(
                 child: Text("Event successfully added!",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 40.0,
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 20.0,
                         fontFamily: 'sans-serif-light',
                         color: Colors.black)),
               ),

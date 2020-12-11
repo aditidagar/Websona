@@ -163,8 +163,10 @@ app.get("/code/:id", (req, res) => {
         }
         const email = codes[0].owner;
         const id = codes[0].id;
+        console.log(codes[0]);
         // event code
         if (codes[0].type && codes[0].type === 'event') {
+            console.log("Event scanned");
             const events = yield DatabaseHandler_1.fetchEvents({ codeId: id });
             if (events.length === 0) {
                 res.status(404).send("event not found").end();
@@ -188,8 +190,17 @@ app.get("/code/:id", (req, res) => {
                     email: scanningUser.email
                 });
             }
+            const newEvent = event;
+            delete newEvent.attendees;
+            delete newEvent._id;
             DatabaseHandler_1.updateEvent({ attendees: event.attendees }, { _id: event._id });
-            res.status(200).send(`Thanks for attending ${event.name} at ${event.location}`);
+            // var ev = {};
+            // ev['type'] = "event";
+            // ev['name'] = event.name;
+            // ev['location'] = event.location;
+            // res.status(200).send(`Thanks for attending ${event.name} at ${event.location}`);
+            console.log(newEvent);
+            res.status(200).send(newEvent);
             return;
         }
         // code belongs to a normal user (personal code)
