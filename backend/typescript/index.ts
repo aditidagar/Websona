@@ -192,7 +192,12 @@ app.get("/code/:id", (req, res) => {
             }
 
             updateEvent({ attendees: event.attendees }, { _id: event._id });
-            res.status(200).send(`Thanks for attending ${event.name} at ${event.location}`);
+            var ev = {};
+            ev['type'] = "event";
+            ev['name'] = event.name;
+            ev['location'] = event.location;
+            // res.status(200).send(`Thanks for attending ${event.name} at ${event.location}`);
+            res.status(200).send(ev);
             return;
         }
 
