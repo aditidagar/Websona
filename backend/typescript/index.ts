@@ -141,7 +141,7 @@ app.post('/updateWebhook', (req, res) => {
     res.end();
 });
 
-app.get("/code/:id", (req, res) => {
+app.get("/code/:id", async (req, res) => {
     const codeId = req.params.id;
     fetchCodes({ id: codeId }).then(async (codes) => {
         codes = codes as Code[];
@@ -191,10 +191,10 @@ app.get("/code/:id", (req, res) => {
                 });
             }
             const newEvent: any = event;
-            delete newEvent.attendees;
             delete newEvent._id;
 
-            updateEvent({ attendees: event.attendees }, { _id: event._id });
+            await updateEvent({ attendees: event.attendees }, { _id: event._id });
+            delete newEvent.attendees;
             res.status(200).send(newEvent);
             return;
         }
